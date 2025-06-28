@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       ventojs:
-        specifier: link:vento/_npm
-        version: link:vento/_npm
+        specifier: link:vendors/vento/_npm
+        version: link:vendors/vento/_npm
     devDependencies:
       '@types/node':
         specifier: ^16.11.6

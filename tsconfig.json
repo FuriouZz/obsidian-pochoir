@@ -22,5 +22,5 @@
   "include": [
     "**/*.ts"
   ],
-  "exclude": ["vento"]
+  "exclude": ["vendors"]
 }
