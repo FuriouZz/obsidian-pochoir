@@ -2,14 +2,6 @@ import type { SectionCache } from "obsidian";
 import FrontmatterBuilder from "./FrontmatterBuilder";
 import { createAsyncFunction } from "./utils";
 
-// export interface Context {
-// 	frontmatter: FrontmatterBuilder;
-// 	internal: Record<string, unknown>;
-// 	user: Record<string, unknown>;
-// }
-
-export type Context = any;
-
 export interface TemplateConfig {
 	suggestedName: string;
 	confirmName: boolean;
@@ -18,33 +10,22 @@ export interface TemplateConfig {
 }
 
 export class TemplateCodeBlock {
-	execute: (cx: Context) => Promise<void>;
-
 	constructor(
 		public language: "js" | "yml",
 		public section: SectionCache,
 		public content: string,
 		public code: string,
-	) {
-		this.execute = async (cx: Context) => {
-			const code: string[] = [];
-			if (language === "yml") {
-				code.push(`const {${Object.keys(cx)}} = pochoir;`);
-				code.push(`pochoir.frontmatter.$builder.fromYaml(\`${this.code}\`)`);
-			} else {
-				code.push(this.code);
-			}
-			await createAsyncFunction(code.join("\n"), "pochoir")(cx);
-		};
-	}
+	) {}
 }
 
 export class TemplateContext {
 	frontmatter = new FrontmatterBuilder();
-	// @ts-ignore:
 	variables: Record<string | symbol, unknown> & {
 		frontmatter: ReturnType<FrontmatterBuilder["createProxy"]>;
-	} = {};
+	} = {
+		// biome-ignore lint/style/noNonNullAssertion: setted in the constructor
+		frontmatter: null!,
+	};
 
 	constructor() {
 		Object.defineProperty(this.variables, "frontmatter", {
@@ -78,7 +59,17 @@ export class Template {
 
 	async evaluateCodeBlocks(cx: TemplateContext) {
 		for (const code of this.codeBlocks) {
-			await code.execute(cx.variables);
+			if (code.language === "yml") {
+				if (this.processor) {
+					const result = await this.processor({
+						context: cx,
+						content: code.code,
+					});
+					cx.frontmatter.fromYaml(result);
+				}
+			} else {
+				await createAsyncFunction(code.code, "pochoir")(cx.variables);
+			}
 		}
 	}
 

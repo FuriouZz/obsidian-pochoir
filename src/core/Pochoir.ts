@@ -41,8 +41,11 @@ export default class Pochoir {
 				const template = await this.parseTemplate(app, file);
 				if (!template) return;
 
-				await template.evaluateCodeBlocks(context);
-				return template.renderContent(context);
+				const cx = new TemplateContext();
+				this.injectInternalFunctions(app, cx);
+				await template.evaluateCodeBlocks(cx);
+				const { content } = await template.renderContent(cx);
+				return { ...cx, content };
 			},
 		});
 
