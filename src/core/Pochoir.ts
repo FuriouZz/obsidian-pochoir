@@ -1,62 +1,82 @@
-import { type App, MarkdownView, moment, Notice, type TFile } from "obsidian";
+import {
+	type App,
+	MarkdownView,
+	Notice,
+	type TFile,
+	Events,
+	type EventRef,
+} from "obsidian";
+import type PochoirPlugin from "src/main";
+import type { Extension } from "./Extension";
 import Parser from "./Parser";
-import { Template, TemplateContext } from "./Template";
-import { vento } from "./vento";
+import { type TemplateCodeBlock, TemplateContext } from "./Template";
+import { TemplateEngine } from "./TemplateEngine";
 
-export default class Pochoir {
-	vento = vento({
-		dataVarname: "pochoir",
-		autoDataVarname: true,
-	});
+export class Pochoir extends Events {
+	templateEngine = new TemplateEngine();
+	parser: Parser;
+	plugin: PochoirPlugin;
 
-	async parseTemplate(app: App, file: TFile) {
-		const parser = new Parser();
-		const tpl = await parser.parse(app, file);
-		if (!tpl) return null;
-		const template = new Template(
-			tpl.source,
-			tpl.codeBlocks,
-			tpl.contentSections,
-		);
-		template.processor = async ({ context, content }) => {
-			const result = await this.vento.runString(content, context.variables);
-			return result.content as string;
-		};
-		return template;
+	codeBlocks: {
+		languages: string[];
+		evaluate(
+			codeBlock: TemplateCodeBlock,
+			context: TemplateContext,
+		): Promise<void>;
+	}[] = [];
+
+	providers: ((params: {
+		provide: (key: string, descriptor: PropertyDescriptor) => void;
+	}) => void)[] = [];
+
+	declare on: (
+		name: "template:rendered",
+		callback: (params: {
+			pochoir: Pochoir;
+			context: TemplateContext;
+			content: string;
+		}) => unknown,
+		ctx?: unknown,
+	) => EventRef;
+
+	constructor(plugin: PochoirPlugin) {
+		super();
+
+		this.plugin = plugin;
+		this.parser = new Parser();
 	}
 
-	injectInternalFunctions(app: App, context: TemplateContext) {
-		Object.defineProperty(context.variables, "include", {
-			configurable: false,
-			enumerable: true,
-			writable: false,
-			value: async (path: string) => {
-				const regex = /^\[\[(.*)\]\]$/;
-				const match = regex.exec(path);
-				if (!match) return;
+	enable() {
+		this.parser.enable(this.plugin.app.metadataCache);
+	}
 
-				const file = app.metadataCache.getFirstLinkpathDest(match[1], "");
-				if (!file) return;
+	disable() {
+		this.parser.disable(this.plugin.app.metadataCache);
+		this.parser.cache.clear();
+	}
 
-				const template = await this.parseTemplate(app, file);
-				if (!template) return;
+	use(extension: Extension) {
+		extension(this);
+		return this;
+	}
 
-				const cx = new TemplateContext();
-				this.injectInternalFunctions(app, cx);
-				await template.evaluateCodeBlocks(cx);
-				const { content } = await template.renderContent(cx);
-				return { ...cx, content };
-			},
-		});
+	async renderTemplate(file: TFile) {
+		const template = await this.parser.parse(this, file);
+		if (!template) throw new Error("Unable to parse template");
 
-		Object.defineProperty(context.variables, "today", {
-			configurable: false,
-			enumerable: true,
-			writable: false,
-			value: (format = "YYYY-MM-DD") => {
-				return moment().format(format);
-			},
-		});
+		const context = new TemplateContext();
+		for (const v of this.providers) {
+			v({
+				provide: (key, descriptor) => {
+					Object.defineProperty(context, key, descriptor);
+				},
+			});
+		}
+
+		await template.evaluateCodeBlocks(this, context);
+		const content = await template.renderContent(this, context);
+
+		return { context, template, content };
 	}
 
 	async insertTemplate(app: App, file: TFile) {
@@ -66,20 +86,9 @@ export default class Pochoir {
 			return;
 		}
 
-		const context = new TemplateContext();
-		this.injectInternalFunctions(app, context);
-
-		const template = await this.parseTemplate(app, file);
-		if (!template) {
-			new Notice("Unable to parse template");
-			return;
-		}
-
-		await template.evaluateCodeBlocks(context);
-		const res = await template.renderContent(context);
-
+		const { context, content } = await this.renderTemplate(file);
 		const view = app.workspace.getActiveViewOfType(MarkdownView);
-		view?.editor.replaceSelection(res.content);
-		view?.metadataEditor?.insertProperties(res.frontmatter);
+		view?.editor.replaceSelection(content);
+		this.trigger("template:rendered", { pochoir: this, context, content });
 	}
 }

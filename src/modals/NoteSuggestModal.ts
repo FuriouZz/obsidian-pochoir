@@ -27,6 +27,6 @@ export default class NoteSuggestModal extends FuzzySuggestModal<TFile> {
 	}
 
 	onChooseItem(item: TFile, _evt: MouseEvent | KeyboardEvent): void {
-		this.plugin.template.insertTemplate(this.app, item);
+		this.plugin.pochoir.insertTemplate(this.app, item);
 	}
 }

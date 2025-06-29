@@ -46,7 +46,7 @@ I directly document my template here.
 I can use a javascript block to expose variable to my template:
 
 \`\`\`js pochoir
-pochoir.message = "Hello World";
+exports.message = "Hello World";
 \`\`\`
 
 I can define properties to merge to my note
@@ -64,32 +64,31 @@ tags:
 I can define properties programatically
 
 \`\`\`js pochoir
-const { frontmatter } = pochoir;
-frontmatter.title = "Template 1";
-frontmatter.number = 1;
-frontmatter.boolean = true;
-frontmatter.date = pochoir.today();
-frontmatter.$builder.insertTo("tags", "inbox");
+properties.title = "Template 1";
+properties.number = 1;
+properties.boolean = true;
+properties.date = pochoir.today();
+$properties.insertTo("tags", "inbox");
 \`\`\`
 
 We can import another template and use its variables, functions and content
 
 \`\`\`js pochoir
-const { $content } = await pochoir.include("[[Template 2]]");
-pochoir.anotherContent = $content;
+const { content } = await include("[[Template 2]]");
+exports.anotherContent = content;
 
-const { sum } = await pochoir.include("[[Math Functions]]");
-pochoir.operation = sum(1, 2);
+const { context } = await include("[[Math Functions]]");
+exports.operation = context.exports.sum(1, 2);
 \`\`\`
 ---
 
-# {{frontmatter.title}}
+# {{properties.title}}
 
-{{message}}
+{{exports.message}}
 
-1 + 2 = {{operation}}
+1 + 2 = {{exports.operation}}
 
-{{anotherContent}}
+{{exports.anotherContent}}
 ```
 
 ## Alternatives

@@ -1,47 +1,20 @@
 import type { SectionCache } from "obsidian";
-import FrontmatterBuilder from "./FrontmatterBuilder";
-import { createAsyncFunction } from "./utils";
+import type { Pochoir } from "./Pochoir";
 
-export interface TemplateConfig {
-	suggestedName: string;
-	confirmName: boolean;
-	openIfExists: boolean;
-	command?: string;
+export class TemplateContext {
+	exports: Record<string, unknown> = {};
 }
 
 export class TemplateCodeBlock {
 	constructor(
-		public language: "js" | "yml",
+		public language: string,
 		public section: SectionCache,
 		public content: string,
 		public code: string,
 	) {}
 }
 
-export class TemplateContext {
-	frontmatter = new FrontmatterBuilder();
-	variables: Record<string | symbol, unknown> & {
-		frontmatter: ReturnType<FrontmatterBuilder["createProxy"]>;
-	} = {
-		// biome-ignore lint/style/noNonNullAssertion: setted in the constructor
-		frontmatter: null!,
-	};
-
-	constructor() {
-		Object.defineProperty(this.variables, "frontmatter", {
-			value: this.frontmatter.createProxy(),
-			enumerable: true,
-			writable: false,
-			configurable: false,
-		});
-	}
-}
-
 export class Template {
-	processor?: (params: { context: TemplateContext; content: string }) =>
-		| string
-		| Promise<string>;
-
 	constructor(
 		public source: string,
 		public codeBlocks: TemplateCodeBlock[],
@@ -57,29 +30,17 @@ export class Template {
 		return this.source.slice(start, end);
 	}
 
-	async evaluateCodeBlocks(cx: TemplateContext) {
+	async evaluateCodeBlocks(pochoir: Pochoir, cx: TemplateContext) {
 		for (const code of this.codeBlocks) {
-			if (code.language === "yml") {
-				if (this.processor) {
-					const result = await this.processor({
-						context: cx,
-						content: code.code,
-					});
-					cx.frontmatter.fromYaml(result);
-				}
-			} else {
-				await createAsyncFunction(code.code, "pochoir")(cx.variables);
-			}
+			const ext = pochoir.codeBlocks.find(({ languages }) => {
+				return languages.includes(code.language);
+			});
+			await ext?.evaluate(code, cx);
 		}
 	}
 
-	async renderContent(cx: TemplateContext) {
-		const frontmatter = cx.variables.frontmatter;
+	async renderContent(pochoir: Pochoir, cx: TemplateContext) {
 		const content = this.getContent();
-		if (!this.processor) return { content, frontmatter };
-		const result = await Promise.resolve(
-			this.processor({ context: cx, content }),
-		);
-		return { content: result, frontmatter: cx.frontmatter.toObject() };
+		return pochoir.templateEngine.render(content, cx);
 	}
 }

@@ -1,6 +1,6 @@
 import { parseYaml } from "obsidian";
 
-export default class FrontmatterBuilder extends Map<string | symbol, unknown> {
+export default class PropertiesBuilder extends Map<string | symbol, unknown> {
 	#findSet(key: string | symbol) {
 		let set = this.get(key);
 		if (!(set instanceof Set)) {
@@ -58,7 +58,6 @@ export default class FrontmatterBuilder extends Map<string | symbol, unknown> {
 	createProxy() {
 		const proxy = new Proxy(this, {
 			get(target, p) {
-				console.log(p);
 				if (p === "$builder") return target;
 				return target.get(p);
 			},
@@ -86,6 +85,6 @@ export default class FrontmatterBuilder extends Map<string | symbol, unknown> {
 			},
 		});
 
-		return proxy as Record<string, unknown> & { $builder: FrontmatterBuilder };
+		return proxy as Record<string, unknown> & { $builder: PropertiesBuilder };
 	}
 }
