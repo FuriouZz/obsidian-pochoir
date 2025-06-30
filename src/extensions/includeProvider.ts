@@ -3,17 +3,19 @@ import { findLinkPath } from "src/core/utils";
 
 export default function includeProvider(): Extension {
 	return (pochoir) => {
-		pochoir.providers.push(({ provide }) => {
-			provide("include", {
-				enumerable: true,
-				configurable: false,
-				writable: false,
-				value: (path: string) => {
-					const file = findLinkPath(pochoir.plugin.app, path);
-					if (!file) throw new Error(`Cannot find ${path}`);
-					return pochoir.renderTemplate(file);
-				},
-			});
+		const { contextProviders, plugin, codeBlockProcessors } = pochoir;
+		contextProviders.push((context) => {
+			const include = async (path: string) => {
+				const file = findLinkPath(plugin.app, path);
+				if (!file) throw new Error(`Cannot find ${path}`);
+
+				const template = await pochoir.parseTemplate(file, context);
+				await template.evaluateCodeBlocks(codeBlockProcessors);
+
+				return template;
+			};
+
+			context.globals.include = include;
 		});
 	};
 }

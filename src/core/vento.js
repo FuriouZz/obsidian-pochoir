@@ -1,3 +1,4 @@
+import autoTrim from "ventojs/plugins/auto_trim.js";
 import echoTag from "ventojs/plugins/echo.js";
 import _escape from "ventojs/plugins/escape.js";
 import exportTag from "ventojs/plugins/export.js";
@@ -19,13 +20,14 @@ import { UrlLoader } from "ventojs/src/url_loader.js";
  */
 export function vento(options = {}) {
 	const env = new Environment({
-		loader: new UrlLoader(new URL(window.location.origin)),
+		loader: options.loader ?? new UrlLoader(new URL(window.location.origin)),
 		dataVarname: options.dataVarname || "it",
 		autoescape: options.autoescape ?? false,
 		autoDataVarname: options.autoDataVarname ?? true,
 	});
 
 	// Register basic plugins
+	env.use(autoTrim());
 	env.use(ifTag());
 	env.use(forTag());
 	env.use(jsTag());

@@ -7,9 +7,7 @@ import { Pochoir } from "./core/Pochoir";
 import dateProvider from "./extensions/dateProvider";
 import includeProvider from "./extensions/includeProvider";
 import jsCodeBlock from "./extensions/jsCodeBlock";
-import propertiesProvider from "./extensions/propertiesProvider";
 import ymlCodeBlock from "./extensions/ymlCodeBlock";
-import extensionProvider from "./extensions/extensionProvider";
 
 export default class PochoirPlugin extends Plugin {
 	settings: ISettings = {};
@@ -20,12 +18,8 @@ export default class PochoirPlugin extends Plugin {
 
 		this.pochoir.use(jsCodeBlock());
 		this.pochoir.use(ymlCodeBlock());
-		this.pochoir.use(propertiesProvider());
 		this.pochoir.use(includeProvider());
 		this.pochoir.use(dateProvider());
-		this.pochoir.use(extensionProvider());
-
-		this.pochoir.enable();
 
 		this.addSettingTab(new SettingTab(this));
 		insertFromTemplateCommand(this);
@@ -33,9 +27,8 @@ export default class PochoirPlugin extends Plugin {
 	}
 
 	onunload() {
-		this.pochoir.codeBlocks.length = 0;
-		this.pochoir.providers.length = 0;
-		this.pochoir.disable();
+		this.pochoir.codeBlockProcessors.length = 0;
+		this.pochoir.contextProviders.length = 0;
 	}
 
 	async loadSettings() {

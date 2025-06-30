@@ -1,33 +1,28 @@
 import {
 	type App,
-	MarkdownView,
-	Notice,
-	type TFile,
-	Events,
 	type EventRef,
+	Events,
+	MarkdownView,
+	type TFile,
 } from "obsidian";
 import type PochoirPlugin from "src/main";
 import type { Extension } from "./Extension";
 import Parser from "./Parser";
-import { type TemplateCodeBlock, TemplateContext } from "./Template";
+import {
+	Template,
+	type TemplateCodeBlockProcessor,
+	TemplateContext,
+	type TemplateContextProvider,
+} from "./Template";
 import { TemplateEngine } from "./TemplateEngine";
 
 export class Pochoir extends Events {
-	templateEngine = new TemplateEngine();
+	templateEngine = new TemplateEngine(this);
 	parser: Parser;
 	plugin: PochoirPlugin;
 
-	codeBlocks: {
-		languages: string[];
-		evaluate(
-			codeBlock: TemplateCodeBlock,
-			context: TemplateContext,
-		): Promise<void>;
-	}[] = [];
-
-	providers: ((params: {
-		provide: (key: string, descriptor: PropertyDescriptor) => void;
-	}) => void)[] = [];
+	codeBlockProcessors: TemplateCodeBlockProcessor[] = [];
+	contextProviders: TemplateContextProvider[] = [];
 
 	declare on: (
 		name: "template:rendered",
@@ -44,15 +39,12 @@ export class Pochoir extends Events {
 
 		this.plugin = plugin;
 		this.parser = new Parser();
-	}
-
-	enable() {
-		this.parser.enable(this.plugin.app.metadataCache);
-	}
-
-	disable() {
-		this.parser.disable(this.plugin.app.metadataCache);
-		this.parser.cache.clear();
+		this.plugin.registerEvent(
+			this.plugin.app.metadataCache.on("changed", (file) => {
+				this.parser.cache.delete(file.path);
+				this.templateEngine.vento.cache.delete(file.path);
+			}),
+		);
 	}
 
 	use(extension: Extension) {
@@ -60,35 +52,45 @@ export class Pochoir extends Events {
 		return this;
 	}
 
-	async renderTemplate(file: TFile) {
-		const template = await this.parser.parse(this, file);
-		if (!template) throw new Error("Unable to parse template");
+	async #renderTemplate(
+		template: Template,
+		properties?: Record<string, unknown>,
+	) {
+		return this.templateEngine.renderTemplate(template, {
+			...template.context.exports,
+			properties,
+		});
+	}
 
-		const context = new TemplateContext();
-		for (const v of this.providers) {
-			v({
-				provide: (key, descriptor) => {
-					Object.defineProperty(context, key, descriptor);
-				},
-			});
+	async parseTemplate(file: TFile, parentContext?: TemplateContext | null) {
+		const info = await this.parser.parse(this.plugin.app, file);
+		if (!info) throw new Error("Unable to parse template");
+
+		let context: TemplateContext;
+		if (parentContext) {
+			context = parentContext;
+		} else {
+			context = new TemplateContext();
+			for (const p of this.contextProviders) p(context);
 		}
 
-		await template.evaluateCodeBlocks(this, context);
-		const content = await template.renderContent(this, context);
-
-		return { context, template, content };
+		return new Template(context, info);
 	}
 
 	async insertTemplate(app: App, file: TFile) {
 		const activeFile = app.workspace.getActiveFile();
-		if (!activeFile) {
-			new Notice("Not a valid file");
-			return;
-		}
+		if (!activeFile) throw new Error("There is no active file");
 
-		const { context, content } = await this.renderTemplate(file);
+		const template = await this.parseTemplate(file);
+
+		await template.evaluateCodeBlocks(this.codeBlockProcessors);
+
 		const view = app.workspace.getActiveViewOfType(MarkdownView);
+		const $properties = template.context.globals.$properties;
+		view?.metadataEditor?.insertProperties($properties.toObject());
+
+		const properties = view?.metadataEditor?.serialize();
+		const content = await this.#renderTemplate(template, properties);
 		view?.editor.replaceSelection(content);
-		this.trigger("template:rendered", { pochoir: this, context, content });
 	}
 }

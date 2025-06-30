@@ -22,7 +22,11 @@ export default class PropertiesBuilder extends Map<string | symbol, unknown> {
 
 	fromObject(obj: object) {
 		for (const [key, value] of Object.entries(obj)) {
-			this.set(key, value);
+			if (Array.isArray(value)) {
+				for (const item of value) this.insertTo(key, item);
+			} else {
+				this.set(key, value);
+			}
 		}
 	}
 
@@ -58,8 +62,11 @@ export default class PropertiesBuilder extends Map<string | symbol, unknown> {
 	createProxy() {
 		const proxy = new Proxy(this, {
 			get(target, p) {
-				if (p === "$builder") return target;
-				return target.get(p);
+				const value = target.get(p);
+				if (value instanceof Set) {
+					return [...value];
+				}
+				return value;
 			},
 			set(target, p, newValue) {
 				target.set(p, newValue);
@@ -85,6 +92,6 @@ export default class PropertiesBuilder extends Map<string | symbol, unknown> {
 			},
 		});
 
-		return proxy as Record<string, unknown> & { $builder: PropertiesBuilder };
+		return proxy as Record<string, unknown>;
 	}
 }

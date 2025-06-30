@@ -1,10 +1,13 @@
 import type { App } from "obsidian";
 
-export const AsyncFunction = (async () => {})
-	.constructor as FunctionConstructor;
-
-export function createAsyncFunction(content: string, ...parameters: string[]) {
-	return new AsyncFunction(...parameters, content);
+export function createAsyncFunction(
+	code: string,
+	...parameters: string[]
+): () => Promise<unknown> {
+	const ctor = new Function(`return async function(${parameters}) {
+        ${code}
+    }`);
+	return ctor();
 }
 
 const LinkPathRegex = /^\[\[(.*)\]\]$/;

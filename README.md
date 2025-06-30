@@ -24,7 +24,7 @@ In this section, we can write and document template properties, code and configu
 
 To create a template, your file must be divided in 3 sections delimited by `---` separator:
 
-```md
+````md
 ---
 Template properties
 ---
@@ -45,41 +45,38 @@ I directly document my template here.
 
 I can use a javascript block to expose variable to my template:
 
-\`\`\`js pochoir
+```js pochoir
 exports.message = "Hello World";
-\`\`\`
+```
 
 I can define properties to merge to my note
 
-\`\`\`yaml pochoir
+```yaml pochoir
 title: Template 1
 number: 1
 boolean: true
-date: {{today()}}
+date: {{date.today()}}
 tags:
 - inbox
-\`\`\`
+```
 
 
 I can define properties programatically
 
-\`\`\`js pochoir
-properties.title = "Template 1";
-properties.number = 1;
-properties.boolean = true;
-properties.date = pochoir.today();
-$properties.insertTo("tags", "inbox");
-\`\`\`
+```js pochoir
+pochoir.properties.title = "Template 1";
+pochoir.properties.number = 1;
+pochoir.properties.boolean = true;
+pochoir.properties.date = pochoir.today();
+pochoir.$properties.insertTo("tags", "inbox");
+```
 
 We can import another template and use its variables, functions and content
 
-\`\`\`js pochoir
-const { content } = await include("[[Template 2]]");
-exports.anotherContent = content;
-
-const { context } = await include("[[Math Functions]]");
-exports.operation = context.exports.sum(1, 2);
-\`\`\`
+```js pochoir
+const math = await include("[[Math Functions]]");
+exports.operation = math.exports.sum(1, 2);
+```
 ---
 
 # {{properties.title}}
@@ -88,8 +85,8 @@ exports.operation = context.exports.sum(1, 2);
 
 1 + 2 = {{exports.operation}}
 
-{{exports.anotherContent}}
-```
+{{ include "[[Template 2]]" }}
+````
 
 ## Alternatives
 
