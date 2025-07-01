@@ -1,7 +1,7 @@
 import { AbstractInputSuggest } from "obsidian";
 import type PochoirPlugin from "src/main";
 
-export default class FolderSuggester extends AbstractInputSuggest<string> {
+export class FolderSuggester extends AbstractInputSuggest<string> {
 	plugin: PochoirPlugin;
 
 	constructor(plugin: PochoirPlugin, input: HTMLInputElement) {

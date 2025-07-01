@@ -1,6 +1,6 @@
 import { parseYaml } from "obsidian";
 
-export default class PropertiesBuilder extends Map<string | symbol, unknown> {
+export class PropertiesBuilder extends Map<string | symbol, unknown> {
 	#findSet(key: string | symbol) {
 		let set = this.get(key);
 		if (!(set instanceof Set)) {

@@ -1,6 +1,6 @@
 import { PluginSettingTab, Setting } from "obsidian";
 import type PochoirPlugin from "src/main";
-import FolderSuggester from "./suggesters/FolderSuggester";
+import { FolderSuggester } from "./suggesters/folder_input_suggester";
 
 export interface ISettings {
 	templates_folder?: string;

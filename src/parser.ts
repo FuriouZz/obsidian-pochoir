@@ -1,10 +1,41 @@
 import type { App, CachedMetadata, SectionCache, TFile } from "obsidian";
-import type { TemplateCodeBlock, TemplateInfo } from "./Template";
+import {
+	Template,
+	type TemplateCodeBlock,
+	TemplateContext,
+	type TemplateInfo,
+	type VariablesProvider,
+} from "./template";
 
-export default class Parser {
+export class Parser {
 	cache = new Map<string, TemplateInfo>();
 
-	async parse(app: App, file: TFile) {
+	async parse({
+		app,
+		file,
+		context: parentContext,
+		variables,
+	}: {
+		app: App;
+		file: TFile;
+		context?: TemplateContext | null;
+		variables?: VariablesProvider[];
+	}) {
+		const info = await this.parseFile(app, file);
+		if (!info) throw new Error(`Cannot parse template: ${file.getShortName()}`);
+
+		let context = parentContext;
+		if (!context) {
+			context = new TemplateContext();
+			if (variables) {
+				for (const p of variables) p(context);
+			}
+		}
+
+		return new Template(context, info);
+	}
+
+	async parseFile(app: App, file: TFile) {
 		const result = this.cache.get(file.path);
 		if (result) return result;
 
@@ -21,6 +52,7 @@ export default class Parser {
 			codeBlocks: res.codeBlocks,
 			contentSections: res.contentSections,
 		};
+
 		this.cache.set(file.path, info);
 
 		return info;

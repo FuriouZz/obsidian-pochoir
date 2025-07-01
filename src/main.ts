@@ -3,20 +3,20 @@ import {
 	createFromTemplateCommand,
 	insertFromTemplateCommand,
 } from "./commands";
-import { Pochoir } from "./core/Pochoir";
+import { Environment } from "./environment";
 import { createFromTemplateFileMenuItem } from "./events";
 import dateProvider from "./extensions/dateProvider";
 import formProvider from "./extensions/formProvider";
 import includeProvider from "./extensions/includeProvider";
 import jsCodeBlock from "./extensions/jsCodeBlock";
 import ymlCodeBlock from "./extensions/ymlCodeBlock";
-import TemplateSuggester from "./modals/TemplateSuggestModal";
-import { type ISettings, SettingTab } from "./settings";
+import { type ISettings, SettingTab } from "./setting_tab";
+import { TemplateModalSuggester } from "./suggesters/template_modal_suggester";
 
 export default class PochoirPlugin extends Plugin {
 	settings: ISettings = {};
-	pochoir = new Pochoir(this);
-	templateSuggester = new TemplateSuggester(this);
+	pochoir = new Environment(this);
+	templateSuggester = new TemplateModalSuggester(this);
 
 	async onload() {
 		await this.loadSettings();

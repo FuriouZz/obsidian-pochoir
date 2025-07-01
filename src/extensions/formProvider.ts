@@ -1,42 +1,48 @@
 import { type App, Modal, Setting } from "obsidian";
-import type { Extension } from "src/core/Extension";
+import type { Extension } from "../environment";
 
-interface DefaultFieldType {
+export interface FormInfo {
+	title: string;
+	description: string;
+}
+
+export interface BaseFieldType {
+	type: string;
 	name: string;
 	label: string;
 	description?: string;
 }
 
-interface TextFieldType extends DefaultFieldType {
+export interface TextFieldType extends BaseFieldType {
 	type: "text";
 	defaultValue?: string;
 	placeholder?: string;
 }
 
-interface TextAreaFieldType extends DefaultFieldType {
+export interface TextAreaFieldType extends BaseFieldType {
 	type: "textarea";
 	defaultValue?: string;
 	placeholder?: string;
 }
 
-interface NumberFieldType extends DefaultFieldType {
+export interface NumberFieldType extends BaseFieldType {
 	type: "number";
 	defaultValue?: number;
 	placeholder?: string;
 }
 
-interface ToggleFieldType extends DefaultFieldType {
+export interface ToggleFieldType extends BaseFieldType {
 	type: "toggle";
 	defaultValue?: boolean;
 }
 
-interface DropdownFieldType extends DefaultFieldType {
+export interface DropdownFieldType extends BaseFieldType {
 	type: "dropdown";
 	options: Record<string, string>;
 	defaultValue?: string;
 }
 
-type FieldType =
+export type FieldType =
 	| TextFieldType
 	| TextAreaFieldType
 	| NumberFieldType
@@ -45,6 +51,10 @@ type FieldType =
 
 abstract class Field<T extends FieldType = FieldType> {
 	data: T;
+
+	constructor(data: T) {
+		this.data = data;
+	}
 
 	name(value: string) {
 		this.data.name = value;
@@ -187,7 +197,7 @@ class DropdownField extends Field<DropdownFieldType> {
 			}
 			cmp.addOptions(field.options);
 			cmp.onChange((value) => {
-				result[field.name] = Number(value);
+				result[field.name] = value;
 			});
 		});
 	}
@@ -195,6 +205,10 @@ class DropdownField extends Field<DropdownFieldType> {
 
 class Form {
 	fields: Field[] = [];
+	data: FormInfo = {
+		title: "Insert template",
+		description: "Please fill in the form",
+	};
 	modal: Modal;
 
 	constructor(app: App) {
@@ -202,42 +216,57 @@ class Form {
 	}
 
 	text(name: string, options?: Omit<TextFieldType, "type">) {
-		const field = new TextField();
-		field.data = { name, label: name, type: "text", ...options };
+		const field = new TextField({
+			name,
+			label: name,
+			type: "text",
+			...options,
+		});
 		this.fields.push(field);
 		return field;
 	}
 
 	textarea(name: string, options?: Omit<TextAreaFieldType, "type">) {
-		const field = new TextAreaField();
-		field.data = { name, label: name, type: "textarea", ...options };
+		const field = new TextAreaField({
+			name,
+			label: name,
+			type: "textarea",
+			...options,
+		});
 		this.fields.push(field);
 		return field;
 	}
 
 	number(name: string, options?: Omit<NumberFieldType, "type">) {
-		const field = new NumberField();
-		field.data = { name, label: name, type: "number", ...options };
+		const field = new NumberField({
+			name,
+			label: name,
+			type: "number",
+			...options,
+		});
 		this.fields.push(field);
 		return field;
 	}
 
 	toggle(name: string, options?: Omit<ToggleFieldType, "type">) {
-		const field = new ToggleField();
-		field.data = { name, label: name, type: "toggle", ...options };
+		const field = new ToggleField({
+			name,
+			label: name,
+			type: "toggle",
+			...options,
+		});
 		this.fields.push(field);
 		return field;
 	}
 
 	dropdown(name: string, options?: Omit<DropdownFieldType, "type">) {
-		const field = new DropdownField();
-		field.data = {
+		const field = new DropdownField({
 			name,
 			label: name,
 			type: "dropdown",
 			options: {},
 			...options,
-		};
+		});
 		this.fields.push(field);
 		return field;
 	}
@@ -247,6 +276,9 @@ class Form {
 			const { modal } = this;
 
 			modal.contentEl.empty();
+
+			modal.setTitle(this.data.title);
+			modal.contentEl.createEl("p", { text: this.data.description });
 
 			const result: Record<string, unknown> = {};
 			for (const field of this.fields) {
@@ -272,10 +304,10 @@ class Form {
 }
 
 export default function (): Extension {
-	return (pochoir) => {
-		pochoir.contextProviders.push((context) => {
+	return (env) => {
+		env.variables.push((context) => {
 			context.globals.createForm = () => {
-				return new Form(pochoir.plugin.app);
+				return new Form(env.plugin.app);
 			};
 		});
 	};

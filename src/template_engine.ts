@@ -1,5 +1,5 @@
-import type { Pochoir } from "./Pochoir";
-import type { Template } from "./Template";
+import type { Environment } from "./environment";
+import type { Template } from "./template";
 import { findLinkPath } from "./utils";
 import { vento } from "./vento";
 
@@ -7,7 +7,7 @@ export class TemplateEngine {
 	// biome-ignore lint/suspicious/noExplicitAny: needs to be typed properly
 	vento: any;
 
-	constructor(pochoir: Pochoir) {
+	constructor(pochoir: Environment) {
 		this.vento = vento({
 			dataVarname: "pochoir",
 			autoDataVarname: true,
@@ -28,9 +28,9 @@ export class TemplateEngine {
 }
 
 export class VentoLoader {
-	pochoir: Pochoir;
+	pochoir: Environment;
 
-	constructor(pochoir: Pochoir) {
+	constructor(pochoir: Environment) {
 		this.pochoir = pochoir;
 	}
 

@@ -3,7 +3,7 @@ import type { App } from "obsidian";
 export function createAsyncFunction(
 	code: string,
 	...parameters: string[]
-): () => Promise<unknown> {
+): (...parameters: unknown[]) => Promise<unknown> {
 	const ctor = new Function(`return async function(${parameters}) {
         ${code}
     }`);

@@ -1,4 +1,4 @@
-import { FuzzySuggestModal, TFile, TFolder, Vault } from "obsidian";
+import { FuzzySuggestModal, TFile, type TFolder, Vault } from "obsidian";
 import type PochoirPlugin from "src/main";
 
 export enum OpenMode {
@@ -6,7 +6,7 @@ export enum OpenMode {
 	CreateFromTemplate,
 }
 
-export default class TemplateSuggester extends FuzzySuggestModal<TFile> {
+export class TemplateModalSuggester extends FuzzySuggestModal<TFile> {
 	plugin: PochoirPlugin;
 	openMode: OpenMode;
 	folderLocation?: TFolder;

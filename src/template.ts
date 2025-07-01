@@ -1,5 +1,5 @@
 import type { App, SectionCache, TFile } from "obsidian";
-import PropertiesBuilder from "./PropertiesBuilder";
+import { PropertiesBuilder } from "./properties_builder";
 
 export interface TemplateInfo {
 	file: TFile;
@@ -15,12 +15,12 @@ export interface TemplateCodeBlock {
 	code: string;
 }
 
-export type TemplateCodeBlockProcessor = (params: {
+export type CodeBlockProcessor = (params: {
 	codeBlock: TemplateCodeBlock;
 	template: Template;
 }) => boolean | Promise<boolean>;
 
-export type TemplateContextProvider = (context: TemplateContext) => void;
+export type VariablesProvider = (context: TemplateContext) => void;
 
 export class TemplateContext {
 	globals: Record<string, unknown> & {
@@ -64,7 +64,7 @@ export class Template {
 		return source.slice(start, end);
 	}
 
-	async evaluateCodeBlocks(processors: TemplateCodeBlockProcessor[]) {
+	async evaluateCodeBlocks(processors: CodeBlockProcessor[]) {
 		for (const codeBlock of this.info.codeBlocks) {
 			for (const processor of processors) {
 				const promise = processor({ codeBlock, template: this });
