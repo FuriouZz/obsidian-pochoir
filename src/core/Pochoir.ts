@@ -55,6 +55,11 @@ export class Pochoir extends Events {
 		return this;
 	}
 
+	clear() {
+		this.codeBlockProcessors.length = 0;
+		this.contextProviders.length = 0;
+	}
+
 	async #renderTemplateContent(
 		template: Template,
 		properties?: Record<string, unknown>,

@@ -6,6 +6,7 @@ import {
 import { Pochoir } from "./core/Pochoir";
 import { createFromTemplateFileMenuItem } from "./events";
 import dateProvider from "./extensions/dateProvider";
+import formProvider from "./extensions/formProvider";
 import includeProvider from "./extensions/includeProvider";
 import jsCodeBlock from "./extensions/jsCodeBlock";
 import ymlCodeBlock from "./extensions/ymlCodeBlock";
@@ -26,6 +27,7 @@ export default class PochoirPlugin extends Plugin {
 		this.pochoir.use(ymlCodeBlock());
 		this.pochoir.use(includeProvider());
 		this.pochoir.use(dateProvider());
+		this.pochoir.use(formProvider());
 
 		insertFromTemplateCommand(this);
 		createFromTemplateCommand(this);
@@ -33,8 +35,7 @@ export default class PochoirPlugin extends Plugin {
 	}
 
 	onunload() {
-		this.pochoir.codeBlockProcessors.length = 0;
-		this.pochoir.contextProviders.length = 0;
+		this.pochoir.clear();
 	}
 
 	async loadSettings() {
