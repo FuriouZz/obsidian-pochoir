@@ -4,6 +4,7 @@ import {
 	insertFromTemplateCommand,
 } from "./commands";
 import { Pochoir } from "./core/Pochoir";
+import { createFromTemplateFileMenuItem } from "./events";
 import dateProvider from "./extensions/dateProvider";
 import includeProvider from "./extensions/includeProvider";
 import jsCodeBlock from "./extensions/jsCodeBlock";
@@ -28,6 +29,7 @@ export default class PochoirPlugin extends Plugin {
 
 		insertFromTemplateCommand(this);
 		createFromTemplateCommand(this);
+		createFromTemplateFileMenuItem(this);
 	}
 
 	onunload() {

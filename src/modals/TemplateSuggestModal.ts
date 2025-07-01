@@ -1,4 +1,4 @@
-import { FuzzySuggestModal, TFile, Vault } from "obsidian";
+import { FuzzySuggestModal, TFile, TFolder, Vault } from "obsidian";
 import type PochoirPlugin from "src/main";
 
 export enum OpenMode {
@@ -9,6 +9,7 @@ export enum OpenMode {
 export default class TemplateSuggester extends FuzzySuggestModal<TFile> {
 	plugin: PochoirPlugin;
 	openMode: OpenMode;
+	folderLocation?: TFolder;
 
 	constructor(plugin: PochoirPlugin) {
 		super(plugin.app);
@@ -50,7 +51,12 @@ export default class TemplateSuggester extends FuzzySuggestModal<TFile> {
 				break;
 			}
 			case OpenMode.CreateFromTemplate: {
-				this.plugin.pochoir.createFromTemplate(item, { openNote: true });
+				const folder = this.folderLocation;
+				this.folderLocation = undefined;
+				this.plugin.pochoir.createFromTemplate(item, {
+					openNote: true,
+					folder,
+				});
 				break;
 			}
 		}
@@ -61,8 +67,9 @@ export default class TemplateSuggester extends FuzzySuggestModal<TFile> {
 		this.open();
 	}
 
-	createFromTemplate() {
+	createFromTemplate(folderLocation?: TFolder) {
 		this.openMode = OpenMode.CreateFromTemplate;
+		this.folderLocation = folderLocation;
 		this.open();
 	}
 }
