@@ -1,4 +1,4 @@
-import type { SectionCache, TFile } from "obsidian";
+import type { App, SectionCache, TFile } from "obsidian";
 import PropertiesBuilder from "./PropertiesBuilder";
 
 export interface TemplateInfo {
@@ -72,5 +72,14 @@ export class Template {
 				if (res) break;
 			}
 		}
+	}
+
+	async mergeProperties(file: TFile, app: App) {
+		let properties: Record<string, unknown> = {};
+		await app.fileManager.processFrontMatter(file, (fm) => {
+			this.context.globals.$properties.toFrontmatter(fm);
+			properties = structuredClone(fm);
+		});
+		return properties;
 	}
 }

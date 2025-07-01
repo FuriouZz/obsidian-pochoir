@@ -1,10 +1,12 @@
 import {
-	type App,
 	type EventRef,
 	Events,
 	MarkdownView,
-	type TFile,
+	normalizePath,
+	TFile,
+	type TFolder,
 } from "obsidian";
+import { parentFolderPath } from "obsidian-typings/implementations";
 import type PochoirPlugin from "src/main";
 import type { Extension } from "./Extension";
 import Parser from "./Parser";
@@ -15,6 +17,7 @@ import {
 	type TemplateContextProvider,
 } from "./Template";
 import { TemplateEngine } from "./TemplateEngine";
+import { getNewFileLocation } from "./utils";
 
 export class Pochoir extends Events {
 	templateEngine = new TemplateEngine(this);
@@ -52,7 +55,7 @@ export class Pochoir extends Events {
 		return this;
 	}
 
-	async #renderTemplate(
+	async #renderTemplateContent(
 		template: Template,
 		properties?: Record<string, unknown>,
 	) {
@@ -77,20 +80,54 @@ export class Pochoir extends Events {
 		return new Template(context, info);
 	}
 
-	async insertTemplate(app: App, file: TFile) {
-		const activeFile = app.workspace.getActiveFile();
-		if (!activeFile) throw new Error("There is no active file");
-
-		const template = await this.parseTemplate(file);
-
+	async renderTemplate(templateFile: TFile, note: TFile) {
+		const { app } = this.plugin;
+		const template = await this.parseTemplate(templateFile);
 		await template.evaluateCodeBlocks(this.codeBlockProcessors);
+		const properties = await template.mergeProperties(note, app);
+		return this.#renderTemplateContent(template, properties);
+	}
 
+	async createFromTemplate(
+		templateFile: TFile,
+		{
+			filename = "Untitled",
+			folder,
+			openNote = true,
+		}: { folder?: TFolder; filename?: string; openNote?: boolean } = {},
+	) {
+		const { app } = this.plugin;
+		const location = folder ?? getNewFileLocation(app);
+
+		let filePath = normalizePath(`${location.path}/${filename}`);
+		filePath = app.vault.getAvailablePath(filePath, "md");
+
+		const folderPath = parentFolderPath(filePath);
+
+		const folderObj = app.vault.getAbstractFileByPath(folderPath);
+		if (folderObj instanceof TFile) {
+			throw new Error(`${folder} is a file`);
+		}
+		if (!folderObj) {
+			await app.vault.createFolder(folderPath);
+		}
+		const note = await app.vault.create(filePath, "");
+
+		const content = await this.renderTemplate(templateFile, note);
+		await app.vault.process(note, (data) => data + content);
+
+		if (openNote) {
+			await app.workspace.getLeaf(false).openFile(note);
+		}
+	}
+
+	async insertTemplate(templateFile: TFile) {
+		const { app } = this.plugin;
+		const note = app.workspace.getActiveFile();
+		if (!note) throw new Error("There is no active file");
+
+		const content = await this.renderTemplate(templateFile, note);
 		const view = app.workspace.getActiveViewOfType(MarkdownView);
-		const $properties = template.context.globals.$properties;
-		view?.metadataEditor?.insertProperties($properties.toObject());
-
-		const properties = view?.metadataEditor?.serialize();
-		const content = await this.#renderTemplate(template, properties);
 		view?.editor.replaceSelection(content);
 	}
 }

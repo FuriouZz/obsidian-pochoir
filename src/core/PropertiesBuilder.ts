@@ -59,6 +59,32 @@ export default class PropertiesBuilder extends Map<string | symbol, unknown> {
 		return lines.join("\n");
 	}
 
+	toFrontmatter(fm: Record<string | symbol, unknown>) {
+		for (const [key, value] of this.entries()) {
+			if (value instanceof Set) {
+				if (fm[key]) {
+					if (Array.isArray(fm[key])) {
+						fm[key] = [...(fm[key] as string[]), ...value];
+					} else {
+						fm[key] = [fm[key], ...value];
+					}
+				} else {
+					fm[key] = [...value];
+				}
+			} else {
+				if (fm[key]) {
+					if (Array.isArray(fm[key])) {
+						fm[key] = [...(fm[key] as string[]), value];
+					} else {
+						fm[key] = [fm[key], value];
+					}
+				} else {
+					fm[key] = value;
+				}
+			}
+		}
+	}
+
 	createProxy() {
 		const proxy = new Proxy(this, {
 			get(target, p) {

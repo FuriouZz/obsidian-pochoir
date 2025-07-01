@@ -16,3 +16,18 @@ export function findLinkPath(app: App, path: string) {
 	if (!match) return;
 	return app.metadataCache.getFirstLinkpathDest(match[1], "");
 }
+
+export function getNewFileLocation(app: App) {
+	switch (app.vault.getConfig("newFileLocation")) {
+		case "folder": {
+			return app.fileManager.getNewFileParent("");
+		}
+		case "current": {
+			const folder = app.workspace.getActiveFile()?.parent;
+			return folder ?? app.vault.getRoot();
+		}
+		default: {
+			return app.vault.getRoot();
+		}
+	}
+}

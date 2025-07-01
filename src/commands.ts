@@ -1,6 +1,4 @@
 import type PochoirPlugin from "src/main";
-import NoteSuggestModal from "./modals/NoteSuggestModal";
-import TemplateSuggestModal from "./modals/TemplateSuggestModal";
 
 export function insertFromTemplateCommand(plugin: PochoirPlugin) {
 	plugin.addCommand({
@@ -8,18 +6,18 @@ export function insertFromTemplateCommand(plugin: PochoirPlugin) {
 		name: "Insert template",
 		icon: "templater-icon",
 		callback() {
-			new TemplateSuggestModal(plugin).open();
+			plugin.templateSuggester.insertTemplate();
 		},
 	});
 }
 
-export function openFileWithTemplate(plugin: PochoirPlugin) {
+export function createFromTemplateCommand(plugin: PochoirPlugin) {
 	plugin.addCommand({
-		id: "open-file",
-		name: "Open file",
+		id: "create-from-template",
+		name: "Create from template",
 		icon: "templater-icon",
 		callback() {
-			new NoteSuggestModal(plugin).open();
+			plugin.templateSuggester.createFromTemplate();
 		},
 	});
 }
