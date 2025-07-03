@@ -10,7 +10,7 @@ export class Parser {
 
 	async parse({ app, file }: { app: App; file: TFile }) {
 		const info = await this.parseFile(app, file);
-		if (!info) throw new Error(`Cannot parse template: ${file.getShortName()}`);
+		if (!info) throw new Error(`Cannot parse template: ${file.basename}`);
 
 		return new Template(info);
 	}

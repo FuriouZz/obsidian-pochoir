@@ -57,11 +57,6 @@ export class Environment extends Events {
 				this.updateTemplateList();
 			}),
 		);
-		this.plugin.registerEvent(
-			this.plugin.app.metadataCache.on("finished", () => {
-				this.updateTemplateList();
-			}),
-		);
 	}
 
 	async updateTemplateList() {
@@ -149,7 +144,7 @@ export class Environment extends Events {
 				await app.workspace.getLeaf(false).openFile(note);
 			}
 		} catch (e) {
-			logError(e);
+			logError(e as Error);
 		}
 	}
 
@@ -165,7 +160,7 @@ export class Environment extends Events {
 			const view = app.workspace.getActiveViewOfType(MarkdownView);
 			view?.editor.replaceSelection(content);
 		} catch (e) {
-			logError(e);
+			logError(e as Error);
 		}
 	}
 }

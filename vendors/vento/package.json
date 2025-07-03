@@ -1,0 +1,83 @@
+{
+  "name": "ventojs",
+  "version": "1.14.0",
+  "description": "🌬 A minimal but powerful template engine",
+  "homepage": "https://vento.js.org/",
+  "repository": "github:oscarotero/vento",
+  "license": "MIT",
+  "bugs": "https://github.com/oscarotero/vento/issues",
+  "module": "./esm/mod.js",
+  "exports": {
+    ".": {
+      "import": "./esm/mod.js"
+    },
+    "./src/environment.js": {
+      "import": "./esm/src/environment.js"
+    },
+    "./src/loader.js": {
+      "import": "./esm/src/loader.node.js"
+    },
+    "./src/url_loader.js": {
+      "import": "./esm/src/url_loader.js"
+    },
+    "./src/tokenizer.js": {
+      "import": "./esm/src/tokenizer.js"
+    },
+    "./plugins/auto_trim.js": {
+      "import": "./esm/plugins/auto_trim.js"
+    },
+    "./plugins/if.js": {
+      "import": "./esm/plugins/if.js"
+    },
+    "./plugins/for.js": {
+      "import": "./esm/plugins/for.js"
+    },
+    "./plugins/include.js": {
+      "import": "./esm/plugins/include.js"
+    },
+    "./plugins/set.js": {
+      "import": "./esm/plugins/set.js"
+    },
+    "./plugins/js.js": {
+      "import": "./esm/plugins/js.js"
+    },
+    "./plugins/layout.js": {
+      "import": "./esm/plugins/layout.js"
+    },
+    "./plugins/function.js": {
+      "import": "./esm/plugins/function.js"
+    },
+    "./plugins/import.js": {
+      "import": "./esm/plugins/import.js"
+    },
+    "./plugins/export.js": {
+      "import": "./esm/plugins/export.js"
+    },
+    "./plugins/echo.js": {
+      "import": "./esm/plugins/echo.js"
+    },
+    "./plugins/escape.js": {
+      "import": "./esm/plugins/escape.js"
+    },
+    "./plugins/unescape.js": {
+      "import": "./esm/plugins/unescape.js"
+    },
+    "./plugins/trim.js": {
+      "import": "./esm/plugins/trim.js"
+    }
+  },
+  "scripts": {
+    "test": "node test_runner.js"
+  },
+  "dependencies": {
+    "estree-walker": "3.0.3",
+    "meriyah": "6.0.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.9.0",
+    "picocolors": "^1.0.0",
+    "@deno/shim-deno": "~0.18.0",
+    "@types/estree": "1.0.5"
+  },
+  "_generatedBy": "dnt@dev"
+}

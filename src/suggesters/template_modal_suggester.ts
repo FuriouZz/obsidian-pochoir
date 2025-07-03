@@ -14,6 +14,7 @@ export class TemplateModalSuggester extends FuzzySuggestModal<TFile> {
 	constructor(plugin: PochoirPlugin) {
 		super(plugin.app);
 		this.plugin = plugin;
+		this.openMode = OpenMode.InsertTemplate;
 	}
 
 	getSuggestions(query: string) {
@@ -26,7 +27,7 @@ export class TemplateModalSuggester extends FuzzySuggestModal<TFile> {
 				);
 			})
 			.map((template) => {
-				const name = template.info.file.getShortName();
+				const name = template.info.file.basename;
 				return {
 					item: template.info.file,
 					match: { matches: [[0, name.length] as [number, number]], score: 0 },
@@ -41,7 +42,7 @@ export class TemplateModalSuggester extends FuzzySuggestModal<TFile> {
 	}
 
 	getItemText(item: TFile): string {
-		return item.getShortName();
+		return item.basename;
 	}
 
 	onChooseItem(item: TFile, _evt: MouseEvent | KeyboardEvent): void {

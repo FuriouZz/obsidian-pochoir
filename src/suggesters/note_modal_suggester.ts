@@ -21,7 +21,7 @@ export class NoteModalSuggester extends FuzzySuggestModal<TFile> {
 	}
 
 	getItemText(item: TFile): string {
-		return item.getShortName();
+		return item.basename;
 	}
 
 	onChooseItem(item: TFile, _evt: MouseEvent | KeyboardEvent): void {}

@@ -32,7 +32,7 @@ export class TemplateList {
 	getTemplateByFile(file: TFile) {
 		const template = this.findByFile(file);
 		if (!template) {
-			throw new Error(`No template with name: ${file.getShortName()}`);
+			throw new Error(`No template with name: ${file.basename}`);
 		}
 		return template;
 	}

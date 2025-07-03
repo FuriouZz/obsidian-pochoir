@@ -5,7 +5,8 @@ export function insertFromTemplateCommand(plugin: PochoirPlugin) {
 		id: "insert-from-template",
 		name: "Insert template",
 		icon: "templater-icon",
-		callback() {
+		async callback() {
+			await plugin.pochoir.updateTemplateList();
 			plugin.templateSuggester.insertTemplate();
 		},
 	});
@@ -16,7 +17,8 @@ export function createFromTemplateCommand(plugin: PochoirPlugin) {
 		id: "create-from-template",
 		name: "Create from template",
 		icon: "templater-icon",
-		callback() {
+		async callback() {
+			await plugin.pochoir.updateTemplateList();
 			plugin.templateSuggester.createFromTemplate();
 		},
 	});
