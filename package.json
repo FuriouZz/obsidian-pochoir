@@ -26,5 +26,5 @@
 	"dependencies": {
 		"ventojs": "link:vendors/vento"
 	},
-	"packageManager": "pnpm@10"
+	"packageManager": "pnpm@10.7.1"
 }
