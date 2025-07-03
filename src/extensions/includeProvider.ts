@@ -8,10 +8,10 @@ export default function includeProvider(): Extension {
 				const file = findLinkPath(env.plugin.app, path);
 				if (!file) throw new Error(`Cannot find ${path}`);
 
-				const template = await env.parseTemplate(file, context);
-				await template.evaluateCodeBlocks(env.codeBlockProcessor);
+				const template = env.list.getTemplateByFile(file);
+				await template.evaluateCodeBlocks(context, env.codeBlocks);
 
-				return template;
+				return context;
 			};
 
 			context.globals.include = include;

@@ -2,7 +2,6 @@ import { Plugin } from "obsidian";
 import {
 	createFromTemplateCommand,
 	insertFromTemplateCommand,
-	openSwitcherCommand,
 } from "./commands";
 import { Environment } from "./environment";
 import { createFromTemplateFileMenuItem } from "./events";
@@ -23,7 +22,6 @@ export default class PochoirPlugin extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
-
 		this.addSettingTab(new SettingTab(this));
 
 		this.pochoir.use(jsCodeBlock());
@@ -34,7 +32,7 @@ export default class PochoirPlugin extends Plugin {
 
 		insertFromTemplateCommand(this);
 		createFromTemplateCommand(this);
-		openSwitcherCommand(this);
+		// openSwitcherCommand(this);
 		createFromTemplateFileMenuItem(this);
 	}
 
@@ -48,5 +46,6 @@ export default class PochoirPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+		await this.pochoir.updateTemplateList();
 	}
 }

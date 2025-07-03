@@ -10,27 +10,31 @@ import { parentFolderPath } from "obsidian-typings/implementations";
 import { logError } from "src/log";
 import type PochoirPlugin from "src/main";
 import { Parser } from "./parser";
-import type {
-	CodeBlockProcessor,
-	Template,
+import {
+	type CodeBlockProcessor,
+	type FrontmatterProcessor,
+	type Template,
 	TemplateContext,
-	VariablesProvider,
+	type VariablesProvider,
 } from "./template";
 import { TemplateEngine, VentoLoader } from "./template_engine";
+import { TemplateList } from "./template_list";
 import { getNewFileLocation } from "./utils";
 
 export type Extension = (env: Environment) => void;
 
 export class Environment extends Events {
-	templateEngine = new TemplateEngine(new VentoLoader(this));
-	parser: Parser;
 	plugin: PochoirPlugin;
+	engine: TemplateEngine;
+	list: TemplateList;
+	parser: Parser;
 
-	codeBlockProcessor: CodeBlockProcessor[] = [];
+	frontmatters: FrontmatterProcessor[] = [];
+	codeBlocks: CodeBlockProcessor[] = [];
 	variables: VariablesProvider[] = [];
 
 	declare on: (
-		name: "template:rendered",
+		name: "write",
 		callback: (params: {
 			pochoir: Environment;
 			context: TemplateContext;
@@ -44,12 +48,24 @@ export class Environment extends Events {
 
 		this.plugin = plugin;
 		this.parser = new Parser();
+		this.engine = new TemplateEngine(new VentoLoader(this));
+		this.list = new TemplateList();
 		this.plugin.registerEvent(
 			this.plugin.app.metadataCache.on("changed", (file) => {
 				this.parser.cache.delete(file.path);
-				this.templateEngine.vento.cache.delete(file.path);
+				this.engine.vento.cache.delete(file.path);
+				this.updateTemplateList();
 			}),
 		);
+		this.plugin.registerEvent(
+			this.plugin.app.metadataCache.on("finished", () => {
+				this.updateTemplateList();
+			}),
+		);
+	}
+
+	async updateTemplateList() {
+		return this.list.refresh(this);
 	}
 
 	use(extension: Extension) {
@@ -58,38 +74,44 @@ export class Environment extends Events {
 	}
 
 	clear() {
-		this.codeBlockProcessor.length = 0;
+		this.codeBlocks.length = 0;
 		this.variables.length = 0;
 	}
 
 	async #renderTemplateContent(
+		context: TemplateContext,
 		template: Template,
 		properties?: Record<string, unknown>,
 	) {
-		return this.templateEngine.renderTemplate(template, {
-			...template.context.exports,
+		return this.engine.renderTemplate(template, {
+			...context.exports,
 			properties,
 		});
 	}
 
-	async parseTemplate(
-		templateFile: TFile,
-		parentContext?: TemplateContext | null,
-	) {
+	createContext() {
+		const context = new TemplateContext();
+		for (const p of this.variables) p(context);
+		return context;
+	}
+
+	async parseTemplate(templateFile: TFile) {
 		return this.parser.parse({
 			app: this.plugin.app,
 			file: templateFile,
-			context: parentContext,
-			variables: this.variables,
 		});
 	}
 
-	async renderTemplate(templateFile: TFile, note: TFile) {
+	async renderTemplate(
+		templateFile: TFile,
+		note: TFile,
+		context: TemplateContext,
+	) {
 		const { app } = this.plugin;
-		const template = await this.parseTemplate(templateFile);
-		await template.evaluateCodeBlocks(this.codeBlockProcessor);
-		const properties = await template.mergeProperties(note, app);
-		return this.#renderTemplateContent(template, properties);
+		const template = this.list.getTemplateByFile(templateFile);
+		await template.evaluateCodeBlocks(context, this.codeBlocks);
+		const properties = await template.mergeProperties(context, note, app);
+		return this.#renderTemplateContent(context, template, properties);
 	}
 
 	async createFromTemplate(
@@ -118,7 +140,9 @@ export class Environment extends Events {
 			}
 			const note = await app.vault.create(filePath, "");
 
-			const content = await this.renderTemplate(templateFile, note);
+			const context = this.createContext();
+			const content = await this.renderTemplate(templateFile, note, context);
+			this.trigger("write");
 			await app.vault.process(note, (data) => data + content);
 
 			if (openNote) {
@@ -135,7 +159,9 @@ export class Environment extends Events {
 			const note = app.workspace.getActiveFile();
 			if (!note) throw new Error("There is no active file");
 
-			const content = await this.renderTemplate(templateFile, note);
+			const context = this.createContext();
+			const content = await this.renderTemplate(templateFile, note, context);
+			this.trigger("write");
 			const view = app.workspace.getActiveViewOfType(MarkdownView);
 			view?.editor.replaceSelection(content);
 		} catch (e) {

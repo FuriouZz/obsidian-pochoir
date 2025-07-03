@@ -1,4 +1,4 @@
-import type { App, SectionCache, TFile } from "obsidian";
+import type { App, FrontMatterCache, SectionCache, TFile } from "obsidian";
 import { PropertiesBuilder } from "./properties_builder";
 
 export interface TemplateInfo {
@@ -6,6 +6,7 @@ export interface TemplateInfo {
 	source: string;
 	codeBlocks: TemplateCodeBlock[];
 	contentSections: SectionCache[];
+	frontmatter?: FrontMatterCache;
 }
 
 export interface TemplateCodeBlock {
@@ -13,11 +14,17 @@ export interface TemplateCodeBlock {
 	section: SectionCache;
 	content: string;
 	code: string;
+	attributes: Record<string, unknown>;
 }
 
+export type FrontmatterProcessor = (params: {
+	context: TemplateContext;
+	frontmatter: FrontMatterCache;
+}) => void | Promise<void>;
+
 export type CodeBlockProcessor = (params: {
+	context: TemplateContext;
 	codeBlock: TemplateCodeBlock;
-	template: Template;
 }) => boolean | Promise<boolean>;
 
 export type VariablesProvider = (context: TemplateContext) => void;
@@ -41,18 +48,7 @@ export class TemplateContext {
 }
 
 export class Template {
-	constructor(
-		public context: TemplateContext,
-		public info: TemplateInfo,
-	) {}
-
-	get globals() {
-		return this.context.globals;
-	}
-
-	get exports() {
-		return this.context.exports;
-	}
+	constructor(public info: TemplateInfo) {}
 
 	getContent() {
 		const { contentSections, source } = this.info;
@@ -64,20 +60,35 @@ export class Template {
 		return source.slice(start, end);
 	}
 
-	async evaluateCodeBlocks(processors: CodeBlockProcessor[]) {
+	async evaluateFrontmatter(
+		context: TemplateContext,
+		processors: FrontmatterProcessor[],
+	) {
+		const { frontmatter } = this.info;
+		if (!frontmatter) return;
+		for (const processor of processors) {
+			const promise = processor({ context, frontmatter });
+			await Promise.resolve(promise);
+		}
+	}
+
+	async evaluateCodeBlocks(
+		context: TemplateContext,
+		processors: CodeBlockProcessor[],
+	) {
 		for (const codeBlock of this.info.codeBlocks) {
 			for (const processor of processors) {
-				const promise = processor({ codeBlock, template: this });
+				const promise = processor({ context, codeBlock });
 				const res = await Promise.resolve(promise);
 				if (res) break;
 			}
 		}
 	}
 
-	async mergeProperties(file: TFile, app: App) {
+	async mergeProperties(context: TemplateContext, file: TFile, app: App) {
 		let properties: Record<string, unknown> = {};
 		await app.fileManager.processFrontMatter(file, (fm) => {
-			this.context.globals.$properties.toFrontmatter(fm);
+			context.globals.$properties.toFrontmatter(fm);
 			properties = structuredClone(fm);
 		});
 		return properties;

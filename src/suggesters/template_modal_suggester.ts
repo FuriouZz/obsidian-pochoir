@@ -1,4 +1,4 @@
-import { FuzzySuggestModal, TFile, type TFolder, Vault } from "obsidian";
+import { FuzzySuggestModal, type TFile, type TFolder } from "obsidian";
 import type PochoirPlugin from "src/main";
 
 export enum OpenMode {
@@ -16,16 +16,28 @@ export class TemplateModalSuggester extends FuzzySuggestModal<TFile> {
 		this.plugin = plugin;
 	}
 
+	getSuggestions(query: string) {
+		const items = this.plugin.pochoir.list.templates
+			.filter((template) => {
+				const aliases: string[] = template.info.frontmatter?.aliases ?? [];
+				const parts = query.split(" ");
+				return aliases.some((item) =>
+					parts.find((part) => item.contains(part)),
+				);
+			})
+			.map((template) => {
+				const name = template.info.file.getShortName();
+				return {
+					item: template.info.file,
+					match: { matches: [[0, name.length] as [number, number]], score: 0 },
+				};
+			});
+		if (items.length > 0) return items;
+		return super.getSuggestions(query);
+	}
+
 	getItems(): TFile[] {
-		const files: TFile[] = [];
-		const folder = this.plugin.app.vault.getFolderByPath(
-			this.plugin.settings.templates_folder ?? "/",
-		);
-		if (!folder) return files;
-		Vault.recurseChildren(folder, (item) => {
-			if (item instanceof TFile) files.push(item);
-		});
-		return files;
+		return this.plugin.pochoir.list.templates.map((t) => t.info.file);
 	}
 
 	getItemText(item: TFile): string {

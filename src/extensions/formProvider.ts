@@ -306,9 +306,12 @@ class Form {
 export default function (): Extension {
 	return (env) => {
 		env.variables.push((context) => {
-			context.globals.createForm = () => {
-				return new Form(env.plugin.app);
+			const api = {
+				create() {
+					return new Form(env.plugin.app);
+				},
 			};
+			context.globals.form = api;
 		});
 	};
 }

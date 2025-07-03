@@ -2,37 +2,17 @@ import type { App, CachedMetadata, SectionCache, TFile } from "obsidian";
 import {
 	Template,
 	type TemplateCodeBlock,
-	TemplateContext,
 	type TemplateInfo,
-	type VariablesProvider,
 } from "./template";
 
 export class Parser {
 	cache = new Map<string, TemplateInfo>();
 
-	async parse({
-		app,
-		file,
-		context: parentContext,
-		variables,
-	}: {
-		app: App;
-		file: TFile;
-		context?: TemplateContext | null;
-		variables?: VariablesProvider[];
-	}) {
+	async parse({ app, file }: { app: App; file: TFile }) {
 		const info = await this.parseFile(app, file);
 		if (!info) throw new Error(`Cannot parse template: ${file.getShortName()}`);
 
-		let context = parentContext;
-		if (!context) {
-			context = new TemplateContext();
-			if (variables) {
-				for (const p of variables) p(context);
-			}
-		}
-
-		return new Template(context, info);
+		return new Template(info);
 	}
 
 	async parseFile(app: App, file: TFile) {
@@ -51,6 +31,7 @@ export class Parser {
 			source,
 			codeBlocks: res.codeBlocks,
 			contentSections: res.contentSections,
+			frontmatter: metadata.frontmatter,
 		};
 
 		this.cache.set(file.path, info);
@@ -97,13 +78,36 @@ export class Parser {
 			section.position.end.offset,
 		);
 
-		const regex = /`{3}(\S+)\s+pochoir\n([\s\S]*?)\n`{3}/;
+		const regex = /`{3}(\S+)\s*(\{.*\})?\n([\s\S]*?)\n`{3}/;
 		const match = content.match(regex);
 		if (!match) return null;
 
 		const language = match[1];
+		const attributes = match[2] ? this.parseAttributes(match[2]) : {};
+		const code = match[3];
+		return { language, section, content, code, attributes };
+	}
 
-		const code = match[2];
-		return { language, section, content, code };
+	parseAttributes(source: string) {
+		const pairs = source.replace(/^\{|\}$/, "").split(/\s/);
+		const attributes: Record<string, unknown> = {};
+
+		for (const pair of pairs) {
+			const [key, value] = pair.split("=");
+			if (value === undefined) {
+				attributes[key] = true;
+			} else if (/true|false/.test(value)) {
+				attributes[key] = Boolean(value);
+			} else {
+				const num = Number(value);
+				if (Number.isNaN(num)) {
+					attributes[key] = value;
+				} else {
+					attributes[key] = num;
+				}
+			}
+		}
+
+		return attributes;
 	}
 }

@@ -3,10 +3,9 @@ import type { Extension } from "../environment";
 export default function ymlCodeBlock(): Extension {
 	return (env) => {
 		const langRegex = /ya?ml/;
-		env.codeBlockProcessor.push(async ({ codeBlock, template }) => {
+		env.codeBlocks.push(async ({ codeBlock, context }) => {
 			if (!langRegex.test(codeBlock.language)) return false;
-			const context = template.context;
-			const result = await env.templateEngine.renderString(
+			const result = await env.engine.renderString(
 				codeBlock.code,
 				context.exports,
 			);
