@@ -2,6 +2,7 @@ import { Plugin } from "obsidian";
 import {
 	createFromTemplateCommand,
 	insertFromTemplateCommand,
+	openSwitcherCommand,
 } from "./commands";
 import { Environment } from "./environment";
 import { createFromTemplateFileMenuItem } from "./events";
@@ -11,12 +12,14 @@ import includeProvider from "./extensions/includeProvider";
 import jsCodeBlock from "./extensions/jsCodeBlock";
 import ymlCodeBlock from "./extensions/ymlCodeBlock";
 import { type ISettings, SettingTab } from "./setting_tab";
+import { NoteModalSuggester } from "./suggesters/note_modal_suggester";
 import { TemplateModalSuggester } from "./suggesters/template_modal_suggester";
 
 export default class PochoirPlugin extends Plugin {
 	settings: ISettings = {};
 	pochoir = new Environment(this);
 	templateSuggester = new TemplateModalSuggester(this);
+	noteSuggester = new NoteModalSuggester(this);
 
 	async onload() {
 		await this.loadSettings();
@@ -31,6 +34,7 @@ export default class PochoirPlugin extends Plugin {
 
 		insertFromTemplateCommand(this);
 		createFromTemplateCommand(this);
+		openSwitcherCommand(this);
 		createFromTemplateFileMenuItem(this);
 	}
 

@@ -21,3 +21,14 @@ export function createFromTemplateCommand(plugin: PochoirPlugin) {
 		},
 	});
 }
+
+export function openSwitcherCommand(plugin: PochoirPlugin) {
+	plugin.addCommand({
+		id: "open-switcher",
+		name: "Open Switcher",
+		icon: "templater-icon",
+		callback() {
+			plugin.noteSuggester.open();
+		},
+	});
+}

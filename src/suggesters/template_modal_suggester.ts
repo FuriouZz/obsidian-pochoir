@@ -28,18 +28,6 @@ export class TemplateModalSuggester extends FuzzySuggestModal<TFile> {
 		return files;
 	}
 
-	getTemplates() {
-		const files: TFile[] = [];
-		const folder = this.plugin.app.vault.getFolderByPath(
-			this.plugin.settings.templates_folder ?? "/",
-		);
-		if (!folder) return files;
-		Vault.recurseChildren(folder, (item) => {
-			if (item instanceof TFile) files.push(item);
-		});
-		return files;
-	}
-
 	getItemText(item: TFile): string {
 		return item.getShortName();
 	}

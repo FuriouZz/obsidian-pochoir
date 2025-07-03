@@ -16,13 +16,13 @@ import type {
 	TemplateContext,
 	VariablesProvider,
 } from "./template";
-import { TemplateEngine } from "./template_engine";
+import { TemplateEngine, VentoLoader } from "./template_engine";
 import { getNewFileLocation } from "./utils";
 
 export type Extension = (env: Environment) => void;
 
 export class Environment extends Events {
-	templateEngine = new TemplateEngine(this);
+	templateEngine = new TemplateEngine(new VentoLoader(this));
 	parser: Parser;
 	plugin: PochoirPlugin;
 

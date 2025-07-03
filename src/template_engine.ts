@@ -7,11 +7,11 @@ export class TemplateEngine {
 	// biome-ignore lint/suspicious/noExplicitAny: needs to be typed properly
 	vento: any;
 
-	constructor(pochoir: Environment) {
+	constructor(loader: unknown) {
 		this.vento = vento({
 			dataVarname: "pochoir",
 			autoDataVarname: true,
-			loader: new VentoLoader(pochoir),
+			loader,
 		});
 	}
 
