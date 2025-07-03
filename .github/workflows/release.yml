@@ -22,9 +22,13 @@ jobs:
         run: |
           npm install -g corepack
 
+      - name: Install Vento
+        run: |
+            cd vendors/vento
+            npm i
+
       - name: Build plugin
         run: |
-          npm install -g corepack
           pnpm install
           pnpm build
 
