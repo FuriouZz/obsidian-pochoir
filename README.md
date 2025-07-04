@@ -4,90 +4,108 @@
 
 ## Status
 
-[Templater](https://github.com/SilentVoid13/Templater) is a very mature and nice plugin for templating in Obsidian.
+This plugin is very experimental and I use it only for my use cases. If you are looking for a more mature alternative, I recommand [Templater](https://github.com/SilentVoid13/Templater).
 
-But it have some limitations and I wanted to explore another way to create from a template.
+## Template layout
 
-Here a couple of limitations, I want to improve in this plugin:
-- Need too much code for property merging
-- User function are in `.js` files
+A basic template is a note placed in the `template_folder`.
 
-Solutions:
-- Like the core `Template` plugin, I want property merging easy
-- Separate template code and configuration and template content
+Exception for the template properties and pochoir code blocks, every content will by copied, rendered and paste in your created note.
 
-## Example
+## Example: Task template
 
-The proposal is to add another section between the note frontmatter and the note content.
-
-In this section, we can write and document template properties, code and configuration via `codeblocks`.
-
-To create a template, your file must be divided in 3 sections delimited by `---` separator:
-
-```md
----
-Template properties
----
-Template code blocks
----
-Template content
-```
-
-Here an example:
+In this template, I want to:
+- Open a form to set the task title
+- Add some properties
+- Select the template via its aliases `tsk` or `task`
 
 ````md
 ---
 tags:
-- template
+  - template
+aliases:
+  - tsk
+  - task
 ---
 
-I directly document my template here.
 
-I can use a javascript block to expose variable to my template:
-
-```js pochoir
-exports.message = "Hello World";
+```js {pochoir}
+const form = pochoir.form.create();
+form.text("title").defaultValue("Task");
+exports.form = await form.prompt();
 ```
 
-I can define properties to merge to my note
-
-```yaml pochoir
-title: Template 1
-number: 1
-boolean: true
-date: {{date.today()}}
+```yaml {pochoir}
+up: "[[Tasks.base]]"
+title: "{{form.title}}"
+date: {{date.today("YYYY-MM-DD")}}
+start: {{date.today("YYYY-MM-DD")}}
+complete: false
 tags:
-- inbox
+  - task
 ```
 
-
-I can define properties programatically
-
-```js pochoir
-pochoir.properties.title = "Template 1";
-pochoir.properties.number = 1;
-pochoir.properties.boolean = true;
-pochoir.properties.date = pochoir.today();
-pochoir.$properties.insertTo("tags", "inbox");
-```
-
-We can import another template and use its variables, functions and content
-
-```js pochoir
-const math = await include("[[Math Functions]]");
-exports.operation = math.exports.sum(1, 2);
-```
----
-
-# {{properties.title}}
-
-{{exports.message}}
-
-1 + 2 = {{exports.operation}}
-
-{{ include "[[Template 2]]" }}
+## {{form.title}}
 ````
 
-## Alternatives
+## Example: Share variables and functions
+
+In this example, I want to:
+- Add a `created` property
+- Add a function `zid()` to generate a zettlekasten id
+
+Let's start by creating a note `Functions.md` in your `template_folder`.
+
+
+````md
+```js {pochoir}
+pochoir.properties.created = pochoir.date.today();
+```
+
+```js {pochoir}
+exports.zid = () => {
+    return pochoir.date.today("YYYYMMDDHHMM");
+}
+```
+````
+
+Now, we can update our `Task Template.md`, include `Functions.md` and use our `zid()` in the `title` property.
+
+````md
+---
+tags:
+  - template
+aliases:
+  - tsk
+  - task
+---
+
+
+```js {pochoir}
+const form = pochoir.form.create();
+form.text("title").defaultValue("Task");
+exports.form = await form.prompt();
+```
+
+```js {pochoir}
+await pochoir.include("[[Functions]]");
+```
+
+```yaml {pochoir}
+up: "[[Tasks.base]]"
+title: "{{zid()}} {{form.title}}"
+date: {{date.today("YYYY-MM-DD")}}
+start: {{date.today("YYYY-MM-DD")}}
+complete: false
+tags:
+  - task
+```
+
+## {{form.title}}
+````
+
+## Inspiration
 
 * [Templater](https://github.com/SilentVoid13/Templater)
+* [Modal Form](https://github.com/danielo515/obsidian-modal-form/)
+* [Varinote](https://github.com/gsarig/obsidian-varinote)
