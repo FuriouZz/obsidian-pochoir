@@ -19,28 +19,28 @@ import { UrlLoader } from "ventojs/src/url_loader.js";
  * @return {Environment}
  */
 export function vento(options = {}) {
-	const env = new Environment({
-		loader: options.loader ?? new UrlLoader(new URL(window.location.origin)),
-		dataVarname: options.dataVarname || "it",
-		autoescape: options.autoescape ?? false,
-		autoDataVarname: options.autoDataVarname ?? true,
-	});
+  const env = new Environment({
+    loader: options.loader ?? new UrlLoader(new URL(window.location.origin)),
+    dataVarname: options.dataVarname || "it",
+    autoescape: options.autoescape ?? false,
+    autoDataVarname: options.autoDataVarname ?? true,
+  });
 
-	// Register basic plugins
-	env.use(autoTrim());
-	env.use(ifTag());
-	env.use(forTag());
-	env.use(jsTag());
-	env.use(includeTag());
-	env.use(setTag());
-	env.use(layoutTag());
-	env.use(functionTag());
-	env.use(importTag());
-	env.use(exportTag());
-	env.use(echoTag());
-	env.use(_escape());
-	env.use(_unescape());
-	env.use(trim());
+  // Register basic plugins
+  env.use(autoTrim());
+  env.use(ifTag());
+  env.use(forTag());
+  env.use(jsTag());
+  env.use(includeTag());
+  env.use(setTag());
+  env.use(layoutTag());
+  env.use(functionTag());
+  env.use(importTag());
+  env.use(exportTag());
+  env.use(echoTag());
+  env.use(_escape());
+  env.use(_unescape());
+  env.use(trim());
 
-	return env;
+  return env;
 }

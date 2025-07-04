@@ -1,113 +1,115 @@
 import type { App, CachedMetadata, SectionCache, TFile } from "obsidian";
 import {
-	Template,
-	type TemplateCodeBlock,
-	type TemplateInfo,
+  Template,
+  type TemplateCodeBlock,
+  type TemplateInfo,
 } from "./template";
 
 export class Parser {
-	cache = new Map<string, TemplateInfo>();
+  cache = new Map<string, TemplateInfo>();
 
-	async parse({ app, file }: { app: App; file: TFile }) {
-		const info = await this.parseFile(app, file);
-		if (!info) throw new Error(`Cannot parse template: ${file.basename}`);
+  async parse({ app, file }: { app: App; file: TFile }) {
+    const info = await this.parseFile(app, file);
+    if (!info) throw new Error(`Cannot parse template: ${file.basename}`);
+    return new Template(info);
+  }
 
-		return new Template(info);
-	}
+  async parseFile(app: App, file: TFile) {
+    const result = this.cache.get(file.path);
+    if (result) return result;
 
-	async parseFile(app: App, file: TFile) {
-		const result = this.cache.get(file.path);
-		if (result) return result;
+    const source = await app.vault.cachedRead(file);
+    const metadata = app.metadataCache.getFileCache(file);
+    if (!metadata) return null;
 
-		const source = await app.vault.cachedRead(file);
-		const metadata = app.metadataCache.getFileCache(file);
-		if (!metadata) return null;
+    const res = this.parseSections(source, metadata);
+    if (!res) return null;
 
-		const res = this.parseSections(source, metadata);
-		if (!res) return null;
+    const info = {
+      file,
+      source,
+      codeBlocks: res.codeBlocks,
+      contentSections: res.contentSections,
+      frontmatter: metadata.frontmatter,
+    };
 
-		const info = {
-			file,
-			source,
-			codeBlocks: res.codeBlocks,
-			contentSections: res.contentSections,
-			frontmatter: metadata.frontmatter,
-		};
+    this.cache.set(file.path, info);
 
-		this.cache.set(file.path, info);
+    return info;
+  }
 
-		return info;
-	}
+  parseSections(source: string, metadata: CachedMetadata) {
+    if (!metadata.sections) return;
 
-	parseSections(source: string, metadata: CachedMetadata) {
-		if (!metadata.sections) return;
+    const contentSections: SectionCache[] = [];
+    const codeBlocks: TemplateCodeBlock[] = [];
+    for (const section of metadata.sections) {
+      if (section.type === "yaml") continue; // Ignore template properties
+      if (section.type === "code") {
+        const codeBlock = this.parseCodeBlock(source, section);
+        if (codeBlock) {
+          codeBlocks.push(codeBlock);
+          continue;
+        }
+      }
+      contentSections.push(section);
+    }
 
-		let topSections: SectionCache[] = [];
-		const contentSections: SectionCache[] = [];
-		let sections = topSections;
+    return { contentSections, codeBlocks };
+  }
 
-		for (const section of metadata.sections) {
-			if (section.type === "thematicBreak") {
-				sections = contentSections;
-				continue; // Ignore thematic break
-			}
-			sections.push(section);
-		}
+  parseCodeBlock(
+    source: string,
+    section: SectionCache,
+  ): TemplateCodeBlock | undefined {
+    if (section.type !== "code") return;
+    const content = getSectionContent(source, section);
 
-		const codeBlocks: TemplateCodeBlock[] = [];
-		topSections = topSections.filter((section) => {
-			const block = this.parseCodeBlock(source, section);
-			if (block) codeBlocks.push(block);
-			return !block;
-		});
+    const regex = /`{3}(\S+)\s*(\{.*\})?\n([\s\S]*?)\n`{3}/;
+    const match = content.match(regex);
+    if (!match) return;
 
-		return {
-			topSections,
-			contentSections,
-			codeBlocks,
-		};
-	}
+    const attributes = match[2] ? this.parseAttributes(match[2]) : {};
+    if (!attributes.pochoir) return;
 
-	parseCodeBlock(
-		source: string,
-		section: SectionCache,
-	): TemplateCodeBlock | null {
-		if (section.type !== "code") return null;
-		const content = source.slice(
-			section.position.start.offset,
-			section.position.end.offset,
-		);
+    const language = match[1];
+    const code = match[3];
+    return {
+      language,
+      section,
+      content,
+      code,
+      attributes,
+    };
+  }
 
-		const regex = /`{3}(\S+)\s*(\{.*\})?\n([\s\S]*?)\n`{3}/;
-		const match = content.match(regex);
-		if (!match) return null;
+  parseAttributes(source: string) {
+    const pairs = source.replace(/^\{|\}$/g, "").split(/\s/);
+    const attributes: Record<string, unknown> = {};
 
-		const language = match[1];
-		const attributes = match[2] ? this.parseAttributes(match[2]) : {};
-		const code = match[3];
-		return { language, section, content, code, attributes };
-	}
+    for (const pair of pairs) {
+      const [key, value] = pair.split("=");
+      if (value === undefined) {
+        attributes[key] = true;
+      } else if (/true|false/.test(value)) {
+        attributes[key] = Boolean(value);
+      } else {
+        const num = Number(value);
+        if (Number.isNaN(num)) {
+          attributes[key] = value;
+        } else {
+          attributes[key] = num;
+        }
+      }
+    }
 
-	parseAttributes(source: string) {
-		const pairs = source.replace(/^\{|\}$/, "").split(/\s/);
-		const attributes: Record<string, unknown> = {};
+    return attributes;
+  }
+}
 
-		for (const pair of pairs) {
-			const [key, value] = pair.split("=");
-			if (value === undefined) {
-				attributes[key] = true;
-			} else if (/true|false/.test(value)) {
-				attributes[key] = Boolean(value);
-			} else {
-				const num = Number(value);
-				if (Number.isNaN(num)) {
-					attributes[key] = value;
-				} else {
-					attributes[key] = num;
-				}
-			}
-		}
-
-		return attributes;
-	}
+export function getSectionContent(source: string, section: SectionCache) {
+  return source.slice(
+    section.position.start.offset,
+    section.position.end.offset,
+  );
 }

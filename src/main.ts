@@ -1,7 +1,7 @@
 import { Plugin } from "obsidian";
 import {
-	createFromTemplateCommand,
-	insertFromTemplateCommand,
+  createFromTemplateCommand,
+  insertFromTemplateCommand,
 } from "./commands";
 import { Environment } from "./environment";
 import { createFromTemplateFileMenuItem } from "./events";
@@ -15,37 +15,37 @@ import { NoteModalSuggester } from "./suggesters/note_modal_suggester";
 import { TemplateModalSuggester } from "./suggesters/template_modal_suggester";
 
 export default class PochoirPlugin extends Plugin {
-	settings: ISettings = {};
-	pochoir = new Environment(this);
-	templateSuggester = new TemplateModalSuggester(this);
-	noteSuggester = new NoteModalSuggester(this);
+  settings: ISettings = {};
+  pochoir = new Environment(this);
+  templateSuggester = new TemplateModalSuggester(this);
+  noteSuggester = new NoteModalSuggester(this);
 
-	async onload() {
-		await this.loadSettings();
-		this.addSettingTab(new SettingTab(this));
+  async onload() {
+    await this.loadSettings();
+    this.addSettingTab(new SettingTab(this));
 
-		this.pochoir.use(jsCodeBlock());
-		this.pochoir.use(ymlCodeBlock());
-		this.pochoir.use(includeProvider());
-		this.pochoir.use(dateProvider());
-		this.pochoir.use(formProvider());
+    this.pochoir.use(jsCodeBlock());
+    this.pochoir.use(ymlCodeBlock());
+    this.pochoir.use(includeProvider());
+    this.pochoir.use(dateProvider());
+    this.pochoir.use(formProvider());
 
-		insertFromTemplateCommand(this);
-		createFromTemplateCommand(this);
-		// openSwitcherCommand(this);
-		createFromTemplateFileMenuItem(this);
-	}
+    insertFromTemplateCommand(this);
+    createFromTemplateCommand(this);
+    // openSwitcherCommand(this);
+    createFromTemplateFileMenuItem(this);
+  }
 
-	onunload() {
-		this.pochoir.clear();
-	}
+  onunload() {
+    this.pochoir.clear();
+  }
 
-	async loadSettings() {
-		this.settings = { ...(await this.loadData()) };
-	}
+  async loadSettings() {
+    this.settings = { ...(await this.loadData()) };
+  }
 
-	async saveSettings() {
-		await this.saveData(this.settings);
-		await this.pochoir.updateTemplateList();
-	}
+  async saveSettings() {
+    await this.saveData(this.settings);
+    await this.pochoir.updateTemplateList();
+  }
 }

@@ -2,75 +2,81 @@ import { FuzzySuggestModal, type TFile, type TFolder } from "obsidian";
 import type PochoirPlugin from "src/main";
 
 export enum OpenMode {
-	InsertTemplate,
-	CreateFromTemplate,
+  InsertTemplate,
+  CreateFromTemplate,
 }
 
 export class TemplateModalSuggester extends FuzzySuggestModal<TFile> {
-	plugin: PochoirPlugin;
-	openMode: OpenMode;
-	folderLocation?: TFolder;
+  plugin: PochoirPlugin;
+  openMode: OpenMode;
+  folderLocation?: TFolder;
 
-	constructor(plugin: PochoirPlugin) {
-		super(plugin.app);
-		this.plugin = plugin;
-		this.openMode = OpenMode.InsertTemplate;
-	}
+  constructor(plugin: PochoirPlugin) {
+    super(plugin.app);
+    this.plugin = plugin;
+    this.openMode = OpenMode.InsertTemplate;
+  }
 
-	getSuggestions(query: string) {
-		const items = this.plugin.pochoir.list.templates
-			.filter((template) => {
-				const aliases: string[] = template.info.frontmatter?.aliases ?? [];
-				const parts = query.split(" ");
-				return aliases.some((item) =>
-					parts.find((part) => item.contains(part)),
-				);
-			})
-			.map((template) => {
-				const name = template.info.file.basename;
-				return {
-					item: template.info.file,
-					match: { matches: [[0, name.length] as [number, number]], score: 0 },
-				};
-			});
-		if (items.length > 0) return items;
-		return super.getSuggestions(query);
-	}
+  getSuggestions(query: string) {
+    let items = this.plugin.pochoir.list.templates;
+    const hasQuery = !!query.trim();
 
-	getItems(): TFile[] {
-		return this.plugin.pochoir.list.templates.map((t) => t.info.file);
-	}
+    if (hasQuery) {
+      items = items.filter((template) => {
+        const aliases: string[] = template.info.frontmatter?.aliases ?? [];
+        const parts = query.split(" ");
+        return aliases.some((item) =>
+          parts.find((part) => item.contains(part)),
+        );
+      });
+    }
 
-	getItemText(item: TFile): string {
-		return item.basename;
-	}
+    return items.map((template) => {
+      const name = template.info.file.basename;
+      return {
+        item: template.info.file,
+        match: {
+          matches: hasQuery ? [[0, name.length] as [number, number]] : [],
+          score: 0,
+        },
+      };
+    });
+  }
 
-	onChooseItem(item: TFile, _evt: MouseEvent | KeyboardEvent): void {
-		switch (this.openMode) {
-			case OpenMode.InsertTemplate: {
-				this.plugin.pochoir.insertTemplate(item);
-				break;
-			}
-			case OpenMode.CreateFromTemplate: {
-				const folder = this.folderLocation;
-				this.folderLocation = undefined;
-				this.plugin.pochoir.createFromTemplate(item, {
-					openNote: true,
-					folder,
-				});
-				break;
-			}
-		}
-	}
+  getItems(): TFile[] {
+    return this.plugin.pochoir.list.templates.map((t) => t.info.file);
+  }
 
-	insertTemplate() {
-		this.openMode = OpenMode.InsertTemplate;
-		this.open();
-	}
+  getItemText(item: TFile): string {
+    return item.basename;
+  }
 
-	createFromTemplate(folderLocation?: TFolder) {
-		this.openMode = OpenMode.CreateFromTemplate;
-		this.folderLocation = folderLocation;
-		this.open();
-	}
+  onChooseItem(item: TFile, _evt: MouseEvent | KeyboardEvent): void {
+    switch (this.openMode) {
+      case OpenMode.InsertTemplate: {
+        this.plugin.pochoir.insertTemplate(item);
+        break;
+      }
+      case OpenMode.CreateFromTemplate: {
+        const folder = this.folderLocation;
+        this.folderLocation = undefined;
+        this.plugin.pochoir.createFromTemplate(item, {
+          openNote: true,
+          folder,
+        });
+        break;
+      }
+    }
+  }
+
+  insertTemplate() {
+    this.openMode = OpenMode.InsertTemplate;
+    this.open();
+  }
+
+  createFromTemplate(folderLocation?: TFolder) {
+    this.openMode = OpenMode.CreateFromTemplate;
+    this.folderLocation = folderLocation;
+    this.open();
+  }
 }

@@ -3,37 +3,45 @@ import type { Environment } from "./environment";
 import type { Template } from "./template";
 
 export class TemplateList {
-	templates: Template[] = [];
+  templates: Template[] = [];
 
-	async refresh(env: Environment) {
-		this.templates.length = 0;
-		const files: TFile[] = [];
-		const folder = env.plugin.app.vault.getFolderByPath(
-			env.plugin.settings.templates_folder ?? "/",
-		);
-		if (!folder) return files;
-		Vault.recurseChildren(folder, (item) => {
-			if (item instanceof TFile) files.push(item);
-		});
+  async refresh(env: Environment) {
+    this.templates.length = 0;
+    const files: TFile[] = [];
+    const folder = env.plugin.app.vault.getFolderByPath(
+      env.plugin.settings.templates_folder ?? "/",
+    );
+    if (!folder) return files;
+    Vault.recurseChildren(folder, (item) => {
+      if (item instanceof TFile) files.push(item);
+    });
 
-		this.templates = await Promise.all(
-			files.map((file) => env.parseTemplate(file)),
-		);
-	}
+    const templates = await Promise.all(
+      files.map(async (file) => {
+        try {
+          const template = await env.parseTemplate(file);
+          return template;
+        } catch (_e) {}
+        return null;
+      }),
+    );
 
-	findByPath(path: string) {
-		return this.templates.find((t) => t.info.file.path === path);
-	}
+    this.templates = templates.filter((t) => t !== null);
+  }
 
-	findByFile(file: TFile) {
-		return this.templates.find((t) => t.info.file === file);
-	}
+  findByPath(path: string) {
+    return this.templates.find((t) => t.info.file.path === path);
+  }
 
-	getTemplateByFile(file: TFile) {
-		const template = this.findByFile(file);
-		if (!template) {
-			throw new Error(`No template with name: ${file.basename}`);
-		}
-		return template;
-	}
+  findByFile(file: TFile) {
+    return this.templates.find((t) => t.info.file === file);
+  }
+
+  getTemplateByFile(file: TFile) {
+    const template = this.findByFile(file);
+    if (!template) {
+      throw new Error(`No template with name: ${file.basename}`);
+    }
+    return template;
+  }
 }
