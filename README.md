@@ -13,7 +13,7 @@ Here a couple of limitations, I want to improve in this plugin:
 - User function are in `.js` files
 
 Solutions:
-- Like the core `Template` plugin, I want to property merging easy
+- Like the core `Template` plugin, I want property merging easy
 - Separate template code and configuration and template content
 
 ## Example
@@ -24,7 +24,7 @@ In this section, we can write and document template properties, code and configu
 
 To create a template, your file must be divided in 3 sections delimited by `---` separator:
 
-````md
+```md
 ---
 Template properties
 ---
@@ -35,7 +35,7 @@ Template content
 
 Here an example:
 
-```md
+````md
 ---
 tags:
 - template
