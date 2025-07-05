@@ -1,7 +1,11 @@
 import { parseYaml } from "obsidian";
 
-export class PropertiesBuilder extends Map<string | symbol, unknown> {
-  #findSet(key: string | symbol) {
+export class PropertiesBuilder extends Map<string, unknown> {
+  clone() {
+    return new PropertiesBuilder(this);
+  }
+
+  #findSet(key: string) {
     let set = this.get(key);
     if (!(set instanceof Set)) {
       set = new Set();
@@ -59,7 +63,7 @@ export class PropertiesBuilder extends Map<string | symbol, unknown> {
     return lines.join("\n");
   }
 
-  toFrontmatter(fm: Record<string | symbol, unknown>) {
+  toFrontmatter(fm: Record<string, unknown>) {
     for (const [key, value] of this.entries()) {
       if (value instanceof Set) {
         if (fm[key]) {
@@ -87,28 +91,28 @@ export class PropertiesBuilder extends Map<string | symbol, unknown> {
 
   createProxy() {
     const proxy = new Proxy(this, {
-      get(target, p) {
+      get(target, p: string) {
         const value = target.get(p);
         if (value instanceof Set) {
           return [...value];
         }
         return value;
       },
-      set(target, p, newValue) {
+      set(target, p: string, newValue) {
         target.set(p, newValue);
         return true;
       },
-      deleteProperty(target, p) {
+      deleteProperty(target, p: string) {
         target.delete(p);
         return true;
       },
-      has(target, p) {
+      has(target, p: string) {
         return target.has(p);
       },
       ownKeys(target) {
         return [...target.keys()];
       },
-      getOwnPropertyDescriptor(target, p) {
+      getOwnPropertyDescriptor(target, p: string) {
         return {
           configurable: true,
           enumerable: true,

@@ -6,8 +6,8 @@ export default function jsCodeBlock(): Extension {
     const langRegex = /js|javascript/;
     env.codeBlocks.push(async ({ codeBlock, context }) => {
       if (!langRegex.test(codeBlock.language)) return false;
-      const fn = createAsyncFunction(codeBlock.code, "pochoir", "exports");
-      await fn(context.globals, context.exports);
+      const fn = createAsyncFunction(codeBlock.code, "pochoir", "template");
+      await fn(context.globals, context.locals);
       return true;
     });
   };

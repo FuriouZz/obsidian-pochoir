@@ -79,7 +79,7 @@ export class Environment extends Events {
     properties?: Record<string, unknown>,
   ) {
     return this.engine.renderTemplate(template, {
-      ...context.exports,
+      ...context.locals.exports,
       properties,
     });
   }
@@ -105,6 +105,7 @@ export class Environment extends Events {
     const { app } = this.plugin;
     const template = this.list.getTemplateByFile(templateFile);
     await template.evaluateCodeBlocks(context, this.codeBlocks);
+    await template.evaluateProperties(context, this.engine);
     const properties = await template.mergeProperties(context, note, app);
     return this.#renderTemplateContent(context, template, properties);
   }

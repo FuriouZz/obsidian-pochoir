@@ -1,5 +1,5 @@
 ```js {pochoir}
-exports.addCreated = () => {
-	pochoir.properties.created = pochoir.date.today();
+template.exports.addCreated = (properties) => {
+	properties.created = pochoir.date.today();
 };
 ```

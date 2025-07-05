@@ -16,6 +16,7 @@ export function logError(error: Error, options?: { duration?: number }) {
     const cause = error.cause as Error;
     log(cause.message, { prefix: "Pochoir Template Error", ...options });
   } else {
+    console.error(error);
     log(error.message, { prefix: "Pochoir Error", ...options });
   }
 }

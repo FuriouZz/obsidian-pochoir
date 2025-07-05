@@ -7,9 +7,8 @@ import { Environment } from "./environment";
 import { createFromTemplateFileMenuItem } from "./events";
 import dateProvider from "./extensions/dateProvider";
 import formProvider from "./extensions/formProvider";
-import includeProvider from "./extensions/includeProvider";
+import importProvider from "./extensions/importProvider";
 import jsCodeBlock from "./extensions/jsCodeBlock";
-import ymlCodeBlock from "./extensions/ymlCodeBlock";
 import { type ISettings, SettingTab } from "./setting_tab";
 import { NoteModalSuggester } from "./suggesters/note_modal_suggester";
 import { TemplateModalSuggester } from "./suggesters/template_modal_suggester";
@@ -25,14 +24,12 @@ export default class PochoirPlugin extends Plugin {
     this.addSettingTab(new SettingTab(this));
 
     this.pochoir.use(jsCodeBlock());
-    this.pochoir.use(ymlCodeBlock());
-    this.pochoir.use(includeProvider());
+    this.pochoir.use(importProvider());
     this.pochoir.use(dateProvider());
     this.pochoir.use(formProvider());
 
     insertFromTemplateCommand(this);
     createFromTemplateCommand(this);
-    // openSwitcherCommand(this);
     createFromTemplateFileMenuItem(this);
   }
 

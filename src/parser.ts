@@ -25,13 +25,7 @@ export class Parser {
     const res = this.parseSections(source, metadata);
     if (!res) return null;
 
-    const info = {
-      file,
-      source,
-      codeBlocks: res.codeBlocks,
-      contentSections: res.contentSections,
-      frontmatter: metadata.frontmatter,
-    };
+    const info: TemplateInfo = { file, source, ...res };
 
     this.cache.set(file.path, info);
 
@@ -41,10 +35,14 @@ export class Parser {
   parseSections(source: string, metadata: CachedMetadata) {
     if (!metadata.sections) return;
 
-    const contentSections: SectionCache[] = [];
+    let frontmatter: SectionCache | undefined;
+    const sections: SectionCache[] = [];
     const codeBlocks: TemplateCodeBlock[] = [];
     for (const section of metadata.sections) {
-      if (section.type === "yaml") continue; // Ignore template properties
+      if (section.type === "yaml") {
+        frontmatter = section;
+        continue;
+      }
       if (section.type === "code") {
         const codeBlock = this.parseCodeBlock(source, section);
         if (codeBlock) {
@@ -52,10 +50,10 @@ export class Parser {
           continue;
         }
       }
-      contentSections.push(section);
+      sections.push(section);
     }
 
-    return { contentSections, codeBlocks };
+    return { frontmatter, sections, codeBlocks };
   }
 
   parseCodeBlock(

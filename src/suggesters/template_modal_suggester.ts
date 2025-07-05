@@ -18,18 +18,19 @@ export class TemplateModalSuggester extends FuzzySuggestModal<TFile> {
   }
 
   getSuggestions(query: string) {
-    let items = this.plugin.pochoir.list.templates;
+    // let items = this.plugin.pochoir.list.templates;
+    const items = this.plugin.pochoir.list.templates;
     const hasQuery = !!query.trim();
 
-    if (hasQuery) {
-      items = items.filter((template) => {
-        const aliases: string[] = template.info.frontmatter?.aliases ?? [];
-        const parts = query.split(" ");
-        return aliases.some((item) =>
-          parts.find((part) => item.contains(part)),
-        );
-      });
-    }
+    // if (hasQuery) {
+    //   items = items.filter((template) => {
+    //     const aliases: string[] = template.info.frontmatter?.aliases ?? [];
+    //     const parts = query.split(" ");
+    //     return aliases.some((item) =>
+    //       parts.find((part) => item.contains(part)),
+    //     );
+    //   });
+    // }
 
     return items.map((template) => {
       const name = template.info.file.basename;

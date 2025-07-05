@@ -19,6 +19,23 @@ export interface TextFieldType extends BaseFieldType {
   placeholder?: string;
 }
 
+export interface DateFieldType extends BaseFieldType {
+  type: "date";
+  defaultValue?: string;
+  placeholder?: string;
+}
+
+export interface TimeFieldType extends BaseFieldType {
+  type: "time";
+  defaultValue?: string;
+  placeholder?: string;
+}
+
+export interface SliderFieldType extends BaseFieldType {
+  type: "slider";
+  defaultValue?: number;
+}
+
 export interface TextAreaFieldType extends BaseFieldType {
   type: "textarea";
   defaultValue?: string;
@@ -47,7 +64,10 @@ export type FieldType =
   | TextAreaFieldType
   | NumberFieldType
   | ToggleFieldType
-  | DropdownFieldType;
+  | DropdownFieldType
+  | DateFieldType
+  | TimeFieldType
+  | SliderFieldType;
 
 abstract class Field<T extends FieldType = FieldType> {
   data: T;
@@ -159,6 +179,77 @@ class NumberField extends Field<NumberFieldType> {
   }
 }
 
+class DateField extends Field<DateFieldType> {
+  defaultValue(value: string | undefined) {
+    this.data.defaultValue = value;
+    return this;
+  }
+
+  placeholder(value: string) {
+    this.data.placeholder = value;
+    return this;
+  }
+
+  createSetting(el: HTMLElement, result: Record<string, unknown>) {
+    const field = this.data;
+    return super.createSetting(el, result).addText((cmp) => {
+      if (typeof field.defaultValue === "string") {
+        cmp.setValue(field.defaultValue);
+      }
+      if (field.placeholder) cmp.setPlaceholder(field.placeholder);
+      cmp.inputEl.type = "date";
+      cmp.onChange((value) => {
+        result[field.name] = value;
+      });
+    });
+  }
+}
+
+class TimeField extends Field<TimeFieldType> {
+  defaultValue(value: string | undefined) {
+    this.data.defaultValue = value;
+    return this;
+  }
+
+  placeholder(value: string) {
+    this.data.placeholder = value;
+    return this;
+  }
+
+  createSetting(el: HTMLElement, result: Record<string, unknown>) {
+    const field = this.data;
+    return super.createSetting(el, result).addText((cmp) => {
+      if (typeof field.defaultValue === "string") {
+        cmp.setValue(field.defaultValue);
+      }
+      if (field.placeholder) cmp.setPlaceholder(field.placeholder);
+      cmp.inputEl.type = "time";
+      cmp.onChange((value) => {
+        result[field.name] = value;
+      });
+    });
+  }
+}
+
+class SliderField extends Field<SliderFieldType> {
+  defaultValue(value: number | undefined) {
+    this.data.defaultValue = value;
+    return this;
+  }
+
+  createSetting(el: HTMLElement, result: Record<string, unknown>) {
+    const field = this.data;
+    return super.createSetting(el, result).addSlider((cmp) => {
+      if (typeof field.defaultValue === "number") {
+        cmp.setValue(field.defaultValue);
+      }
+      cmp.onChange((value) => {
+        result[field.name] = Number(value);
+      });
+    });
+  }
+}
+
 class ToggleField extends Field<ToggleFieldType> {
   defaultValue(value: boolean | undefined) {
     this.data.defaultValue = value;
@@ -248,6 +339,39 @@ class Form {
     return field;
   }
 
+  date(name: string, options?: Omit<DateFieldType, "type">) {
+    const field = new DateField({
+      name,
+      label: name,
+      type: "date",
+      ...options,
+    });
+    this.fields.push(field);
+    return field;
+  }
+
+  time(name: string, options?: Omit<TimeFieldType, "type">) {
+    const field = new TimeField({
+      name,
+      label: name,
+      type: "time",
+      ...options,
+    });
+    this.fields.push(field);
+    return field;
+  }
+
+  slider(name: string, options?: Omit<SliderFieldType, "type">) {
+    const field = new SliderField({
+      name,
+      label: name,
+      type: "slider",
+      ...options,
+    });
+    this.fields.push(field);
+    return field;
+  }
+
   toggle(name: string, options?: Omit<ToggleFieldType, "type">) {
     const field = new ToggleField({
       name,
@@ -291,11 +415,13 @@ class Form {
       };
 
       new Setting(modal.contentEl).addButton((btn) => {
-        btn.setButtonText("Validate");
-        btn.onClick(() => {
-          cancelled = false;
-          modal.close();
-        });
+        btn
+          .setButtonText("Validate")
+          .setCta()
+          .onClick(() => {
+            cancelled = false;
+            modal.close();
+          });
       });
 
       modal.open();
@@ -309,6 +435,11 @@ export default function (): Extension {
       const api = {
         create() {
           return new Form(env.plugin.app);
+        },
+        open(cb: (form: Form) => void) {
+          const form = new Form(env.plugin.app);
+          cb(form);
+          return form.prompt();
         },
       };
       context.globals.form = api;

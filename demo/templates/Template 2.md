@@ -1,6 +1,13 @@
+---
+tags:
+  - task
+  - yolo
+---
 ```js {pochoir}
-pochoir.$properties.insertTo("tags", "task");
+template.exports.properties = template.properties;
 ```
+
+
 ## Todolist
 
 - [ ] Task 1

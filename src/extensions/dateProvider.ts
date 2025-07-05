@@ -10,7 +10,7 @@ export default function (): Extension {
         },
       };
       context.globals.date = date;
-      context.exports.date = date;
+      context.locals.exports.date = date;
     });
   };
 }

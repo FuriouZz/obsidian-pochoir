@@ -1,13 +1,20 @@
-import type { App, FrontMatterCache, SectionCache, TFile } from "obsidian";
-import { PropertiesBuilder } from "./properties_builder";
+import {
+  parseYaml,
+  type App,
+  type FrontMatterCache,
+  type SectionCache,
+  type TFile,
+} from "obsidian";
 import { getSectionContent } from "./parser";
+import { PropertiesBuilder } from "./properties_builder";
+import { TemplateEngine } from "./template_engine";
 
 export interface TemplateInfo {
   file: TFile;
   source: string;
+  frontmatter?: SectionCache;
   codeBlocks: TemplateCodeBlock[];
-  contentSections: SectionCache[];
-  frontmatter?: FrontMatterCache;
+  sections: SectionCache[];
 }
 
 export interface TemplateCodeBlock {
@@ -31,28 +38,33 @@ export type CodeBlockProcessor = (params: {
 export type VariablesProvider = (context: TemplateContext) => void;
 
 export class TemplateContext {
-  globals: Record<string, unknown> & {
+  globals: Record<string, unknown>;
+  locals: {
     $properties: PropertiesBuilder;
     properties: ReturnType<PropertiesBuilder["createProxy"]>;
+    exports: Record<string, unknown>;
   };
-  exports: Record<string, unknown>;
 
   constructor() {
     const $properties = new PropertiesBuilder();
     const properties = $properties.createProxy();
-    this.globals = {
-      properties: properties,
-      $properties: $properties,
-    };
-    this.exports = {};
+    this.globals = {};
+    this.locals = Object.freeze({ properties, $properties, exports: {} });
   }
 }
 
 export class Template {
   constructor(public info: TemplateInfo) {}
 
+  getPropertiesContent() {
+    if (!this.info.frontmatter) return;
+    return getSectionContent(this.info.source, this.info.frontmatter)
+      .replace(/^-{3}|-{3}$/g, "")
+      .trim();
+  }
+
   getContent() {
-    const { contentSections, source } = this.info;
+    const { sections: contentSections, source } = this.info;
     if (contentSections.length === 0) return "";
 
     const content = [];
@@ -62,18 +74,6 @@ export class Template {
     }
 
     return content.join("\n");
-  }
-
-  async evaluateFrontmatter(
-    context: TemplateContext,
-    processors: FrontmatterProcessor[],
-  ) {
-    const { frontmatter } = this.info;
-    if (!frontmatter) return;
-    for (const processor of processors) {
-      const promise = processor({ context, frontmatter });
-      await Promise.resolve(promise);
-    }
   }
 
   async evaluateCodeBlocks(
@@ -89,12 +89,20 @@ export class Template {
     }
   }
 
+  async evaluateProperties(context: TemplateContext, engine: TemplateEngine) {
+    const content = this.getPropertiesContent();
+    if (!content) return {};
+    const str = await engine.renderString(content, context.locals.exports);
+    context.locals.$properties.fromYaml(str);
+  }
+
   async mergeProperties(context: TemplateContext, file: TFile, app: App) {
-    let properties: Record<string, unknown> = {};
+    const builder = new PropertiesBuilder();
     await app.fileManager.processFrontMatter(file, (fm) => {
-      context.globals.$properties.toFrontmatter(fm);
-      properties = structuredClone(fm);
+      builder.fromObject({ ...fm });
+      builder.fromObject(context.locals.$properties.toObject());
+      builder.toFrontmatter(fm);
     });
-    return properties;
+    return builder.toObject();
   }
 }

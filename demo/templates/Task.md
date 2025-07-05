@@ -1,17 +1,11 @@
 ---
-tags:
-  - template
-aliases:
-  - tsk
----
-```yaml {pochoir}
 up: "[[Tasks.base]]"
 title:
-date: {{date.today("YYYY-MM-DD")}}
-start: {{date.today("YYYY-MM-DD")}}
+date: "{{date.today()}}"
+start: "{{date.today()}}"
 complete: false
 tags:
-- task
-```
+  - task
+---
 
 {{date.today()}}

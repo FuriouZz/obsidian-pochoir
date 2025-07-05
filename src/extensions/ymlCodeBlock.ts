@@ -7,9 +7,9 @@ export default function ymlCodeBlock(): Extension {
       if (!langRegex.test(codeBlock.language)) return false;
       const result = await env.engine.renderString(
         codeBlock.code,
-        context.exports,
+        context.locals,
       );
-      context.globals.$properties.fromYaml(result);
+      context.locals.$properties.fromYaml(result);
       return true;
     });
   };
