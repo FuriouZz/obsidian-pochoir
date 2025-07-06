@@ -424,6 +424,15 @@ class Form {
           });
       });
 
+      // Add event listener for Enter key to trigger the button
+      modal.contentEl.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault(); // Prevent default form submission behavior
+          cancelled = false;
+          modal.close();
+        }
+      });
+
       modal.open();
     });
   }

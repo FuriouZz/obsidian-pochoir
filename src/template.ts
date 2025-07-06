@@ -1,20 +1,14 @@
-import {
-  parseYaml,
-  type App,
-  type FrontMatterCache,
-  type SectionCache,
-  type TFile,
-} from "obsidian";
+import type { App, FrontMatterCache, SectionCache, TFile } from "obsidian";
 import { getSectionContent } from "./parser";
 import { PropertiesBuilder } from "./properties_builder";
-import { TemplateEngine } from "./template_engine";
+import type { TemplateEngine } from "./template_engine";
 
 export interface TemplateInfo {
   file: TFile;
   source: string;
   frontmatter?: SectionCache;
   codeBlocks: TemplateCodeBlock[];
-  sections: SectionCache[];
+  contents: [number, number][];
 }
 
 export interface TemplateCodeBlock {
@@ -56,7 +50,7 @@ export class TemplateContext {
 export class Template {
   constructor(public info: TemplateInfo) {}
 
-  getPropertiesContent() {
+  getFrontmatter() {
     if (!this.info.frontmatter) return;
     return getSectionContent(this.info.source, this.info.frontmatter)
       .replace(/^-{3}|-{3}$/g, "")
@@ -64,16 +58,11 @@ export class Template {
   }
 
   getContent() {
-    const { sections: contentSections, source } = this.info;
-    if (contentSections.length === 0) return "";
-
-    const content = [];
-
-    for (const section of contentSections) {
-      content.push(getSectionContent(source, section));
-    }
-
-    return content.join("\n");
+    const { source } = this.info;
+    return this.info.contents
+      .map((range) => source.slice(...range))
+      .join("")
+      .trim();
   }
 
   async evaluateCodeBlocks(
@@ -90,16 +79,16 @@ export class Template {
   }
 
   async evaluateProperties(context: TemplateContext, engine: TemplateEngine) {
-    const content = this.getPropertiesContent();
-    if (!content) return {};
-    const str = await engine.renderString(content, context.locals.exports);
+    const frontmatter = this.getFrontmatter();
+    if (!frontmatter) return {};
+    const str = await engine.renderString(frontmatter, context.locals.exports);
     context.locals.$properties.fromYaml(str);
   }
 
   async mergeProperties(context: TemplateContext, file: TFile, app: App) {
     const builder = new PropertiesBuilder();
     await app.fileManager.processFrontMatter(file, (fm) => {
-      builder.fromObject({ ...fm });
+      builder.fromObject(fm);
       builder.fromObject(context.locals.$properties.toObject());
       builder.toFrontmatter(fm);
     });

@@ -36,24 +36,25 @@ export class Parser {
     if (!metadata.sections) return;
 
     let frontmatter: SectionCache | undefined;
-    const sections: SectionCache[] = [];
     const codeBlocks: TemplateCodeBlock[] = [];
+    const contents: [number, number][] = [];
+    let start = 0;
     for (const section of metadata.sections) {
       if (section.type === "yaml") {
         frontmatter = section;
-        continue;
-      }
-      if (section.type === "code") {
+        start = section.position.end.offset;
+      } else if (section.type === "code") {
         const codeBlock = this.parseCodeBlock(source, section);
         if (codeBlock) {
+          contents.push([start, section.position.start.offset]);
+          start = section.position.end.offset;
           codeBlocks.push(codeBlock);
-          continue;
         }
       }
-      sections.push(section);
     }
+    contents.push([start, source.length]);
 
-    return { frontmatter, sections, codeBlocks };
+    return { frontmatter, contents, codeBlocks };
   }
 
   parseCodeBlock(
