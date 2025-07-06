@@ -23,21 +23,30 @@ fn.addCreated(template.properties);
 template.exports.message = "Hello World";
 ```
 
-```js {pochoir}
-const form = pochoir.form.create();
-
-form.text("title").label("Title").desc("Some desc");
-form.number("count").label("Count");
-form.textarea("content").label("Content");
-form.toggle("remember").label("Remember");
-form.dropdown("pronoms").label("Pronoms")
-	.option("she", "She")
-	.option("he", "He")
-	.option("they", "They");
-form.date("birthday").label("Birthday");
-form.slider("Level");
-
-// template.exports.form = await form.prompt();
+```form {pochoir exports=form}
+title:
+	type: text
+	label: Title
+	description: Some desc
+	defaultValue: Untitled
+count:
+	type: number
+	label: Count
+	defaultValue: 3
+remember: 
+	type: toggle
+pronom:
+	type: dropdown
+	options:
+		she: She
+		he: He
+		they: They
+birthday:
+	type: date
+	label: Birthday
+level:
+	type: slider
+	label: Level
 ```
 
 exports.message = {{message}}

@@ -1,4 +1,4 @@
-import { type App, Modal, Setting } from "obsidian";
+import { type App, Modal, parseYaml, Setting } from "obsidian";
 import type { Extension } from "../environment";
 
 export interface FormInfo {
@@ -117,13 +117,14 @@ class TextField extends Field<TextFieldType> {
   createSetting(el: HTMLElement, result: Record<string, unknown>) {
     const field = this.data;
     return super.createSetting(el, result).addText((cmp) => {
-      if (typeof field.defaultValue === "string") {
-        cmp.setValue(field.defaultValue);
-      }
       if (field.placeholder) cmp.setPlaceholder(field.placeholder);
       cmp.onChange((value) => {
         result[field.name] = value;
       });
+      if (typeof field.defaultValue === "string") {
+        cmp.setValue(field.defaultValue);
+      }
+      result[field.name] = cmp.getValue();
     });
   }
 }
@@ -142,13 +143,14 @@ class TextAreaField extends Field<TextAreaFieldType> {
   createSetting(el: HTMLElement, result: Record<string, unknown>) {
     const field = this.data;
     return super.createSetting(el, result).addTextArea((cmp) => {
-      if (typeof field.defaultValue === "string") {
-        cmp.setValue(field.defaultValue);
-      }
       if (field.placeholder) cmp.setPlaceholder(field.placeholder);
       cmp.onChange((value) => {
         result[field.name] = value;
       });
+      if (typeof field.defaultValue === "string") {
+        cmp.setValue(field.defaultValue);
+      }
+      result[field.name] = cmp.getValue();
     });
   }
 }
@@ -167,14 +169,15 @@ class NumberField extends Field<NumberFieldType> {
   createSetting(el: HTMLElement, result: Record<string, unknown>) {
     const field = this.data;
     return super.createSetting(el, result).addText((cmp) => {
-      if (typeof field.defaultValue === "number") {
-        cmp.setValue(String(field.defaultValue));
-      }
       if (field.placeholder) cmp.setPlaceholder(field.placeholder);
       cmp.inputEl.type = "number";
       cmp.onChange((value) => {
         result[field.name] = Number(value);
       });
+      if (typeof field.defaultValue === "number") {
+        cmp.setValue(String(field.defaultValue));
+      }
+      result[field.name] = cmp.getValue();
     });
   }
 }
@@ -193,14 +196,15 @@ class DateField extends Field<DateFieldType> {
   createSetting(el: HTMLElement, result: Record<string, unknown>) {
     const field = this.data;
     return super.createSetting(el, result).addText((cmp) => {
-      if (typeof field.defaultValue === "string") {
-        cmp.setValue(field.defaultValue);
-      }
       if (field.placeholder) cmp.setPlaceholder(field.placeholder);
       cmp.inputEl.type = "date";
       cmp.onChange((value) => {
         result[field.name] = value;
       });
+      if (typeof field.defaultValue === "string") {
+        cmp.setValue(field.defaultValue);
+      }
+      result[field.name] = cmp.getValue();
     });
   }
 }
@@ -219,14 +223,15 @@ class TimeField extends Field<TimeFieldType> {
   createSetting(el: HTMLElement, result: Record<string, unknown>) {
     const field = this.data;
     return super.createSetting(el, result).addText((cmp) => {
-      if (typeof field.defaultValue === "string") {
-        cmp.setValue(field.defaultValue);
-      }
       if (field.placeholder) cmp.setPlaceholder(field.placeholder);
       cmp.inputEl.type = "time";
       cmp.onChange((value) => {
         result[field.name] = value;
       });
+      if (typeof field.defaultValue === "string") {
+        cmp.setValue(field.defaultValue);
+      }
+      result[field.name] = cmp.getValue();
     });
   }
 }
@@ -240,12 +245,13 @@ class SliderField extends Field<SliderFieldType> {
   createSetting(el: HTMLElement, result: Record<string, unknown>) {
     const field = this.data;
     return super.createSetting(el, result).addSlider((cmp) => {
-      if (typeof field.defaultValue === "number") {
-        cmp.setValue(field.defaultValue);
-      }
       cmp.onChange((value) => {
         result[field.name] = Number(value);
       });
+      if (typeof field.defaultValue === "number") {
+        cmp.setValue(field.defaultValue);
+      }
+      result[field.name] = cmp.getValue();
     });
   }
 }
@@ -259,12 +265,13 @@ class ToggleField extends Field<ToggleFieldType> {
   createSetting(el: HTMLElement, result: Record<string, unknown>) {
     const field = this.data;
     return super.createSetting(el, result).addToggle((cmp) => {
-      if (typeof field.defaultValue === "boolean") {
-        cmp.setValue(field.defaultValue);
-      }
       cmp.onChange((value) => {
         result[field.name] = Number(value);
       });
+      if (typeof field.defaultValue === "boolean") {
+        cmp.setValue(field.defaultValue);
+      }
+      result[field.name] = cmp.getValue();
     });
   }
 }
@@ -283,13 +290,14 @@ class DropdownField extends Field<DropdownFieldType> {
   createSetting(el: HTMLElement, result: Record<string, unknown>) {
     const field = this.data;
     return super.createSetting(el, result).addDropdown((cmp) => {
-      if (typeof field.defaultValue === "string") {
-        cmp.setValue(field.defaultValue);
-      }
       cmp.addOptions(field.options);
       cmp.onChange((value) => {
         result[field.name] = value;
       });
+      if (typeof field.defaultValue === "string") {
+        cmp.setValue(field.defaultValue);
+      }
+      result[field.name] = cmp.getValue();
     });
   }
 }
@@ -395,6 +403,15 @@ class Form {
     return field;
   }
 
+  fromObject(obj: Record<string, FieldType>) {
+    for (const [key, value] of Object.entries(obj)) {
+      if (value.type in this) {
+        // biome-ignore lint/suspicious/noExplicitAny: value is known here
+        this[value.type](key, value as any);
+      }
+    }
+  }
+
   prompt() {
     return new Promise<Record<string, unknown>>((resolve) => {
       const { modal } = this;
@@ -406,6 +423,9 @@ class Form {
 
       const result: Record<string, unknown> = {};
       for (const field of this.fields) {
+        if (typeof field.data.defaultValue !== "undefined") {
+          result[field.data.name] = field.data.defaultValue;
+        }
         field.createSetting(modal.contentEl, result);
       }
 
@@ -438,20 +458,45 @@ class Form {
   }
 }
 
+interface FormAPI {
+  forms?: Map<string, Form>;
+  create(): Form;
+}
+
 export default function (): Extension {
   return (env) => {
     env.variables.push((context) => {
-      const api = {
+      const api: FormAPI = {
+        forms: new Map(),
         create() {
           return new Form(env.plugin.app);
         },
-        open(cb: (form: Form) => void) {
-          const form = new Form(env.plugin.app);
-          cb(form);
-          return form.prompt();
-        },
       };
       context.globals.form = api;
+    });
+
+    const langRegex = /form/;
+    env.codeBlocks.push(async ({ codeBlock, context }) => {
+      if (!langRegex.test(codeBlock.language)) return false;
+
+      const obj = parseYaml(codeBlock.code.replace(/\t/g, " "));
+
+      const form = new Form(env.plugin.app);
+      form.fromObject(obj);
+
+      const { name, exports } = codeBlock.attributes;
+
+      if (typeof exports === "string") {
+        context.locals.exports[exports] = await form.prompt();
+      }
+
+      if (typeof name === "string") {
+        const api = context.globals.form as FormAPI;
+        if (!api.forms) api.forms = new Map();
+        api.forms.set(name, form);
+      }
+
+      return true;
     });
   };
 }
