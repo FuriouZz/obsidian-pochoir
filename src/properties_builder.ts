@@ -56,6 +56,7 @@ export class PropertiesBuilder extends Map<string, unknown> {
         } else {
           fm[key] = [...value];
         }
+        fm[key] = (fm[key] as string[]).unique();
       } else {
         if (fm[key]) {
           if (Array.isArray(fm[key])) {
@@ -63,6 +64,7 @@ export class PropertiesBuilder extends Map<string, unknown> {
           } else {
             fm[key] = [fm[key], value];
           }
+          fm[key] = (fm[key] as string[]).unique();
         } else {
           fm[key] = value;
         }
@@ -91,6 +93,13 @@ export class PropertiesBuilder extends Map<string, unknown> {
   createProxy() {
     const proxy = new Proxy(this, {
       get(target, p: string) {
+        if (p.startsWith("$")) {
+          const key = p.slice(1);
+          const value = Reflect.get(target, key);
+          if (typeof value === "function") return value.bind(target);
+          return value;
+        }
+
         const value = target.get(p);
         if (value instanceof Set) {
           return [...value];

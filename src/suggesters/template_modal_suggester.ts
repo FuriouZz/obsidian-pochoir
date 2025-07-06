@@ -34,8 +34,6 @@ export class TemplateModalSuggester extends FuzzySuggestModal<TFile> {
       });
     }
 
-    console.log(items.map((i) => i.info.file.basename));
-
     return items.map((template) => {
       const name = template.info.file.basename;
       return {
@@ -74,14 +72,19 @@ export class TemplateModalSuggester extends FuzzySuggestModal<TFile> {
     }
   }
 
+  async #open() {
+    await this.plugin.pochoir.updateTemplateList();
+    this.open();
+  }
+
   insertTemplate() {
     this.openMode = OpenMode.InsertTemplate;
-    this.open();
+    this.#open();
   }
 
   createFromTemplate(folderLocation?: TFolder) {
     this.openMode = OpenMode.CreateFromTemplate;
     this.folderLocation = folderLocation;
-    this.open();
+    this.#open();
   }
 }
