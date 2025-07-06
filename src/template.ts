@@ -1,14 +1,14 @@
 import type { App, FrontMatterCache, SectionCache, TFile } from "obsidian";
-import { getSectionContent } from "./parser";
 import { PropertiesBuilder } from "./properties_builder";
 import type { TemplateEngine } from "./template_engine";
 
 export interface TemplateInfo {
   file: TFile;
   source: string;
-  frontmatter?: SectionCache;
+  internalProperties: Record<string, unknown>;
+  templateProperties: Record<string, unknown>;
   codeBlocks: TemplateCodeBlock[];
-  contents: [number, number][];
+  contentRanges: [number, number][];
 }
 
 export interface TemplateCodeBlock {
@@ -50,16 +50,9 @@ export class TemplateContext {
 export class Template {
   constructor(public info: TemplateInfo) {}
 
-  getFrontmatter() {
-    if (!this.info.frontmatter) return;
-    return getSectionContent(this.info.source, this.info.frontmatter)
-      .replace(/^-{3}|-{3}$/g, "")
-      .trim();
-  }
-
   getContent() {
     const { source } = this.info;
-    return this.info.contents
+    return this.info.contentRanges
       .map((range) => source.slice(...range))
       .join("")
       .trim();
@@ -79,10 +72,10 @@ export class Template {
   }
 
   async evaluateProperties(context: TemplateContext, engine: TemplateEngine) {
-    const frontmatter = this.getFrontmatter();
-    if (!frontmatter) return {};
+    const frontmatter = JSON.stringify(this.info.templateProperties);
     const str = await engine.renderString(frontmatter, context.locals.exports);
-    context.locals.$properties.fromYaml(str);
+    context.locals.$properties.fromObject(JSON.parse(str));
+    context.locals.$properties.filter((key) => !key.startsWith("pochoir."));
   }
 
   async mergeProperties(context: TemplateContext, file: TFile, app: App) {
@@ -90,7 +83,7 @@ export class Template {
     await app.fileManager.processFrontMatter(file, (fm) => {
       builder.fromObject(fm);
       builder.fromObject(context.locals.$properties.toObject());
-      builder.toFrontmatter(fm);
+      builder.toObject(fm);
     });
     return builder.toObject();
   }

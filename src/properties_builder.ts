@@ -24,6 +24,16 @@ export class PropertiesBuilder extends Map<string, unknown> {
     if (set.size === 0) this.delete(key);
   }
 
+  filter(predicate: (key: string, value: unknown) => boolean) {
+    const keys: string[] = [];
+    for (const [key, value] of this.entries()) {
+      if (!predicate(key, value)) keys.push(key);
+    }
+    if (keys.length > 0) {
+      for (const key of keys) this.delete(key);
+    }
+  }
+
   fromObject(obj: object) {
     for (const [key, value] of Object.entries(obj)) {
       if (Array.isArray(value)) {
@@ -34,36 +44,7 @@ export class PropertiesBuilder extends Map<string, unknown> {
     }
   }
 
-  fromYaml(yaml: string) {
-    this.fromObject(parseYaml(yaml));
-  }
-
-  toObject() {
-    const obj: Record<string | symbol, unknown> = {};
-    for (const [key, value] of this.entries()) {
-      if (value instanceof Set) {
-        obj[key] = [...value];
-      } else {
-        obj[key] = value;
-      }
-    }
-    return obj;
-  }
-
-  toYaml() {
-    const lines: string[] = [];
-    for (const [key, value] of Object.entries(this.toObject())) {
-      if (Array.isArray(value)) {
-        const list = value.map((item) => `  - ${item}`).join("\n");
-        lines.push(`${key}:\n${list}`);
-      } else {
-        lines.push(`${key}: ${value}`);
-      }
-    }
-    return lines.join("\n");
-  }
-
-  toFrontmatter(fm: Record<string, unknown>) {
+  toObject(fm: Record<string, unknown> = {}) {
     for (const [key, value] of this.entries()) {
       if (value instanceof Set) {
         if (fm[key]) {
@@ -87,6 +68,24 @@ export class PropertiesBuilder extends Map<string, unknown> {
         }
       }
     }
+    return fm;
+  }
+
+  fromYaml(yaml: string) {
+    this.fromObject(parseYaml(yaml));
+  }
+
+  toYaml() {
+    const lines: string[] = [];
+    for (const [key, value] of Object.entries(this.toObject())) {
+      if (Array.isArray(value)) {
+        const list = value.map((item) => `  - ${item}`).join("\n");
+        lines.push(`${key}:\n${list}`);
+      } else {
+        lines.push(`${key}: ${value}`);
+      }
+    }
+    return lines.join("\n");
   }
 
   createProxy() {

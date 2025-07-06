@@ -4,8 +4,11 @@ number: 1
 boolean: true
 date: "{{date.today()}}"
 tags:
-- inbox
-- test
+  - inbox
+  - test
+pochoir.aliases:
+  - tpl
+  - tpl1
 ---
 ```js {pochoir}
 const tpl2 = await pochoir.import("[[Template 2]]");
@@ -30,7 +33,7 @@ template.exports.form = await pochoir.form.open((form) => {
 	    .option("he", "He")
 	    .option("they", "They");
 	form.date("birthday").label("Birthday");
-	form.slider("Level")	
+	form.slider("Level");
 });
 ```
 

@@ -4,6 +4,7 @@ import {
   type TemplateCodeBlock,
   type TemplateInfo,
 } from "./template";
+import { PropertiesBuilder } from "./properties_builder";
 
 export class Parser {
   cache = new Map<string, TemplateInfo>();
@@ -35,26 +36,43 @@ export class Parser {
   parseSections(source: string, metadata: CachedMetadata) {
     if (!metadata.sections) return;
 
-    let frontmatter: SectionCache | undefined;
+    const templateProperties = new PropertiesBuilder();
+    const internalProperties = new PropertiesBuilder();
+
     const codeBlocks: TemplateCodeBlock[] = [];
-    const contents: [number, number][] = [];
+
+    const contentRanges: [number, number][] = [];
     let start = 0;
+
     for (const section of metadata.sections) {
       if (section.type === "yaml") {
-        frontmatter = section;
+        const frontmatter = getSectionContent(source, section)
+          .replace(/^-{3}|-{3}$/g, "")
+          .trim();
+        templateProperties.fromYaml(frontmatter);
+        internalProperties.fromYaml(frontmatter);
         start = section.position.end.offset;
       } else if (section.type === "code") {
         const codeBlock = this.parseCodeBlock(source, section);
         if (codeBlock) {
-          contents.push([start, section.position.start.offset]);
+          contentRanges.push([start, section.position.start.offset]);
           start = section.position.end.offset;
           codeBlocks.push(codeBlock);
         }
       }
     }
-    contents.push([start, source.length]);
 
-    return { frontmatter, contents, codeBlocks };
+    contentRanges.push([start, source.length]);
+
+    internalProperties.filter((key) => key.startsWith("pochoir."));
+    templateProperties.filter((key) => !key.startsWith("pochoir."));
+
+    return {
+      internalProperties: internalProperties.toObject(),
+      templateProperties: templateProperties.toObject(),
+      contentRanges,
+      codeBlocks,
+    };
   }
 
   parseCodeBlock(
