@@ -3,6 +3,9 @@
     "aliases": "aliases",
     "cssclasses": "multitext",
     "tags": "tags",
-    "pochoir-aliases": "multitext"
+    "pochoir-aliases": "multitext",
+    "$.properties": "multitext",
+    "$.exports": "multitext",
+    "$.title": "text"
   }
 }

@@ -4,7 +4,7 @@ import {
   MarkdownView,
   normalizePath,
   TFile,
-  type TFolder,
+  TFolder,
 } from "obsidian";
 import { parentFolderPath } from "obsidian-typings/implementations";
 import { logError } from "src/log";
@@ -19,7 +19,8 @@ import {
 } from "./template";
 import { TemplateEngine, VentoLoader } from "./template_engine";
 import { TemplateList } from "./template_list";
-import { getNewFileLocation } from "./utils";
+import { findLinkPath, getNewFileLocation } from "./utils";
+import { FileBuilder } from "./file";
 
 export type Extension = (env: Environment) => void;
 
@@ -32,16 +33,6 @@ export class Environment extends Events {
   frontmatters: FrontmatterProcessor[] = [];
   codeBlocks: CodeBlockProcessor[] = [];
   variables: VariablesProvider[] = [];
-
-  declare on: (
-    name: "write",
-    callback: (params: {
-      pochoir: Environment;
-      context: TemplateContext;
-      content: string;
-    }) => unknown,
-    ctx?: unknown,
-  ) => EventRef;
 
   constructor(plugin: PochoirPlugin) {
     super();
@@ -84,10 +75,44 @@ export class Environment extends Events {
     });
   }
 
-  createContext() {
+  async #renameFile(context: TemplateContext, target: TFile) {
+    const { app } = this.plugin;
+    const { file } = context.locals;
+    if (file.hasChanged) {
+      if (file.folder) {
+        const folder = app.vault.getAbstractFileByPath(file.folder);
+        if (folder instanceof TFile) {
+          throw new Error(`This is not a folder: ${folder.path}`);
+        }
+        if (!folder) {
+          await app.vault.createFolder(file.folder);
+        }
+      }
+      await app.fileManager.renameFile(target, file.path);
+    }
+  }
+
+  createContext(target?: TFile) {
     const context = new TemplateContext();
+    const { file } = context.locals;
+    if (target) {
+      file.fromTFile(target);
+    }
     for (const p of this.variables) p(context);
     return context;
+  }
+
+  async importTemplate(path: string, context: TemplateContext) {
+    const file = findLinkPath(this.plugin.app, path);
+    if (!file) throw new Error(`Cannot find ${path}`);
+
+    const ctx = this.createContext();
+    ctx.globals = context.globals;
+    const template = this.list.getTemplateByFile(file);
+    await template.evaluateCodeBlocks(ctx, this.codeBlocks);
+    await template.evaluateProperties(ctx, this.engine);
+
+    return ctx.locals.exports;
   }
 
   async parseTemplate(templateFile: TFile) {
@@ -129,17 +154,17 @@ export class Environment extends Events {
 
       const folderObj = app.vault.getAbstractFileByPath(folderPath);
       if (folderObj instanceof TFile) {
-        throw new Error(`${folder} is a file`);
+        throw new Error(`This is not a folder: ${folderObj.path}`);
       }
       if (!folderObj) {
         await app.vault.createFolder(folderPath);
       }
       const note = await app.vault.create(filePath, "");
 
-      const context = this.createContext();
+      const context = this.createContext(note);
       const content = await this.renderTemplate(templateFile, note, context);
-      this.trigger("write");
       await app.vault.process(note, (data) => data + content);
+      await this.#renameFile(context, note);
 
       if (openNote) {
         await app.workspace.getLeaf(false).openFile(note);
@@ -155,11 +180,11 @@ export class Environment extends Events {
       const note = app.workspace.getActiveFile();
       if (!note) throw new Error("There is no active file");
 
-      const context = this.createContext();
+      const context = this.createContext(note);
       const content = await this.renderTemplate(templateFile, note, context);
-      this.trigger("write");
       const view = app.workspace.getActiveViewOfType(MarkdownView);
       view?.editor.replaceSelection(content);
+      await this.#renameFile(context, note);
     } catch (e) {
       logError(e as Error);
     }

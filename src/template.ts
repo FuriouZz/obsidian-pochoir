@@ -1,6 +1,7 @@
 import type { App, FrontMatterCache, SectionCache, TFile } from "obsidian";
 import { PropertiesBuilder } from "./properties_builder";
 import type { TemplateEngine } from "./template_engine";
+import { FileBuilder } from "./file";
 
 export interface TemplateInfo {
   file: TFile;
@@ -31,19 +32,30 @@ export type CodeBlockProcessor = (params: {
 
 export type VariablesProvider = (context: TemplateContext) => void;
 
+export interface TemplateContextGlobals extends Record<string, unknown> {}
+export interface TemplateContextLocals {
+  $properties: PropertiesBuilder;
+  properties: ReturnType<PropertiesBuilder["createProxy"]>;
+  file: FileBuilder;
+  exports: Record<string, unknown>;
+}
+
 export class TemplateContext {
-  globals: Record<string, unknown>;
-  locals: {
-    $properties: PropertiesBuilder;
-    properties: ReturnType<PropertiesBuilder["createProxy"]>;
-    exports: Record<string, unknown>;
-  };
+  globals: TemplateContextGlobals;
+  locals: TemplateContextLocals;
 
   constructor() {
     const $properties = new PropertiesBuilder();
     const properties = $properties.createProxy();
+    const file = new FileBuilder();
+    // @ts-ignore
     this.globals = {};
-    this.locals = Object.freeze({ properties, $properties, exports: {} });
+    this.locals = Object.freeze({
+      properties,
+      $properties,
+      file,
+      exports: { file },
+    });
   }
 }
 

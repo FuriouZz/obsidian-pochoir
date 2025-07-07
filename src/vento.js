@@ -27,7 +27,27 @@ export function vento(options = {}) {
   });
 
   // Register basic plugins
-  env.use(autoTrim());
+  env.use(
+    autoTrim({
+      tags: [
+        "> ",
+        "# ",
+        "set ",
+        "/set",
+        "if ",
+        "/if",
+        "else ",
+        "for ",
+        "/for",
+        "function ",
+        "async ",
+        "/function",
+        "export ",
+        "/export",
+        "import ",
+      ],
+    }),
+  );
   env.use(ifTag());
   env.use(forTag());
   env.use(jsTag());

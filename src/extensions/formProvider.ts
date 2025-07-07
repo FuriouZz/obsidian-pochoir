@@ -1,5 +1,6 @@
 import { type App, Modal, parseYaml, Setting } from "obsidian";
 import type { Extension } from "../environment";
+import { FileBuilder } from "src/file";
 
 export interface FormInfo {
   title: string;
@@ -463,6 +464,13 @@ interface FormAPI {
   create(): Form;
 }
 
+declare module "../template" {
+  interface TemplateContextGlobals {
+    form: FormAPI;
+    forms: FormAPI["forms"];
+  }
+}
+
 export default function (): Extension {
   return (env) => {
     env.variables.push((context) => {
@@ -473,6 +481,13 @@ export default function (): Extension {
         },
       };
       context.globals.form = api;
+      Object.defineProperty(context.globals, "forms", {
+        enumerable: true,
+        configurable: false,
+        get() {
+          return api.forms;
+        },
+      });
     });
 
     const langRegex = /form/;
@@ -491,7 +506,7 @@ export default function (): Extension {
       }
 
       if (typeof name === "string") {
-        const api = context.globals.form as FormAPI;
+        const api = context.globals.form;
         if (!api.forms) api.forms = new Map();
         api.forms.set(name, form);
       }

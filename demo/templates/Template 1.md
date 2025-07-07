@@ -5,13 +5,13 @@ boolean: true
 date: "{{date.today()}}"
 tags:
   - inbox
-pochoir.aliases:
+  - test
+$.aliases:
   - tpl
   - tpl1
+$.extend: "[[Template 2]]"
 ---
 ```js {pochoir}
-template.properties.$insertTo("tags", "test");
-
 const tpl2 = await pochoir.import("[[Template 2]]");
 template.properties.$fromObject(tpl2.properties);
 
@@ -49,6 +49,18 @@ level:
 	label: Level
 ```
 
+```filename {pochoir}
+# title: {{[[Template 2]].zid}} {{form.title}}
+```
+
+```js {pochoir}
+const tpl2 = await pochoir.import("[[Template 2]]");
+const fn = await pochoir.import("[[Functions]]");
+const form = template.exports.form;
+template.file.title = `${tpl2.zid} ${form.title}`
+template.file.parent = fn.yolo() + "totoo";
+```
+
 exports.message = {{message}}
 
 properties.title = {{properties.title}}
@@ -63,7 +75,7 @@ Properties:
 
 Tags:
 ```yaml
-tags:
+tags: 
 {{for tag of properties.tags}}
 - {{tag}}
 {{/for}}

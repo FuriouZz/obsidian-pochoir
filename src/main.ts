@@ -6,6 +6,7 @@ import {
 import { Environment } from "./environment";
 import { createFromTemplateFileMenuItem } from "./events";
 import dateProvider from "./extensions/dateProvider";
+import fileProvider from "./extensions/fileProvider";
 import formProvider from "./extensions/formProvider";
 import importProvider from "./extensions/importProvider";
 import jsCodeBlock from "./extensions/jsCodeBlock";
@@ -27,6 +28,7 @@ export default class PochoirPlugin extends Plugin {
     this.pochoir.use(importProvider());
     this.pochoir.use(dateProvider());
     this.pochoir.use(formProvider());
+    this.pochoir.use(fileProvider());
 
     insertFromTemplateCommand(this);
     createFromTemplateCommand(this);
