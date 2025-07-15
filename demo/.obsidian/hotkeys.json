@@ -1,0 +1,10 @@
+{
+  "pochoir:create-from-template": [
+    {
+      "modifiers": [
+        "Mod"
+      ],
+      "key": "M"
+    }
+  ]
+}

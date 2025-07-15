@@ -1,14 +1,8 @@
 ---
 tags:
-  - task
-  - yolo
+  - todo
 ---
-```js {pochoir}
-template.exports.properties = template.properties;
-template.exports.zid = pochoir.date.today("YYYYMMDDHHmm");
-```
-
 ## Todolist
 
-- [ ] Task 1
+- [x] Task 1 ✅ 2025-07-14
 - [ ] Task 2

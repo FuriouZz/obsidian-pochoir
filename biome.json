@@ -10,6 +10,7 @@
 	},
 	"formatter": {
 		"enabled": true,
+	    "indentWidth": 4,
 		"indentStyle": "space"
 	},
 	"linter": {

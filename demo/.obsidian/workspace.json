@@ -4,17 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "e489a45ae7180550",
+        "id": "18299dd8498d43a1",
         "type": "tabs",
         "children": [
           {
-            "id": "c9ffd06f1f6bd2f8",
+            "id": "93b55e590c93ff92",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "Sample.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "Sample"
             }
           }
         ]
@@ -159,41 +163,47 @@
       "canvas:Create new canvas": false,
       "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
-      "command-palette:Open command palette": false
+      "command-palette:Open command palette": false,
+      "templater-obsidian:Templater": false
     }
   },
-  "active": "c262ce4aa8a9ade9",
+  "active": "93b55e590c93ff92",
   "lastOpenFiles": [
+    "tasks/202507151516 1.md",
+    "tasks/202507151516.md",
+    "templates/Without Javascript.md",
+    "tasks",
     "Sample.md",
+    "Welcome.md",
+    "templates/With Javascript.md",
+    "templates/Template 2.md",
     "templates/Functions.md",
-    "templates/Template 1.md",
-    "yolototoo/202507070330 YILO.md",
-    "Untitled 26.md",
-    "Untitled 25.md",
-    "yolototoo/202507070329 Untitled.md",
-    "yolototoo/202507070329 YOLO.md",
-    "Untitled 24.md",
-    "Untitled 23.md",
-    "yolototoo/202507070322 Untitled.md",
-    "Untitled 22.md",
-    "yolototoo/202507070315 Untitled.md",
-    "yolototoo/202507070314 Untitled.md",
-    "yolototoo/202507070313 Untitled.md",
-    "yolototoo/202507070309 Untitledzert.md",
-    "Untitled 21.md",
-    "yolototoo/202507070309 Untitled.md",
-    "yolototoo/202507070308 Untitled.md",
-    "yolototoo/202507070308 Untitledli.md",
-    "yolototoo/202507070308 Untitledlpo.md",
-    "Untitled 20.md",
-    "yolototoo/202507070307 Untitled.md",
-    "yolototoo/202507070306 Untitled.md",
-    "yolototoo/202507070306 Untitledl.md",
-    "yolototoo/202507070305 Untitledll.md",
-    "yolototoo",
-    "yolototo",
-    "{{file.parent}}",
-    "yolo",
-    "Yolo"
+    "tasks/202507151251.md",
+    "tasks/202507151250.md",
+    "toto.md",
+    "Tasks.md",
+    "tpls/Daily Template.md",
+    "daily/2025-07-14.md",
+    "tasks/202507120956.md",
+    "daily",
+    "tpls",
+    "tasks/202507120952.md",
+    "tasks/202507120945.md",
+    "tasks/202507120944.md",
+    "tasks/202507120943.md",
+    "tasks/202507120941.md",
+    "tasks/202507120940.md",
+    "tasks/202507120937.md",
+    "tasks/202507120936 1.md",
+    "tasks/202507120936.md",
+    "tasks/202507120935.md",
+    "tasks/202507120923.md",
+    "tasks/202507120124",
+    "tasks/202507120120 1",
+    "tasks/202507120120",
+    "folder",
+    "folder/Hello World",
+    "folder/Hello World.md 2",
+    "folder/Hello World.md 1"
   ]
 }

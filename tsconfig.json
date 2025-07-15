@@ -17,8 +17,7 @@
       "ES5",
       "ES6",
       "ES7"
-    ],
-    "types": ["obsidian-typings"]
+    ]
   },
   "include": ["src/**/*"],
   "exclude": ["vendors", "node_modules"]

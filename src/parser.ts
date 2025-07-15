@@ -1,132 +1,183 @@
-import type { App, CachedMetadata, SectionCache, TFile } from "obsidian";
 import {
-  Template,
-  type TemplateCodeBlock,
-  type TemplateInfo,
-} from "./template";
-import { PropertiesBuilder } from "./properties_builder";
+    type App,
+    type CachedMetadata,
+    parseYaml,
+    type SectionCache,
+    type TFile,
+} from "obsidian";
+import { ParserError } from "./errors";
+import { PropertiesBuilder } from "./properties-builder";
+import { Template } from "./template";
 
-export class Parser {
-  cache = new Map<string, TemplateInfo>();
-
-  async parse({ app, file }: { app: App; file: TFile }) {
-    const info = await this.parseFile(app, file);
-    if (!info) throw new Error(`Cannot parse template: ${file.basename}`);
-    return new Template(info);
-  }
-
-  async parseFile(app: App, file: TFile) {
-    const result = this.cache.get(file.path);
-    if (result) return result;
-
-    const source = await app.vault.cachedRead(file);
-    const metadata = app.metadataCache.getFileCache(file);
-    if (!metadata) return null;
-
-    const res = this.parseSections(source, metadata);
-    if (!res) return null;
-
-    const info: TemplateInfo = { file, source, ...res };
-
-    this.cache.set(file.path, info);
-
-    return info;
-  }
-
-  parseSections(source: string, metadata: CachedMetadata) {
-    if (!metadata.sections) return;
-
-    const templateProperties = new PropertiesBuilder();
-    const internalProperties = new PropertiesBuilder();
-
-    const codeBlocks: TemplateCodeBlock[] = [];
-
-    const contentRanges: [number, number][] = [];
-    let start = 0;
-
-    for (const section of metadata.sections) {
-      if (section.type === "yaml") {
-        const frontmatter = getSectionContent(source, section)
-          .replace(/^-{3}|-{3}$/g, "")
-          .trim();
-        templateProperties.fromYaml(frontmatter);
-        internalProperties.fromYaml(frontmatter);
-        start = section.position.end.offset;
-      } else if (section.type === "code") {
-        const codeBlock = this.parseCodeBlock(source, section);
-        if (codeBlock) {
-          contentRanges.push([start, section.position.start.offset]);
-          start = section.position.end.offset;
-          codeBlocks.push(codeBlock);
-        }
-      }
-    }
-
-    contentRanges.push([start, source.length]);
-
-    internalProperties.filter((key) => key.startsWith("pochoir."));
-    templateProperties.filter((key) => !key.startsWith("pochoir."));
-
-    return {
-      internalProperties: internalProperties.toObject(),
-      templateProperties: templateProperties.toObject(),
-      contentRanges,
-      codeBlocks,
-    };
-  }
-
-  parseCodeBlock(
-    source: string,
-    section: SectionCache,
-  ): TemplateCodeBlock | undefined {
-    if (section.type !== "code") return;
-    const content = getSectionContent(source, section);
-
-    const regex = /`{3}(\S+)\s*(\{.*\})?\n([\s\S]*?)\n`{3}/;
-    const match = content.match(regex);
-    if (!match) return;
-
-    const attributes = match[2] ? this.parseAttributes(match[2]) : {};
-    if (!attributes.pochoir) return;
-
-    const language = match[1];
-    const code = match[3];
-    return {
-      language,
-      section,
-      content,
-      code,
-      attributes,
-    };
-  }
-
-  parseAttributes(source: string) {
-    const pairs = source.replace(/^\{|\}$/g, "").split(/\s/);
-    const attributes: Record<string, unknown> = {};
-
-    for (const pair of pairs) {
-      const [key, value] = pair.split("=");
-      if (value === undefined) {
-        attributes[key] = true;
-      } else if (/true|false/.test(value)) {
-        attributes[key] = Boolean(value);
-      } else {
-        const num = Number(value);
-        if (Number.isNaN(num)) {
-          attributes[key] = value;
-        } else {
-          attributes[key] = num;
-        }
-      }
-    }
-
-    return attributes;
-  }
+export interface ParsedCodeBlock {
+    language: string;
+    section: SectionCache;
+    content: string;
+    code: string;
+    attributes: Record<string, unknown>;
 }
 
-export function getSectionContent(source: string, section: SectionCache) {
-  return source.slice(
-    section.position.start.offset,
-    section.position.end.offset,
-  );
+export interface ParsedFrontMatter {
+    properties: Record<string, unknown>;
+}
+
+export interface ParsedSections {
+    frontmatter: ParsedFrontMatter;
+    codeBlocks: ParsedCodeBlock[];
+    contentRanges: [number, number][];
+}
+
+export interface ParsedTemplateInfo {
+    file: TFile;
+    source: string;
+    frontmatter: ParsedFrontMatter;
+    codeBlocks: ParsedCodeBlock[];
+    contentRanges: [number, number][];
+}
+
+export class Parser {
+    app: App;
+
+    constructor(app: App) {
+        this.app = app;
+    }
+
+    async parse(file: TFile) {
+        const info = await this.parseFile(file);
+        if (!info) {
+            throw new ParserError(`Cannot parse template: ${file.basename}`);
+        }
+        return new Template(info);
+    }
+
+    async parseFile(file: TFile): Promise<ParsedTemplateInfo | null> {
+        const source = await this.app.vault.cachedRead(file);
+        const metadata = this.app.metadataCache.getFileCache(file);
+        if (!metadata) return null;
+
+        return {
+            file,
+            source,
+            ...this.parseSections(source, metadata),
+        };
+    }
+
+    parseSections(source: string, metadata: CachedMetadata): ParsedSections {
+        const ret: ParsedSections = {
+            frontmatter: {
+                properties: {},
+            },
+            contentRanges: [],
+            codeBlocks: [],
+        };
+
+        if (!metadata.sections) return ret;
+
+        let start = 0;
+
+        for (const [index, section] of metadata.sections.entries()) {
+            if (section.type === "yaml") {
+                ret.frontmatter = this.parseFrontmatter(source, section);
+                start = section.position.end.offset;
+            } else if (section.type === "code") {
+                const codeBlock = this.parseCodeBlock(source, section);
+                if (codeBlock) {
+                    ret.contentRanges.push([
+                        start,
+                        section.position.start.offset,
+                    ]);
+                    start =
+                        metadata.sections[index + 1]?.position.start.offset ??
+                        section.position.end.offset;
+                    ret.codeBlocks.push(codeBlock);
+                }
+            }
+        }
+
+        ret.contentRanges.push([start, source.length]);
+        return ret;
+    }
+
+    parseFrontmatter(source: string, section: SectionCache): ParsedFrontMatter {
+        const ret: ParsedFrontMatter = { properties: {} };
+        if (section.type !== "yaml") return ret;
+
+        const frontmatter = this.getSectionContent(source, section)
+            .replace(/^-{3}|-{3}$/g, "")
+            .trim();
+
+        const properties = new PropertiesBuilder();
+
+        const json = parseYaml(frontmatter);
+
+        for (const [key, value] of Object.entries(json)) {
+            properties.set(key, value);
+        }
+
+        ret.properties = properties.toObject();
+
+        return ret;
+    }
+
+    parseCodeBlock(
+        source: string,
+        section: SectionCache,
+    ): ParsedCodeBlock | undefined {
+        if (section.type !== "code") return;
+        const content = this.getSectionContent(source, section);
+
+        const regex = /`{3}(\S+)\s*?(\{.*\})\n([\s\S]*?)\n`{3}/;
+        const match = content.match(regex);
+        if (!match) return;
+
+        const attributes = match[2] ? this.parseAttributes(match[2]) : {};
+        if (!attributes.pochoir) return;
+
+        const language = match[1];
+        const code = match[3];
+
+        return {
+            language,
+            section,
+            content,
+            code,
+            attributes,
+        };
+    }
+
+    parseAttributes(source: string) {
+        const pairs = source.replace(/^\{|\}$/g, "").split(/\s/);
+        const attributes: Record<string, unknown> = {};
+
+        for (const pair of pairs) {
+            let [key, value] = pair.split("=");
+            if (value === undefined) {
+                attributes[key] = true;
+            } else if (/true|false/.test(value)) {
+                attributes[key] = Boolean(value);
+            } else {
+                value = value.replace(/^"|"$/g, "");
+                const num = Number(value);
+                if (Number.isNaN(num)) {
+                    attributes[key] = value;
+                } else {
+                    attributes[key] = num;
+                }
+            }
+        }
+
+        return attributes;
+    }
+
+    getSectionContent(source: string, section: SectionCache) {
+        return source.slice(
+            section.position.start.offset,
+            section.position.end.offset,
+        );
+    }
+}
+
+export function parse(app: App, file: TFile) {
+    const parser = new Parser(app);
+    return parser.parse(file);
 }

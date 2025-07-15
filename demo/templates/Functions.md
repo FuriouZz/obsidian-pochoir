@@ -1,9 +1,16 @@
 ```js {pochoir}
+const { today } = await template.import("pochoir:date");
+
 template.exports.addCreated = (properties) => {
-	properties.created = pochoir.date.today();
+	properties.created = today();
 };
 
-template.exports.yolo = () => {
-  return "yolo";
+template.exports.message = () => {
+  return "Hello World";
 };
+```
+
+```js {pochoir}
+const { today } = await template.import("pochoir:date");
+template.exports.zid = () => today("YYYYMMDDHHmm");
 ```

@@ -1,192 +1,155 @@
-import {
-  type EventRef,
-  Events,
-  MarkdownView,
-  normalizePath,
-  TFile,
-  TFolder,
-} from "obsidian";
-import { parentFolderPath } from "obsidian-typings/implementations";
-import { logError } from "src/log";
-import type PochoirPlugin from "src/main";
+import { type App, MarkdownView, type TFile, type TFolder } from "obsidian";
+import { Cache } from "./cache";
+import { Importer } from "./importer";
+import { LOG_CONFIG, LogLevel, verbose } from "./logger";
+import type PochoirPlugin from "./main";
 import { Parser } from "./parser";
-import {
-  type CodeBlockProcessor,
-  type FrontmatterProcessor,
-  type Template,
-  TemplateContext,
-  type VariablesProvider,
-} from "./template";
-import { TemplateEngine, VentoLoader } from "./template_engine";
-import { TemplateList } from "./template_list";
-import { findLinkPath, getNewFileLocation } from "./utils";
-import { FileBuilder } from "./file";
+import { ProcessorList } from "./processor-list";
+import { Renderer } from "./renderer";
+import type { ISettings } from "./setting-tab";
+import { type Template, TemplateContext } from "./template";
+import { alertWrap } from "./utils/alert";
+import { createNote, ensurePath } from "./utils/obsidian";
 
 export type Extension = (env: Environment) => void;
 
-export class Environment extends Events {
-  plugin: PochoirPlugin;
-  engine: TemplateEngine;
-  list: TemplateList;
-  parser: Parser;
-
-  frontmatters: FrontmatterProcessor[] = [];
-  codeBlocks: CodeBlockProcessor[] = [];
-  variables: VariablesProvider[] = [];
-
-  constructor(plugin: PochoirPlugin) {
-    super();
-
-    this.plugin = plugin;
-    this.parser = new Parser();
-    this.engine = new TemplateEngine(new VentoLoader(this));
-    this.list = new TemplateList();
-    this.plugin.registerEvent(
-      this.plugin.app.metadataCache.on("changed", (file) => {
-        this.parser.cache.delete(file.path);
-        this.engine.vento.cache.delete(file.path);
-        this.updateTemplateList();
-      }),
-    );
-  }
-
-  async updateTemplateList() {
-    return this.list.refresh(this);
-  }
-
-  use(extension: Extension) {
-    extension(this);
-    return this;
-  }
-
-  clear() {
-    this.codeBlocks.length = 0;
-    this.variables.length = 0;
-  }
-
-  async #renderTemplateContent(
+export type ContextProvider = (
     context: TemplateContext,
     template: Template,
-    properties?: Record<string, unknown>,
-  ) {
-    return this.engine.renderTemplate(template, {
-      ...context.locals.exports,
-      properties,
-    });
-  }
+) => void | Promise<void>;
 
-  async #renameFile(context: TemplateContext, target: TFile) {
-    const { app } = this.plugin;
-    const { file } = context.locals;
-    if (file.hasChanged) {
-      if (file.folder) {
-        const folder = app.vault.getAbstractFileByPath(file.folder);
-        if (folder instanceof TFile) {
-          throw new Error(`This is not a folder: ${folder.path}`);
+export class Environment {
+    app: App;
+    plugin: PochoirPlugin;
+    parser: Parser;
+    cache: Cache;
+    renderer: Renderer;
+    importer: Importer;
+
+    processors = new ProcessorList();
+
+    contextProviders: ContextProvider[] = [];
+
+    constructor(plugin: PochoirPlugin) {
+        const findTemplate = (path: string) => {
+            const file = this.app.vault.getFileByPath(path);
+            if (!file) return null;
+            return this.cache.resolve(file);
+        };
+
+        this.plugin = plugin;
+        this.app = plugin.app;
+        this.parser = new Parser(this.app);
+        this.cache = new Cache(this.app);
+        this.renderer = new Renderer(this.app, { findTemplate });
+        this.importer = new Importer();
+
+        LOG_CONFIG.level = LogLevel.VERBOSE;
+    }
+
+    get resolvers() {
+        return this.importer.resolvers;
+    }
+
+    createContext(target: TFile) {
+        return new TemplateContext(target);
+    }
+
+    use(extension: Extension) {
+        extension(this);
+        return this;
+    }
+
+    async updateSettings(settings: ISettings) {
+        this.cache.templateFolder = settings.templates_folder;
+        await this.invalidate();
+    }
+
+    async invalidate() {
+        verbose("invalidate");
+        await this.cache.refresh();
+    }
+
+    async invalidateFile(file: TFile) {
+        this.renderer.vento.cache.delete(file.path);
+        await this.cache.invalidate(file);
+    }
+
+    dispose() {
+        this.cache.templates.clear();
+    }
+
+    async renderTemplate(context: TemplateContext, template: Template) {
+        // Transfer properties
+        const properties = await context.transferProps(this.app);
+
+        // Generate content
+        const content = await this.renderer.render(template.getContent(), {
+            ...context.locals.exports,
+            properties,
+        });
+
+        // Place content
+        const activeFile = this.app.workspace.getActiveFile();
+        if (activeFile?.path === context.target.path) {
+            const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+            view?.editor.replaceSelection(content);
+        } else {
+            await this.app.vault.process(
+                context.target,
+                (data) => data + content,
+            );
         }
-        if (!folder) {
-          await app.vault.createFolder(file.folder);
+
+        // Rename file
+        if (context.path.hasChanged) {
+            const path = await ensurePath(
+                this.app,
+                context.path.name,
+                context.path.parent,
+            );
+            await this.app.fileManager.renameFile(context.target, path);
         }
-      }
-      await app.fileManager.renameFile(target, file.path);
     }
-  }
 
-  createContext(target?: TFile) {
-    const context = new TemplateContext();
-    const { file } = context.locals;
-    if (target) {
-      file.fromTFile(target);
+    async createFromTemplate(
+        template: Template,
+        {
+            filename = "Untitled",
+            folder,
+            openNote = true,
+        }: { folder?: TFolder; filename?: string; openNote?: boolean } = {},
+    ) {
+        let createdNote: TFile | undefined;
+        return alertWrap(
+            async () => {
+                const target = await createNote(this.app, filename, folder);
+                createdNote = target;
+
+                const context = this.createContext(target);
+                await context.load(template, this);
+                await this.renderTemplate(context, template);
+
+                if (openNote) {
+                    await this.app.workspace.getLeaf(false).openFile(target);
+                }
+            },
+            () => {
+                if (!createdNote) return;
+                this.app.vault.delete(createdNote);
+            },
+        );
     }
-    for (const p of this.variables) p(context);
-    return context;
-  }
 
-  async importTemplate(path: string, context: TemplateContext) {
-    const file = findLinkPath(this.plugin.app, path);
-    if (!file) throw new Error(`Cannot find ${path}`);
+    insertFromTemplate(template: Template) {
+        const { app } = this;
+        return alertWrap(async () => {
+            const target = app.workspace.getActiveFile();
+            if (!target) throw new Error("There is no active file");
 
-    const ctx = this.createContext();
-    ctx.globals = context.globals;
-    const template = this.list.getTemplateByFile(file);
-    await template.evaluateCodeBlocks(ctx, this.codeBlocks);
-    await template.evaluateProperties(ctx, this.engine);
-
-    return ctx.locals.exports;
-  }
-
-  async parseTemplate(templateFile: TFile) {
-    return this.parser.parse({
-      app: this.plugin.app,
-      file: templateFile,
-    });
-  }
-
-  async renderTemplate(
-    templateFile: TFile,
-    note: TFile,
-    context: TemplateContext,
-  ) {
-    const { app } = this.plugin;
-    const template = this.list.getTemplateByFile(templateFile);
-    await template.evaluateCodeBlocks(context, this.codeBlocks);
-    await template.evaluateProperties(context, this.engine);
-    const properties = await template.mergeProperties(context, note, app);
-    return this.#renderTemplateContent(context, template, properties);
-  }
-
-  async createFromTemplate(
-    templateFile: TFile,
-    {
-      filename = "Untitled",
-      folder,
-      openNote = true,
-    }: { folder?: TFolder; filename?: string; openNote?: boolean } = {},
-  ) {
-    try {
-      const { app } = this.plugin;
-      const location = folder ?? getNewFileLocation(app);
-
-      let filePath = normalizePath(`${location.path}/${filename}`);
-      filePath = app.vault.getAvailablePath(filePath, "md");
-
-      const folderPath = parentFolderPath(filePath);
-
-      const folderObj = app.vault.getAbstractFileByPath(folderPath);
-      if (folderObj instanceof TFile) {
-        throw new Error(`This is not a folder: ${folderObj.path}`);
-      }
-      if (!folderObj) {
-        await app.vault.createFolder(folderPath);
-      }
-      const note = await app.vault.create(filePath, "");
-
-      const context = this.createContext(note);
-      const content = await this.renderTemplate(templateFile, note, context);
-      await app.vault.process(note, (data) => data + content);
-      await this.#renameFile(context, note);
-
-      if (openNote) {
-        await app.workspace.getLeaf(false).openFile(note);
-      }
-    } catch (e) {
-      logError(e as Error);
+            const context = this.createContext(target);
+            await context.load(template, this);
+            await this.renderTemplate(context, template);
+        });
     }
-  }
-
-  async insertTemplate(templateFile: TFile) {
-    try {
-      const { app } = this.plugin;
-      const note = app.workspace.getActiveFile();
-      if (!note) throw new Error("There is no active file");
-
-      const context = this.createContext(note);
-      const content = await this.renderTemplate(templateFile, note, context);
-      const view = app.workspace.getActiveViewOfType(MarkdownView);
-      view?.editor.replaceSelection(content);
-      await this.#renameFile(context, note);
-    } catch (e) {
-      logError(e as Error);
-    }
-  }
 }
