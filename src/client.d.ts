@@ -14,4 +14,13 @@ declare module "obsidian" {
         items: WorkspaceRibbonItem[];
         removeRibbonAction(id: string): void;
     }
+
+    interface Vault {
+        /**
+         * Get path for file that does not conflict with other existing files
+         */
+        getAvailablePath(path: string, extension: string): string;
+
+        getConfig(key: "newFileLocation"): "folder" | "current" | "root";
+    }
 }

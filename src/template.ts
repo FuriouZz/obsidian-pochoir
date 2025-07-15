@@ -108,23 +108,6 @@ export class Template {
             }
         }
     }
-
-    async preprocessProperty(processor: PropertyProcessor) {
-        const entries = Object.entries(this.info.frontmatter.properties);
-        for (const [key, value] of entries) {
-            console.log(key, value);
-        }
-        // for (const [key, value] of context.properties.entries()) {
-        //     const isValid = testProcessor(processor, key, {
-        //         context,
-        //         key,
-        //         value,
-        //     });
-        //     if (isValid) {
-        //         await processor.process({ context, key, value });
-        //     }
-        // }
-    }
 }
 
 function testProcessor<Params extends { context: TemplateContext }>(
