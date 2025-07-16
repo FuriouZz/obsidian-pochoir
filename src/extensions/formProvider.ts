@@ -1,5 +1,6 @@
 import { type App, Modal, parseYaml, Setting } from "obsidian";
 import type { Extension } from "../environment";
+import type { TemplateContext } from "../template";
 
 export interface FormInfo {
     title: string;
@@ -303,104 +304,131 @@ class DropdownField extends Field<DropdownFieldType> {
 }
 
 class Form {
+    modal: Modal;
     fields: Field[] = [];
-    data: FormInfo = {
+    info: FormInfo = {
         title: "Insert template",
         description: "Please fill in the form",
     };
-    modal: Modal;
+    result: Record<string, unknown> = {};
 
     constructor(app: App) {
         this.modal = new Modal(app);
     }
 
+    title(title: string) {
+        this.info.title = title;
+    }
+
+    description(description: string) {
+        this.info.description = description;
+    }
+
     text(name: string, options?: Omit<TextFieldType, "type">) {
-        const field = new TextField({
-            name,
-            label: name,
-            type: "text",
-            ...options,
-        });
-        this.fields.push(field);
-        return field;
+        return this.field(
+            new TextField({
+                name,
+                label: name,
+                type: "text",
+                ...options,
+            }),
+        );
     }
 
     textarea(name: string, options?: Omit<TextAreaFieldType, "type">) {
-        const field = new TextAreaField({
-            name,
-            label: name,
-            type: "textarea",
-            ...options,
-        });
-        this.fields.push(field);
-        return field;
+        return this.field(
+            new TextAreaField({
+                name,
+                label: name,
+                type: "textarea",
+                ...options,
+            }),
+        );
     }
 
     number(name: string, options?: Omit<NumberFieldType, "type">) {
-        const field = new NumberField({
-            name,
-            label: name,
-            type: "number",
-            ...options,
-        });
-        this.fields.push(field);
-        return field;
+        return this.field(
+            new NumberField({
+                name,
+                label: name,
+                type: "number",
+                ...options,
+            }),
+        );
     }
 
     date(name: string, options?: Omit<DateFieldType, "type">) {
-        const field = new DateField({
-            name,
-            label: name,
-            type: "date",
-            ...options,
-        });
-        this.fields.push(field);
-        return field;
+        return this.field(
+            new DateField({
+                name,
+                label: name,
+                type: "date",
+                ...options,
+            }),
+        );
     }
 
     time(name: string, options?: Omit<TimeFieldType, "type">) {
-        const field = new TimeField({
-            name,
-            label: name,
-            type: "time",
-            ...options,
-        });
-        this.fields.push(field);
-        return field;
+        return this.field(
+            new TimeField({
+                name,
+                label: name,
+                type: "time",
+                ...options,
+            }),
+        );
     }
 
     slider(name: string, options?: Omit<SliderFieldType, "type">) {
-        const field = new SliderField({
-            name,
-            label: name,
-            type: "slider",
-            ...options,
-        });
-        this.fields.push(field);
-        return field;
+        return this.field(
+            new SliderField({
+                name,
+                label: name,
+                type: "slider",
+                ...options,
+            }),
+        );
     }
 
     toggle(name: string, options?: Omit<ToggleFieldType, "type">) {
-        const field = new ToggleField({
-            name,
-            label: name,
-            type: "toggle",
-            ...options,
-        });
-        this.fields.push(field);
-        return field;
+        return this.field(
+            new ToggleField({
+                name,
+                label: name,
+                type: "toggle",
+                ...options,
+            }),
+        );
     }
 
     dropdown(name: string, options?: Omit<DropdownFieldType, "type">) {
-        const field = new DropdownField({
-            name,
-            label: name,
-            type: "dropdown",
-            options: {},
-            ...options,
-        });
+        return this.field(
+            new DropdownField({
+                name,
+                label: name,
+                type: "dropdown",
+                options: {},
+                ...options,
+            }),
+        );
+    }
+
+    field(field: Field) {
         this.fields.push(field);
-        return field;
+        if (typeof field.data.defaultValue !== "undefined") {
+            this.result[field.data.name] = field.data.defaultValue;
+        }
+        return this;
+    }
+
+    reset() {
+        this.result = {};
+        for (const field of this.fields) {
+            if (typeof field.data.defaultValue !== "undefined") {
+                this.result[field.data.name] = field.data.defaultValue;
+            }
+        }
+        return this;
     }
 
     fromObject(obj: Record<string, FieldType>) {
@@ -410,22 +438,19 @@ class Form {
                 this[value.type](key, value as any);
             }
         }
+        return this;
     }
 
     prompt() {
         return new Promise<Record<string, unknown>>((resolve) => {
-            const { modal } = this;
+            const { modal, result } = this;
 
             modal.contentEl.empty();
 
-            modal.setTitle(this.data.title);
-            modal.contentEl.createEl("p", { text: this.data.description });
+            modal.setTitle(this.info.title);
+            modal.contentEl.createEl("p", { text: this.info.description });
 
-            const result: Record<string, unknown> = {};
             for (const field of this.fields) {
-                if (typeof field.data.defaultValue !== "undefined") {
-                    result[field.data.name] = field.data.defaultValue;
-                }
                 field.createSetting(modal.contentEl, result);
             }
 
@@ -457,32 +482,57 @@ class Form {
     }
 }
 
-interface FormAPI {
-    forms?: Map<string, Form>;
-    create(): Form;
+class FormContext {
+    app: App;
+    forms = new WeakMap<TemplateContext, Map<string, Form>>();
+
+    constructor(app: App) {
+        this.app = app;
+    }
+
+    getFormMap(ctx: TemplateContext) {
+        let forms = this.forms.get(ctx);
+        if (!forms) {
+            forms = new Map<string, Form>();
+            this.forms.set(ctx, forms);
+        }
+        return forms;
+    }
+
+    createForm(ctx: TemplateContext, name?: string) {
+        const forms = this.getFormMap(ctx);
+        const _name = name ?? `form${forms.size}`;
+        let form = forms.get(_name);
+        if (!form) {
+            form = new Form(this.app);
+            forms.set(_name, form);
+        }
+        return form;
+    }
+
+    createAPI(ctx: TemplateContext) {
+        return {
+            getForms: () => {
+                return this.getFormMap(ctx);
+            },
+            getForm: (name: string) => {
+                return this.getFormMap(ctx).get(name);
+            },
+            createForm: (name?: string) => {
+                return this.createForm(ctx, name);
+            },
+        };
+    }
 }
 
 export default function (): Extension {
     return (env) => {
-        env.contextProviders.push((context) => {
-            const api: FormAPI = {
-                create() {
-                    return new Form(env.app);
-                },
-            };
+        const formContext = new FormContext(env.app);
 
-            Object.defineProperty(context, "form", {
-                enumerable: true,
-                configurable: false,
-                writable: false,
-                value: api,
-            });
-        });
-
-        const formPath = "pochoir:form";
-        env.resolvers.push({
-            resolve: (path) => path === formPath,
-            load: (_, ctx) => Promise.resolve(Reflect.get(ctx, "form")),
+        env.loaders.push({
+            contextMode: "shared",
+            test: "pochoir:form",
+            load: async (_, ctx) => formContext.createAPI(ctx),
         });
 
         env.processors.set("codeblock:form", {
@@ -490,25 +540,17 @@ export default function (): Extension {
             test: /form/,
             order: 40,
             process: async ({ codeBlock, context }) => {
-                const obj = parseYaml(codeBlock.code.replace(/\t/g, " "));
-
-                const form = new Form(env.app);
-                form.fromObject(obj);
-
                 const { name, exports } = codeBlock.attributes;
+
+                const form = formContext.createForm(
+                    context,
+                    typeof name === "string" ? name : undefined,
+                );
+                const obj = parseYaml(codeBlock.code.replace(/\t/g, " "));
+                form.fromObject(obj);
 
                 if (typeof exports === "string") {
                     context.locals.exports[exports] = await form.prompt();
-                }
-
-                if (typeof name === "string") {
-                    const api = Reflect.get(context, "form") as
-                        | FormAPI
-                        | undefined;
-                    if (api) {
-                        if (!api.forms) api.forms = new Map();
-                        api.forms.set(name, form);
-                    }
                 }
             },
         });

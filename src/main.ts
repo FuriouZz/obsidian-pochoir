@@ -9,11 +9,11 @@ import formProvider from "./extensions/formProvider";
 import internalProperties from "./extensions/internalProperties";
 import javascriptProcessor from "./extensions/javascriptProcessor";
 import minimal from "./extensions/minimal";
-import { type ISettings, SettingTab } from "./setting-tab";
+import { DEFAULT_SETTINGS, type ISettings, SettingTab } from "./setting-tab";
 import { TemplateModalSuggester } from "./suggesters/template-modal-suggester";
 
 export default class PochoirPlugin extends Plugin {
-    settings: ISettings = {};
+    settings: ISettings = { ...DEFAULT_SETTINGS };
     environment = new Environment(this);
     templateSuggester = new TemplateModalSuggester(this);
 
@@ -27,12 +27,6 @@ export default class PochoirPlugin extends Plugin {
             }),
         );
 
-        this.environment.use(minimal());
-        this.environment.use(javascriptProcessor());
-        this.environment.use(dateProvider());
-        this.environment.use(formProvider());
-        this.environment.use(internalProperties());
-
         insertFromTemplateCommand(this);
         createFromTemplateCommand(this);
 
@@ -42,16 +36,28 @@ export default class PochoirPlugin extends Plugin {
     }
 
     onunload() {
-        this.environment.dispose();
+        this.environment.cleanup();
     }
 
     async loadSettings() {
-        this.settings = { ...(await this.loadData()) };
-        await this.environment.updateSettings(this.settings);
+        this.settings = { ...this.settings, ...(await this.loadData()) };
+        await this.#updateEnvironment();
     }
 
     async saveSettings() {
         await this.saveData(this.settings);
+        await this.#updateEnvironment();
+    }
+
+    async #updateEnvironment() {
+        this.environment.use(minimal());
+        if (this.settings.enable_js_codeblock) {
+            this.environment.use(javascriptProcessor());
+        }
+        this.environment.use(dateProvider());
+        this.environment.use(formProvider());
+        this.environment.use(internalProperties());
+
         await this.environment.updateSettings(this.settings);
     }
 }

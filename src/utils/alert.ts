@@ -1,5 +1,5 @@
 import { Notice } from "obsidian";
-import { ParserError, RendererError } from "../errors";
+import { PochoirError, RendererError } from "../errors";
 
 export function alert(
     message: string,
@@ -16,14 +16,20 @@ export function alert(
 }
 
 export function alertError(error: Error, options?: { duration?: number }) {
+    let notice = true;
+    let verbose = true;
+    let prefix = "Pochoir Error";
+
     if (error instanceof RendererError) {
-        alert(error.message, { prefix: "Pochoir Template Error", ...options });
-    } else if (error instanceof ParserError) {
-        console.error(error);
-        // alert(error.message, { prefix: "Pochoir Error", ...options });
-    } else {
-        console.error(error);
-        alert(error.message, { prefix: "Pochoir Error", ...options });
+        prefix = "Pochoir Template Error";
+    } else if (error instanceof PochoirError) {
+        verbose = error.verbose;
+        notice = error.notice;
+    }
+
+    if (verbose) console.error(error);
+    if (notice) {
+        alert(error.message, { prefix, ...options });
     }
 }
 

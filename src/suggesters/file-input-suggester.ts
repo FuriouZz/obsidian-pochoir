@@ -1,7 +1,16 @@
-import { AbstractInputSuggest, type TAbstractFile } from "obsidian";
+import { AbstractInputSuggest, type App, type TAbstractFile } from "obsidian";
 
 export class FileInputSuggester extends AbstractInputSuggest<TAbstractFile> {
     type: "file" | "folder" = "file";
+
+    constructor(
+        app: App,
+        el: HTMLInputElement | HTMLDivElement,
+        type: "file" | "folder" = "file",
+    ) {
+        super(app, el);
+        this.type = type;
+    }
 
     protected getSuggestions(
         query: string,

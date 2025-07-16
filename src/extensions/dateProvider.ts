@@ -23,9 +23,8 @@ export default function (): Extension {
             },
         };
 
-        const datePath = "pochoir:date";
-        env.resolvers.unshift({
-            resolve: (path) => path === datePath,
+        env.loaders.unshift({
+            test: "pochoir:date",
             load: async () => api,
         });
 

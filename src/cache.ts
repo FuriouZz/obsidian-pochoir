@@ -8,6 +8,7 @@ import {
     getFilesAtLocation,
     LinkPathRegex,
 } from "./utils/obsidian";
+import { PochoirError } from "errors";
 
 export class Cache extends Events {
     app: App;
@@ -67,11 +68,11 @@ export class Cache extends Events {
                 ? findLinkPath(this.app, path)
                 : this.app.vault.getFileByPath(path);
         }
-        if (!file) throw new Error(`File does not exist: ${path}`);
+        if (!file) throw new PochoirError(`File does not exist: ${path}`);
 
         const template = this.templates.get(file.path);
         if (!template) {
-            throw new Error(`Template does not exist: ${path}`);
+            throw new PochoirError(`Template does not exist: ${path}`);
         }
 
         return template;

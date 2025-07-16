@@ -5,7 +5,7 @@ import {
     type SectionCache,
     type TFile,
 } from "obsidian";
-import { ParserError } from "./errors";
+import { PochoirError } from "./errors";
 import { PropertiesBuilder } from "./properties-builder";
 import { Template } from "./template";
 
@@ -45,7 +45,9 @@ export class Parser {
     async parse(file: TFile) {
         const info = await this.parseFile(file);
         if (!info) {
-            throw new ParserError(`Cannot parse template: ${file.basename}`);
+            throw new PochoirError(`Cannot parse template: ${file.basename}`, {
+                notice: false,
+            });
         }
         return new Template(info);
     }

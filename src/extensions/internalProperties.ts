@@ -10,8 +10,10 @@ export default function (): Extension {
                 async process({ context, value: properties }) {
                     if (!isStringList(properties)) return;
                     for (const t of properties) {
-                        const ctx = env.createContext(context.target);
-                        await env.importer.load(t, ctx);
+                        const { context: ctx } = await env.importer.load(
+                            t,
+                            context,
+                        );
                         context.properties.merge(ctx.properties);
                     }
                 },
@@ -23,8 +25,10 @@ export default function (): Extension {
                 async process({ context, value: properties }) {
                     if (!isStringList(properties)) return;
                     for (const t of properties) {
-                        const ctx = env.createContext(context.target);
-                        await env.importer.load(t, ctx);
+                        const { context: ctx } = await env.importer.load(
+                            t,
+                            context,
+                        );
                         Object.assign(
                             context.locals.exports,
                             ctx.locals.exports,

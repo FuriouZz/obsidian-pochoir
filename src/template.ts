@@ -1,3 +1,4 @@
+import { verbose } from "logger";
 import type { App, TFile } from "obsidian";
 import type { Environment } from "./environment";
 import type { ParsedTemplateInfo } from "./parser";
@@ -12,11 +13,13 @@ export interface TemplateContextLocals {
     exports: Record<string, unknown>;
 }
 
+let ID = 0;
 export class TemplateContext {
     target: TFile;
     properties: PropertiesBuilder;
     path: PathBuilder;
     locals: TemplateContextLocals;
+    id = ++ID;
 
     constructor(target: TFile) {
         this.target = target;
@@ -31,6 +34,8 @@ export class TemplateContext {
             target: this.target,
             exports: {},
         });
+
+        verbose("create context", this.id);
     }
 
     async load(template: Template, env: Environment) {
@@ -55,7 +60,6 @@ export class TemplateContext {
             builder.merge(fm);
             builder.merge(this.properties.toObject());
             builder.toObject(fm);
-            console.log(fm.tags);
         });
         return builder.toObject();
     }

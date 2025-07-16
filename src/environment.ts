@@ -1,9 +1,8 @@
-import { type App, MarkdownView, type TFile, type TFolder } from "obsidian";
+import { MarkdownView, type TFile, type TFolder } from "obsidian";
 import { Cache } from "./cache";
-import { Importer } from "./importer";
+import { Importer, type Loader } from "./importer";
 import { LOG_CONFIG, LogLevel, verbose } from "./logger";
 import type PochoirPlugin from "./main";
-import { Parser } from "./parser";
 import { ProcessorList } from "./processor-list";
 import { Renderer } from "./renderer";
 import type { ISettings } from "./setting-tab";
@@ -19,16 +18,14 @@ export type ContextProvider = (
 ) => void | Promise<void>;
 
 export class Environment {
-    app: App;
     plugin: PochoirPlugin;
-    parser: Parser;
     cache: Cache;
     renderer: Renderer;
     importer: Importer;
 
     processors = new ProcessorList();
-
     contextProviders: ContextProvider[] = [];
+    loaders: Loader[] = [];
 
     constructor(plugin: PochoirPlugin) {
         const findTemplate = (path: string) => {
@@ -38,21 +35,15 @@ export class Environment {
         };
 
         this.plugin = plugin;
-        this.app = plugin.app;
-        this.parser = new Parser(this.app);
         this.cache = new Cache(this.app);
         this.renderer = new Renderer(this.app, { findTemplate });
-        this.importer = new Importer();
+        this.importer = new Importer(this);
 
         LOG_CONFIG.level = LogLevel.VERBOSE;
     }
 
-    get resolvers() {
-        return this.importer.resolvers;
-    }
-
-    createContext(target: TFile) {
-        return new TemplateContext(target);
+    get app() {
+        return this.plugin.app;
     }
 
     use(extension: Extension) {
@@ -75,8 +66,12 @@ export class Environment {
         await this.cache.invalidate(file);
     }
 
-    dispose() {
+    cleanup() {
+        this.contextProviders.length = 0;
+        this.loaders.length = 0;
+        this.processors.clear();
         this.cache.templates.clear();
+        this.renderer.vento.cache.clear();
     }
 
     async renderTemplate(context: TemplateContext, template: Template) {
@@ -126,7 +121,7 @@ export class Environment {
                 const target = await createNote(this.app, filename, folder);
                 createdNote = target;
 
-                const context = this.createContext(target);
+                const context = new TemplateContext(target);
                 await context.load(template, this);
                 await this.renderTemplate(context, template);
 
@@ -147,7 +142,7 @@ export class Environment {
             const target = app.workspace.getActiveFile();
             if (!target) throw new Error("There is no active file");
 
-            const context = this.createContext(target);
+            const context = new TemplateContext(target);
             await context.load(template, this);
             await this.renderTemplate(context, template);
         });

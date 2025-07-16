@@ -11,9 +11,12 @@ export default function (): Extension {
                 const fn = createAsyncFunction(codeBlock.code, "template");
                 await fn({
                     ...context.locals,
-                    import(path: string) {
-                        const ctx = env.createContext(context.target);
-                        return env.importer.load(path, ctx);
+                    async import(path: string) {
+                        const { result } = await env.importer.load(
+                            path,
+                            context,
+                        );
+                        return result;
                     },
                 });
             },
