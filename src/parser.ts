@@ -112,8 +112,10 @@ export class Parser {
 
         const json = parseYaml(frontmatter);
 
-        for (const [key, value] of Object.entries(json)) {
-            properties.set(key, value);
+        if (json) {
+            for (const [key, value] of Object.entries(json)) {
+                properties.set(key, value);
+            }
         }
 
         ret.properties = properties.toObject();
