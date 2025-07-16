@@ -24,7 +24,7 @@ class TemplateLoader {
 
     resolve(_from: string, path: string) {
         const file = findLinkPath(this.app, path);
-        if (!file) throw new Error("File does not exist");
+        if (!file) throw new RendererError("File does not exist");
         return file.path;
     }
 }

@@ -70,7 +70,9 @@ export class Cache extends Events {
         if (!file) throw new Error(`File does not exist: ${path}`);
 
         const template = this.templates.get(file.path);
-        if (!template) throw new Error(`Template does not exist: ${path}`);
+        if (!template) {
+            throw new Error(`Template does not exist: ${path}`);
+        }
 
         return template;
     }

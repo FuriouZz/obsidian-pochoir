@@ -1,4 +1,3 @@
-import { ResolverError } from "./errors";
 import type { TemplateContext } from "./template";
 import { alertError } from "./utils/alert";
 
@@ -25,7 +24,7 @@ export class Importer {
                 alertError(e as Error);
             }
         }
-        throw new ResolverError(`Cannot resolve path: ${path}`);
+        throw new Error(`Cannot resolve path: ${path}`);
     }
 
     load(path: string, context: TemplateContext) {
