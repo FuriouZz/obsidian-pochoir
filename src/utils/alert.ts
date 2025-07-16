@@ -1,5 +1,5 @@
 import { Notice } from "obsidian";
-import { ParserError, RendererError } from "src/errors";
+import { ParserError, RendererError } from "../errors";
 
 export function alert(
     message: string,

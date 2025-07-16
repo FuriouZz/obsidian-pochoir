@@ -1,4 +1,4 @@
-import type PochoirPlugin from "src/main";
+import type PochoirPlugin from "./main";
 
 export function insertFromTemplateCommand(plugin: PochoirPlugin) {
     plugin.addCommand({

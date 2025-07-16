@@ -1,5 +1,5 @@
 import { PluginSettingTab, Setting } from "obsidian";
-import type PochoirPlugin from "src/main";
+import type PochoirPlugin from "./main";
 import { FileInputSuggester } from "./suggesters/file-input-suggester";
 
 export interface ISettings {

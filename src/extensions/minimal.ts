@@ -1,5 +1,5 @@
-import type { Extension } from "src/environment";
-import { PathBuilder } from "src/path-builder";
+import type { Extension } from "../environment";
+import { PathBuilder } from "../path-builder";
 
 export default function (): Extension {
     return (env) => {

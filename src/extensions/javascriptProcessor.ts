@@ -1,5 +1,5 @@
-import { createAsyncFunction } from "src/utils/function";
 import type { Extension } from "../environment";
+import { createAsyncFunction } from "../utils/function";
 
 export default function (): Extension {
     return (env) => {

@@ -1,5 +1,5 @@
 import { type FuzzyMatch, FuzzySuggestModal, type TFolder } from "obsidian";
-import type PochoirPlugin from "src/main";
+import type PochoirPlugin from "../main";
 import type { Template } from "../template";
 
 export enum OpenMode {
