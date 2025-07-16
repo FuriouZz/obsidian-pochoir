@@ -6,103 +6,118 @@
 
 This plugin is very experimental and I use it only for my use cases. If you are looking for a more mature alternative, I recommand [Templater](https://github.com/SilentVoid13/Templater).
 
-## Template layout
+## Why?
 
-A basic template is a note placed in the `template_folder`.
+I wanted to create a plugin similar to [Templater](https://github.com/SilentVoid13/Templater) but with less scripting and has features out-of-the-box.
 
-Exception for the template properties and pochoir code blocks, every content will by copied, rendered and paste in your created note.
+## Features
 
-## Example: Task template
+This plugin provides two approachs:
+- Write template without code with special properties prefixed with `$.`
+- Write complex template with javascript code block
 
-In this template, I want to:
-- Open a form to set the task title
-- Add some properties
-- Select the template via its aliases `tsk` or `task`
+### Change note path
+
+Use `$.path` property to change note file path.
+
+**Example**
+
+Here an example for a unique note template
+
+```md
+---
+tags:
+- inbox
+$.path: "inbox/{{date.today('YYYYMMDDHHmm')}}"
+---
+```
+
+### Merge properties from another template
+
+Use `$.properties` property to inherits properties from specified list templates.
+
+**Example**
+
+In this template, I want to inherits properties from `[[AnotherTemplate]]`.
+
+```md
+---
+tags:
+- my-tag
+$.properties:
+- "[[AnotherTemplate]]"
+---
+```
+
+### Import functions or variables from another template
+
+Use `$.exports` property to inherits exports from specified list of templates.
+
+**Example**
+
+I have a function `fullname()` in `[[Functions]]` and I want to use it for my template
+
+```md
+---
+author: "{{fullname()}}"
+$.exports:
+- "[[Functions]]"
+---
+```
+
+### Select a template with its aliases
+
+Use `$.aliases` property to give a list of aliases to the template
+
+**Example**
+
+I want the alias `tsk` to select `[[Task Template]]` from the template picker.
+
+```md
+---
+date: "{{date.today()}}"
+tags:
+- task
+$.aliases:
+- tsk
+---
+```
+
+### Create form and use the result
+
+You can create a form with the custom codeblock `form`.
+
+The codeblock accepts these attributes:
+- **pochoir** required, to be evaluated by the plugin and not rendered to your note
+- **disabled** to not evaluate the code block and not render to your note
+- **name="form"** to assign a name to your form and access the form in Javascript code blocks
+- **exports="form"** to expose the form to template renderer or another template
+
+**Example**
+
+In this example, I will prompt a form modal with two fields `title` and `birthday`.
+
+After validation, my note will be created with `myform.*` data filled.
 
 ````md
 ---
-tags:
-  - template
-aliases:
-  - tsk
-  - task
+title: {{myform.title}}
 ---
 
-
-```js {pochoir}
-const form = pochoir.form.create();
-form.text("title").defaultValue("Task");
-exports.form = await form.prompt();
+```form {pochoir exports=myform}
+title:
+  type: text
+  defaultValue: Untitled
+birthday:
+  type: date
 ```
 
-```yaml {pochoir}
-up: "[[Tasks.base]]"
-title: "{{form.title}}"
-date: {{date.today("YYYY-MM-DD")}}
-start: {{date.today("YYYY-MM-DD")}}
-complete: false
-tags:
-  - task
-```
-
-## {{form.title}}
+My birthday is {{myform.birthday}};
 ````
 
-## Example: Share variables and functions
+## More information
 
-In this example, I want to:
-- Add a `created` property
-- Add a function `zid()` to generate a zettlekasten id
-
-Let's start by creating a note `Functions.md` in your `template_folder`.
-
-
-````md
-```js {pochoir}
-pochoir.properties.created = pochoir.date.today();
-```
-
-```js {pochoir}
-exports.zid = () => {
-    return pochoir.date.today("YYYYMMDDHHMM");
-}
-```
-````
-
-Now, we can update our `Task Template.md`, include `Functions.md` and use our `zid()` in the `title` property.
-
-````md
----
-tags:
-  - template
-aliases:
-  - tsk
-  - task
----
-
-
-```js {pochoir}
-const form = pochoir.form.create();
-form.text("title").defaultValue("Task");
-exports.form = await form.prompt();
-```
-
-```js {pochoir}
-await pochoir.include("[[Functions]]");
-```
-
-```yaml {pochoir}
-up: "[[Tasks.base]]"
-title: "{{zid()}} {{form.title}}"
-date: {{date.today("YYYY-MM-DD")}}
-start: {{date.today("YYYY-MM-DD")}}
-complete: false
-tags:
-  - task
-```
-
-## {{form.title}}
-````
+For more complex templates, check the `./demo` vault.
 
 ## Inspiration
 
