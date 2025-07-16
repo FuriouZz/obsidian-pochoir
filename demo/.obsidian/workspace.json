@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Sample.md",
+                "file": "templates/Form (CodeBlock).md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Sample"
+              "title": "Form (CodeBlock)"
             }
           }
         ]
@@ -169,30 +169,30 @@
   },
   "active": "93b55e590c93ff92",
   "lastOpenFiles": [
-    "Welcome.md",
+    "templates/Form (Javascript).md",
+    "templates/Functions.md",
+    "templates/Inherit Properties.md",
+    "templates/With Javascript.md",
+    "templates/Without Javascript.md",
+    "templates/Form (CodeBlock).md",
+    "Sample.md",
+    "Untitled 2.md",
+    "folder/Hello World.md",
+    "folder/Hello World 1.md",
+    "folder",
     "Untitled.md",
+    "Untitled 1.md",
+    "Welcome.md",
     "tasks/202507151516.md",
     "tasks/202507151516 1.md",
     "tasks",
-    "templates/Form (CodeBlock).md",
-    "templates/Form (Javascript).md",
-    "folder/Hello World.md",
-    "folder/Hello World 1.md",
-    "Untitled 1.md",
-    "Untitled 2.md",
-    "templates/With Javascript.md",
-    "templates/Without Javascript.md",
-    "folder",
     "folder/Hello World 5.md",
     "folder/Hello World 4.md",
     "folder/Hello World 3.md",
     "folder/Hello World 2.md",
     "templater/Toto.md",
     "Toto.md",
-    "Sample.md",
     "templater",
-    "templates/Template 2.md",
-    "templates/Functions.md",
     "tasks/202507151251.md",
     "tasks/202507151250.md",
     "toto.md",

@@ -8,7 +8,8 @@ tags:
   - task
 $.aliases:
   - tsk
-$.path: tasks/{{date.today('YYYYMMDDHHmm')}}
+  - nojs
+$.path: outputs/{{date.today('YYYYMMDDHHmm')}}
 $.command: true
 ---
 ```form {pochoir exports=form}

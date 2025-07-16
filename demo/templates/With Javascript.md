@@ -1,12 +1,11 @@
 ---
 tags:
-  - nothing
+  - javascript
 $.aliases:
-  - nth
-  - dm
+  - js
 $.properties:
-  - "[[Template 2]]"
-$.path: folder/Hello World
+  - "[[Inherit Properties]]"
+$.path: outputs/Javascript Output
 ---
 Content to copy
 
@@ -45,10 +44,10 @@ const app = await template.import("pochoir:obsidian:app");
 console.log(obsidian, app);
 ```
 
-```js{pochoir disabled}
+```js{pochoir}
 // Create form programmatically
-const { create } = await template.import("pochoir:form");
-const form = create();
+const { createForm } = await template.import("pochoir:form");
+const form = createForm();
 form.text("title").label("Title").defaultValue("Untitled");
 form.textarea("content").label("Content");
 form.number("age").label("Age");
@@ -57,38 +56,13 @@ form.date("birthday").label("Birthday");
 template.exports.form = await form.prompt();
 ```
 
-```form{pochoir exports=form1}
-title:
-	type: text
-	description: Some desc
-	defaultValue: Untitled
-count:
-	type: number
-	defaultValue: 3
-remember: 
-	type: toggle
-pronom:
-	type: dropdown
-	options:
-		she: She
-		he: He
-		they: They
-birthday:
-	type: date
-	label: Birthday
-	defaultValue: 01-01-2025
-level:
-	type: slider
-	label: Level
-```
-
 ```yml
 # Form
-{{for key, value of form1}}
+{{for key, value of form}}
 {{key}}: {{value}}
 {{/for}}
 ```
 
 End of content
 
-{{ include "[[Template 2]]" }}
+{{ include "[[Inherit Properties]]" }}
