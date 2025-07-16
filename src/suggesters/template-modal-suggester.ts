@@ -25,6 +25,8 @@ export class TemplateModalSuggester extends FuzzySuggestModal<Entry> {
     }
 
     override getSuggestions(query: string) {
+        const suggestions = super.getSuggestions(query);
+
         const items = this.getItems();
 
         const matches = items
@@ -48,22 +50,29 @@ export class TemplateModalSuggester extends FuzzySuggestModal<Entry> {
             })
             .filter((entry) => entry !== null);
 
-        if (matches.length === 0) {
-            return super.getSuggestions(query);
+        if (matches.length === 0) return suggestions;
+
+        for (const { entry, alias: text, match } of matches) {
+            const sug = suggestions.find(
+                (item) => item.item.name === entry.name,
+            );
+            if (sug) {
+                sug.item.alias = { text, match };
+            } else {
+                suggestions.push({
+                    item: {
+                        ...entry,
+                        alias: { text, match },
+                    },
+                    match: {
+                        matches: [],
+                        score: 0,
+                    },
+                });
+            }
         }
 
-        return matches.map(({ entry, alias, match }) => {
-            return {
-                item: {
-                    ...entry,
-                    alias: { text: alias, match },
-                },
-                match: {
-                    matches: [],
-                    score: 0,
-                },
-            };
-        });
+        return suggestions;
     }
 
     override renderSuggestion(item: FuzzyMatch<Entry>, el: HTMLElement): void {
