@@ -6,6 +6,9 @@
 
 This plugin is very experimental and I use it only for my use cases. If you are looking for a more mature alternative, I recommand [Templater](https://github.com/SilentVoid13/Templater).
 
+## Dependencies
+- [ventojs](https://github.com/ventojs/vento)
+
 ## Why?
 
 I wanted to create a plugin similar to [Templater](https://github.com/SilentVoid13/Templater) but with less scripting and has features out-of-the-box.
@@ -15,6 +18,10 @@ I wanted to create a plugin similar to [Templater](https://github.com/SilentVoid
 This plugin provides two approachs:
 - Write template without code with special properties prefixed with `$.`
 - Write complex template with javascript code block
+
+## Todo
+- [ ] Better documentation
+- [ ] More testing
 
 ### Change note path
 
