@@ -4,12 +4,12 @@ import {
     insertFromTemplateCommand,
 } from "./commands";
 import { Environment } from "./environment";
-import dateProvider from "./extensions/dateProvider";
-import formProvider from "./extensions/formProvider";
-import internalProperties from "./extensions/internalProperties";
-import javascriptProcessor from "./extensions/javascriptProcessor";
-import minimal from "./extensions/minimal";
-import ribbonExtension from "./extensions/ribbonExtension";
+import dateExtension from "./extensions/date-extension";
+import formExtension from "./extensions/form-extension";
+import internalPropertiesExtension from "./extensions/internal-properties-extension";
+import javascriptExtension from "./extensions/javascript-extension";
+import minimalExtension from "./extensions/minimal-extension";
+import ribbonExtension from "./extensions/ribbon-extension";
 import { DEFAULT_SETTINGS, type ISettings, SettingTab } from "./setting-tab";
 import { TemplateModalSuggester } from "./suggesters/template-modal-suggester";
 
@@ -51,13 +51,13 @@ export default class PochoirPlugin extends Plugin {
     }
 
     async #updateEnvironment() {
-        this.environment.use(minimal());
+        this.environment.use(minimalExtension());
         if (this.settings.enable_js_codeblock) {
-            this.environment.use(javascriptProcessor());
+            this.environment.use(javascriptExtension());
         }
-        this.environment.use(dateProvider());
-        this.environment.use(formProvider());
-        this.environment.use(internalProperties());
+        this.environment.use(dateExtension());
+        this.environment.use(formExtension());
+        this.environment.use(internalPropertiesExtension());
         this.environment.use(ribbonExtension());
 
         await this.environment.updateSettings(this.settings);
