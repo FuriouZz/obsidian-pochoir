@@ -7,8 +7,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - Implement template preprocessor. Preprocessor are called after template parsing without a `TemplateContext`.
-- `processor.disable(params)` is a new function for (pre)processor. It is called when a code block is disabled.
-- Add ```yaml {pochoir type=ribbon}``` code block to trigger a template from ribbon
+- `(pre)processor.disable(params)` is a new function for (pre)processor. It is called when a code block is disabled.
+- `processor.dispose()` is a new function (pre)processor. Is is called when processor list is cleared.
+- Add ```yaml {pochoir type=ribbon}``` code block to trigger a template from a ribbon action or the command palette.
+
+````md
+
+```yaml {pochoir type=command}
+id: task # (required)
+triggers: # (required) can be a string or a list
+- ribbon
+- command
+title: Create task
+icon: square-check-big
+action: create # or "insert"
+```
 
 ### Changed
 - Deprecate ```form {pochoir}``` code block. Prefer ```yaml {pochoir type=form}```
