@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.0.6]
 ### Added
 - Implement template preprocessor. Preprocessor are called after template parsing without a `TemplateContext`.
 - `(pre)processor.disable(params)` is a new function for (pre)processor. It is called when a code block is disabled.
@@ -63,6 +65,7 @@ action: create # or "insert"
 
 First version
 
+[0.0.6]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.3...v0.0.4
 [0.0.3]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.2...v0.0.3
