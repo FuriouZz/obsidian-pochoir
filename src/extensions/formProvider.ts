@@ -418,7 +418,7 @@ class Form {
         if (typeof field.data.defaultValue !== "undefined") {
             this.result[field.data.name] = field.data.defaultValue;
         }
-        return this;
+        return field;
     }
 
     reset() {
