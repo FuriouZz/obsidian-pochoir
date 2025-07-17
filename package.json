@@ -6,7 +6,7 @@
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"fmt": "biome check --write src/",
-		"lint": "biome lint src/ && tsc -noEmit -skipLibCheck",
+		"lint": "biome check src/ && tsc -noEmit -skipLibCheck",
 		"build": "npm run lint && node esbuild.config.mjs production",
 		"build-vento": "cd ./vendors/vento && deno run build-npm v1.14.0",
 		"version": "node version-bump.mjs && git add manifest.json versions.json"
