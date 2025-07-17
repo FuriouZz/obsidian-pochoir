@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Implement template preprocessor. Preprocessor are called after template parsing without a `TemplateContext`.
+- `processor.disable(params)` is a new function for (pre)processor. It is called when a code block is disabled.
+- Add ```yaml {pochoir type=ribbon}``` code block to trigger a template from ribbon
+
+### Changed
+- Deprecate ```form {pochoir}``` code block. Prefer ```yaml {pochoir type=form}```
 
 ## [0.0.5] - 2025-07-17
 ### Changed
