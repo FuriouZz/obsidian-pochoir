@@ -1,3 +1,4 @@
+import { PochoirError } from "errors";
 import { type App, type EventRef, Events, TFile } from "obsidian";
 import { verbose } from "./logger";
 import { parse } from "./parser";
@@ -8,7 +9,6 @@ import {
     getFilesAtLocation,
     LinkPathRegex,
 } from "./utils/obsidian";
-import { PochoirError } from "errors";
 
 export class Cache extends Events {
     app: App;

@@ -26,3 +26,7 @@ data.json
 
 # do not exclude mise.toml temporarily
 !mise.toml
+
+# vault
+demo/.obsidian/workspace.json
+demo/outputs
