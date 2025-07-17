@@ -34,7 +34,6 @@ export class Cache extends Events {
 
     set templateFolder(path: string | undefined) {
         this.#templateFolder = path;
-        this.refresh();
     }
 
     getFiles() {

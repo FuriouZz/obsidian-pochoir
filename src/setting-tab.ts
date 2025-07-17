@@ -2,14 +2,16 @@ import { PluginSettingTab, Setting } from "obsidian";
 import type PochoirPlugin from "./main";
 import { FileInputSuggester } from "./suggesters/file-input-suggester";
 
+export type ActivableExtension = "javascript" | "command";
+
 export interface ISettings {
     templates_folder: string;
-    enable_js_codeblock: boolean;
+    disabled_extension: ActivableExtension[];
 }
 
 export const DEFAULT_SETTINGS: ISettings = {
     templates_folder: "templates",
-    enable_js_codeblock: false,
+    disabled_extension: ["javascript", "command"],
 };
 
 export class SettingTab extends PluginSettingTab {
@@ -43,15 +45,28 @@ export class SettingTab extends PluginSettingTab {
             });
 
         new Setting(containerEl)
-            .setName("Enable Javascript Codeblock")
+            .setName("Enable Javascript extension")
             .setDesc(
                 "Use Javascript for more complex template or expose new functions",
             )
             .addToggle((toggle) => {
-                toggle.setValue(this.plugin.settings.enable_js_codeblock);
+                toggle.setValue(this.plugin.hasExtension("javascript"));
                 toggle.onChange(async (value) => {
-                    this.plugin.settings.enable_js_codeblock = value;
-                    await this.plugin.saveSettings();
+                    value
+                        ? await this.plugin.addExtension("javascript")
+                        : await this.plugin.removeExtension("javascript");
+                });
+            });
+
+        new Setting(containerEl)
+            .setName("Enable Command extension")
+            .setDesc("Trigger template from command palette or ribbon action")
+            .addToggle((toggle) => {
+                toggle.setValue(this.plugin.hasExtension("command"));
+                toggle.onChange(async (value) => {
+                    value
+                        ? await this.plugin.addExtension("command")
+                        : await this.plugin.removeExtension("command");
                 });
             });
     }

@@ -10,6 +10,7 @@ export interface AbstractProcessor<
     test?: string | RegExp | ((params: TParams) => boolean);
     process: (params: TParams) => Promise<void>;
     disable?: (params: TParams) => void;
+    dispose?: () => void;
 }
 
 export type PropertyProcessor = AbstractProcessor<
@@ -67,6 +68,7 @@ export class ProcessorList<T extends Processor | Preprocessor> {
     }
 
     clear() {
+        for (const p of this.#entries) p[1].dispose?.();
         this.#entries.clear();
         this.order.length = 0;
         return this;

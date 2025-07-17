@@ -4,21 +4,29 @@ import {
     insertFromTemplateCommand,
 } from "./commands";
 import { Environment } from "./environment";
+import commandExtension from "./extensions/command-extension";
 import dateExtension from "./extensions/date-extension";
 import formExtension from "./extensions/form-extension";
 import internalPropertiesExtension from "./extensions/internal-properties-extension";
 import javascriptExtension from "./extensions/javascript-extension";
 import minimalExtension from "./extensions/minimal-extension";
-import ribbonExtension from "./extensions/ribbon-extension";
-import { DEFAULT_SETTINGS, type ISettings, SettingTab } from "./setting-tab";
+import { getLogger } from "./logger";
+import {
+    type ActivableExtension,
+    DEFAULT_SETTINGS,
+    type ISettings,
+    SettingTab,
+} from "./setting-tab";
 import { TemplateModalSuggester } from "./suggesters/template-modal-suggester";
 
 export default class PochoirPlugin extends Plugin {
     settings: ISettings = { ...DEFAULT_SETTINGS };
     environment = new Environment(this);
     templateSuggester = new TemplateModalSuggester(this);
+    logger = getLogger();
 
     async onload() {
+        this.logger.level = "DEBUG";
         await this.loadSettings();
         this.addSettingTab(new SettingTab(this));
 
@@ -51,15 +59,40 @@ export default class PochoirPlugin extends Plugin {
     }
 
     async #updateEnvironment() {
+        this.logger.verbose("updateEnvironment");
+        this.environment.cleanup();
         this.environment.use(minimalExtension());
-        if (this.settings.enable_js_codeblock) {
-            this.environment.use(javascriptExtension());
-        }
         this.environment.use(dateExtension());
         this.environment.use(formExtension());
         this.environment.use(internalPropertiesExtension());
-        this.environment.use(ribbonExtension());
-
+        if (this.hasExtension("javascript")) {
+            this.environment.use(javascriptExtension());
+        }
+        if (this.hasExtension("command")) {
+            this.environment.use(commandExtension());
+        }
         await this.environment.updateSettings(this.settings);
+    }
+
+    async addExtension(name: ActivableExtension) {
+        const arr = this.settings.disabled_extension;
+        const index = arr.indexOf(name);
+        if (index > -1) {
+            arr.splice(index, 1);
+            await this.saveSettings();
+        }
+    }
+
+    hasExtension(name: ActivableExtension) {
+        const arr = this.settings.disabled_extension;
+        return !arr.includes(name);
+    }
+
+    async removeExtension(name: ActivableExtension) {
+        const arr = this.settings.disabled_extension;
+        if (!arr.includes(name)) {
+            arr.push(name);
+            await this.saveSettings();
+        }
     }
 }

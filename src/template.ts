@@ -1,6 +1,6 @@
-import { verbose } from "logger";
 import type { App, TFile } from "obsidian";
 import type { Environment } from "./environment";
+import { verbose } from "./logger";
 import type { ParsedTemplateInfo } from "./parser";
 import { PathBuilder } from "./path-builder";
 import type {

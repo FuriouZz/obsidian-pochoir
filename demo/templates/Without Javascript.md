@@ -17,8 +17,9 @@ due:
 ```
 
 ```yaml {pochoir type=ribbon}
+id: task
 icon: square-check-big
-title: Task
+title: Create Task
 action: create
 ```
 

@@ -1,12 +1,18 @@
-import { MarkdownView, type TFile, type TFolder } from "obsidian";
+import {
+    type EventRef,
+    Events,
+    MarkdownView,
+    type TFile,
+    type TFolder,
+} from "obsidian";
 import { Cache } from "./cache";
 import { Importer, type Loader } from "./importer";
-import { LOG_CONFIG, LogLevel, verbose } from "./logger";
+import { verbose } from "./logger";
 import type PochoirPlugin from "./main";
 import {
-    ProcessorList,
     type Preprocessor,
     type Processor,
+    ProcessorList,
 } from "./processor-list";
 import { Renderer } from "./renderer";
 import type { ISettings } from "./setting-tab";
@@ -49,8 +55,6 @@ export class Environment {
                 await template.preprocess(this);
             }),
         );
-
-        LOG_CONFIG.level = LogLevel.VERBOSE;
     }
 
     get app() {
@@ -81,6 +85,7 @@ export class Environment {
         this.contextProviders.length = 0;
         this.loaders.length = 0;
         this.processors.clear();
+        this.preprocessors.clear();
         this.cache.templates.clear();
         this.renderer.vento.cache.clear();
     }

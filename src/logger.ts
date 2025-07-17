@@ -1,23 +1,47 @@
-export enum LogLevel {
-    INFO,
-    DEBUG,
-    VERBOSE,
+const L = {
+    INFO: 0,
+    DEBUG: 10,
+    VERBOSE: 20,
+};
+
+type Level = keyof typeof L;
+
+let level: Level = "VERBOSE";
+
+export function getLogLevel() {
+    return level;
 }
 
-export const LOG_CONFIG: {
-    level: LogLevel;
-} = { level: LogLevel.VERBOSE };
+export function setLogLevel(value: Level) {
+    level = value;
+}
 
 export function verbose(...msg: unknown[]) {
-    if (LOG_CONFIG.level === LogLevel.VERBOSE) {
-        console.log(...msg);
-    }
+    if (L[level] >= L.VERBOSE) log(...msg);
 }
 
 export function debug(...msg: unknown[]) {
-    if (LOG_CONFIG.level >= LogLevel.DEBUG) console.log(...msg);
+    if (L[level] >= L.DEBUG) log(...msg);
 }
 
 export function info(...msg: unknown[]) {
-    if (LOG_CONFIG.level >= LogLevel.INFO) console.log(...msg);
+    if (L[level] >= L.INFO) log(...msg);
+}
+
+function log(...msg: unknown[]) {
+    console.log(`${level}:`, ...msg);
+}
+
+export function getLogger() {
+    return {
+        get level() {
+            return getLogLevel();
+        },
+        set level(value: Level) {
+            setLogLevel(value);
+        },
+        verbose,
+        debug,
+        info,
+    };
 }
