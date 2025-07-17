@@ -1,15 +1,18 @@
 import type { Environment, Extension } from "../environment";
 import { PochoirError } from "../errors";
 import type { Template } from "../template";
-import { alertError } from "../utils/alert";
+import { alertWrap } from "../utils/alert";
 import { parseYaml } from "../utils/obsidian";
-import { createCodeBlockProcessorTests as test } from "../utils/processor";
+import { createCodeBlockProcessorTest as test } from "../utils/processor";
+
+export type CommandTrigger = "ribbon" | "command";
 
 export interface Command {
     id: string;
     icon: string;
     title: string;
     action: "create" | "insert";
+    triggers: CommandTrigger[] | CommandTrigger;
 }
 
 export class CommandManager {
@@ -20,19 +23,39 @@ export class CommandManager {
         this.env = env;
     }
 
+    add(template: Template, command: Command) {
+        const triggers = [command.triggers].flat();
+        if (triggers.includes("ribbon")) {
+            this.addRibon(template, command);
+        }
+        if (triggers.includes("command")) {
+            this.addCommand(template, command);
+        }
+    }
+
     addRibon(template: Template, command: Command) {
-        this.env.plugin.addRibbonIcon(command.icon, command.title, async () => {
+        const callback = async () => {
             if (command.action === "insert") {
                 await this.env.insertFromTemplate(template);
             } else {
                 await this.env.createFromTemplate(template);
             }
-        });
-        this.map.set(command.title, template.info.file.path);
+        };
+
+        this.env.plugin.addRibbonIcon(command.icon, command.title, callback);
+        const { leftRibbon } = this.env.plugin.app.workspace;
+        const item = leftRibbon.items.find(
+            (item) =>
+                item.title === command.title &&
+                item.icon === command.icon &&
+                item.callback === callback,
+        );
+        if (item) {
+            this.map.set(item.id, template.info.file.path);
+        }
     }
 
-    removeRibon(title: string) {
-        const id = `${this.env.plugin.manifest.id}:${title}`;
+    removeRibon(id: string) {
         const { leftRibbon } = this.env.plugin.app.workspace;
         const item = leftRibbon.items.find((item) => item.id === id);
         if (item) {
@@ -82,20 +105,17 @@ export class CommandManager {
 
 export default function (): Extension {
     return (env) => {
-        const ribbon = new CommandManager(env);
+        const cmd = new CommandManager(env);
 
         env.plugin.app.metadataCache.on("deleted", (file) => {
-            ribbon.deleteAllFromPath(file.path);
+            cmd.deleteAllFromPath(file.path);
         });
 
         env.preprocessors.set("codeblock:ribbon", {
             type: "codeblock",
-            test: test([
-                ["yaml", { type: "ribbon" }],
-                ["yaml", { type: "command" }],
-            ]),
+            test: test("yaml", { type: "command" }),
             async process({ codeBlock, template }) {
-                ribbon.deleteAllFromPath(template.info.file.path);
+                cmd.deleteAllFromPath(template.info.file.path);
 
                 const command = {
                     title: template.info.file.basename,
@@ -106,22 +126,21 @@ export default function (): Extension {
                     ),
                 } as Command;
 
-                if (typeof command.id !== "string") {
-                    alertError(new PochoirError("id is missing"));
-                    return;
-                }
-
-                if (codeBlock.attributes.type === "command") {
-                    ribbon.addCommand(template, command);
-                } else {
-                    ribbon.addRibon(template, command);
-                }
+                alertWrap(() => {
+                    if (typeof command.id !== "string") {
+                        throw new PochoirError("id is missing");
+                    }
+                    if (!command.triggers) {
+                        throw new PochoirError("triggers is missing");
+                    }
+                    cmd.add(template, command);
+                });
             },
             disable({ template }) {
-                ribbon.deleteAllFromPath(template.info.file.path);
+                cmd.deleteAllFromPath(template.info.file.path);
             },
             dispose() {
-                ribbon.clear();
+                cmd.clear();
             },
         });
     };

@@ -16,11 +16,14 @@ due:
   type: date
 ```
 
-```yaml {pochoir type=ribbon}
+```yaml {pochoir type=command}
 id: task
 icon: square-check-big
 title: Create Task
 action: create
+triggers: 
+- ribbon
+- command
 ```
 
 Some content
