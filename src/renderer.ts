@@ -1,4 +1,5 @@
 import type { App } from "obsidian";
+import type { Loader } from "ventojs/src/environment.js";
 import { RendererError } from "./errors";
 import type { Template } from "./template";
 import { findLinkPath } from "./utils/obsidian";
@@ -8,7 +9,7 @@ interface TemplateLoaderOptions {
     findTemplate: (path: string) => Template | null;
 }
 
-class TemplateLoader {
+class TemplateLoader implements Loader {
     app: App;
     options: TemplateLoaderOptions;
 

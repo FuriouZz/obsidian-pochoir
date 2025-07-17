@@ -5,6 +5,7 @@
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
+		"fmt": "biome check --write src/",
 		"lint": "biome lint src/ && tsc -noEmit -skipLibCheck",
 		"build": "npm run lint && node esbuild.config.mjs production",
 		"build-vento": "cd ./vendors/vento && deno run build-npm v1.14.0",
@@ -25,7 +26,7 @@
 		"typescript": "5.8.3"
 	},
 	"dependencies": {
-		"ventojs": "link:vendors/vento"
+		"ventojs": "^1.15.0"
 	},
 	"packageManager": "pnpm@10.7.1"
 }
