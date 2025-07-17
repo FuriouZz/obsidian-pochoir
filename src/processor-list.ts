@@ -1,58 +1,57 @@
-import type { ParsedCodeBlock } from "./parser";
-import type { TemplateContext } from "./template";
+import type { ParsedCodeBlock } from "parser";
+import type { Template, TemplateContext } from "./template";
 
-export type PropertyProcessor = {
-    type: "property";
-    test?:
-        | string
-        | RegExp
-        | ((params: {
-              context: TemplateContext;
-              key: string;
-              value: unknown;
-          }) => boolean);
-    process: (params: {
+export interface AbstractProcessor<
+    TType extends "property" | "codeblock" = "property",
+    TParams extends object = object,
+> {
+    type: TType;
+    order?: number;
+    test?: string | RegExp | ((params: TParams) => boolean);
+    process: (params: TParams) => Promise<void>;
+    disable?: (params: TParams) => void;
+}
+
+export type PropertyProcessor = AbstractProcessor<
+    "property",
+    {
         context: TemplateContext;
+        template: Template;
         key: string;
         value: unknown;
-    }) => Promise<void>;
-};
+    }
+>;
 
-export type CodeBlockProcessor = {
-    type: "codeblock";
-    test?:
-        | string
-        | RegExp
-        | ((params: {
-              context: TemplateContext;
-              codeBlock: ParsedCodeBlock;
-          }) => boolean);
-    process: (params: {
-        context: TemplateContext;
-        codeBlock: ParsedCodeBlock;
-    }) => Promise<void>;
-};
+export type CodeBlockProcessor = AbstractProcessor<
+    "codeblock",
+    { context: TemplateContext; template: Template; codeBlock: ParsedCodeBlock }
+>;
 
-export type UserProcessor = (PropertyProcessor | CodeBlockProcessor) & {
-    order?: number;
-};
+export type PropertyPreprocessor = PropertyProcessor extends AbstractProcessor<
+    infer V,
+    infer U
+>
+    ? AbstractProcessor<V, Omit<U, "context">>
+    : never;
 
-export type Processor = UserProcessor & {
-    name: string;
-};
+export type CodeBlockPreprocessor =
+    CodeBlockProcessor extends AbstractProcessor<infer V, infer U>
+        ? AbstractProcessor<V, Omit<U, "context">>
+        : never;
 
-export class ProcessorList {
-    #entries = new Map<string, Processor>();
+export type Processor = PropertyProcessor | CodeBlockProcessor;
+export type Preprocessor = PropertyPreprocessor | CodeBlockPreprocessor;
+
+export class ProcessorList<T extends Processor | Preprocessor> {
+    #entries = new Map<string, T & { name: string; order: number }>();
     order: string[] = [];
 
-    set(name: string, processor: UserProcessor) {
-        const value = {
+    set(name: string, processor: T) {
+        this.#entries.set(name, {
             name,
             order: 0,
-            test: undefined,
             ...processor,
-        };
-        this.#entries.set(name, value);
+        });
         if (!this.order.includes(name)) {
             this.order.push(name);
         }

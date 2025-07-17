@@ -1,7 +1,7 @@
 import { PochoirError } from "errors";
 import { type App, type EventRef, Events, TFile } from "obsidian";
 import { verbose } from "./logger";
-import { parse } from "./parser";
+import { Parser } from "./parser";
 import type { Template } from "./template";
 import { alertWrap } from "./utils/alert";
 import {
@@ -12,6 +12,7 @@ import {
 
 export class Cache extends Events {
     app: App;
+    parser: Parser;
     templates = new Map<string, Template>();
     #templateFolder: string | undefined;
 
@@ -24,6 +25,7 @@ export class Cache extends Events {
     constructor(app: App) {
         super();
         this.app = app;
+        this.parser = new Parser(app);
     }
 
     get templateFolder() {
@@ -49,12 +51,11 @@ export class Cache extends Events {
     async invalidate(file: TFile) {
         if (file.parent?.path !== this.#templateFolder) return;
         this.templates.delete(file.path);
-        verbose("parse", file.path);
-        const template = await alertWrap(() => parse(this.app, file));
+        verbose("parse", file.basename);
+        const template = await alertWrap(() => this.parser.parse(file));
         if (template) {
             this.templates.set(template.info.file.path, template);
             this.trigger("template-changed", template);
-            this.on;
         }
         return template;
     }

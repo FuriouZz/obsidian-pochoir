@@ -1,4 +1,4 @@
-import { parseYaml } from "obsidian";
+import { parseYaml } from "utils/obsidian";
 
 export class PropertiesBuilder extends Map<string, unknown> {
     clone() {
@@ -59,14 +59,13 @@ export class PropertiesBuilder extends Map<string, unknown> {
     }
 
     mergeYaml(yaml: string) {
-        try {
-            this.merge(parseYaml(yaml));
-        } catch (e) {
-            console.error(e);
+        const json = parseYaml(yaml);
+        if (typeof json !== "object" || json === null) {
             throw new Error(
                 "Failed to merge YAML. Check the console for more information.",
             );
         }
+        this.merge(json);
     }
 
     toObject(fm: Record<string, unknown> = {}) {

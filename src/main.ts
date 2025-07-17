@@ -9,6 +9,7 @@ import formProvider from "./extensions/formProvider";
 import internalProperties from "./extensions/internalProperties";
 import javascriptProcessor from "./extensions/javascriptProcessor";
 import minimal from "./extensions/minimal";
+import ribbonExtension from "./extensions/ribbonExtension";
 import { DEFAULT_SETTINGS, type ISettings, SettingTab } from "./setting-tab";
 import { TemplateModalSuggester } from "./suggesters/template-modal-suggester";
 
@@ -57,6 +58,7 @@ export default class PochoirPlugin extends Plugin {
         this.environment.use(dateProvider());
         this.environment.use(formProvider());
         this.environment.use(internalProperties());
+        this.environment.use(ribbonExtension());
 
         await this.environment.updateSettings(this.settings);
     }

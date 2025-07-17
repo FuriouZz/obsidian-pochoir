@@ -1,10 +1,5 @@
-import {
-    type App,
-    type CachedMetadata,
-    parseYaml,
-    type SectionCache,
-    type TFile,
-} from "obsidian";
+import type { App, CachedMetadata, SectionCache, TFile } from "obsidian";
+import { parseYaml } from "utils/obsidian";
 import { PochoirError } from "./errors";
 import { PropertiesBuilder } from "./properties-builder";
 import { Template } from "./template";
@@ -179,9 +174,4 @@ export class Parser {
             section.position.end.offset,
         );
     }
-}
-
-export function parse(app: App, file: TFile) {
-    const parser = new Parser(app);
-    return parser.parse(file);
 }

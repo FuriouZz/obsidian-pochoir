@@ -1,4 +1,11 @@
-import { type App, normalizePath, TFile, TFolder, Vault } from "obsidian";
+import {
+    parseYaml as _parseYaml,
+    type App,
+    normalizePath,
+    TFile,
+    TFolder,
+    Vault,
+} from "obsidian";
 
 export const LinkPathRegex = /^\[\[(.*)\]\]$/;
 
@@ -79,4 +86,9 @@ export async function ensurePath(app: App, filename: string, folder = "") {
         folder ? `${folder}/${basename}` : basename,
         extension,
     );
+}
+
+export function parseYaml<T = unknown>(str: string) {
+    if (!str) return null;
+    return _parseYaml(str) as T;
 }

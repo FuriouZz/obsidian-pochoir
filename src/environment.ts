@@ -3,7 +3,11 @@ import { Cache } from "./cache";
 import { Importer, type Loader } from "./importer";
 import { LOG_CONFIG, LogLevel, verbose } from "./logger";
 import type PochoirPlugin from "./main";
-import { ProcessorList } from "./processor-list";
+import {
+    ProcessorList,
+    type Preprocessor,
+    type Processor,
+} from "./processor-list";
 import { Renderer } from "./renderer";
 import type { ISettings } from "./setting-tab";
 import { type Template, TemplateContext } from "./template";
@@ -23,7 +27,8 @@ export class Environment {
     renderer: Renderer;
     importer: Importer;
 
-    processors = new ProcessorList();
+    preprocessors = new ProcessorList<Preprocessor>();
+    processors = new ProcessorList<Processor>();
     contextProviders: ContextProvider[] = [];
     loaders: Loader[] = [];
 
@@ -38,6 +43,12 @@ export class Environment {
         this.cache = new Cache(this.app);
         this.renderer = new Renderer(this.app, { findTemplate });
         this.importer = new Importer(this);
+
+        this.plugin.registerEvent(
+            this.cache.on("template-changed", async (template) => {
+                await template.preprocess(this);
+            }),
+        );
 
         LOG_CONFIG.level = LogLevel.VERBOSE;
     }
@@ -122,7 +133,7 @@ export class Environment {
                 createdNote = target;
 
                 const context = new TemplateContext(target);
-                await context.load(template, this);
+                await template.process(this, context);
                 await this.renderTemplate(context, template);
 
                 if (openNote) {
@@ -143,7 +154,7 @@ export class Environment {
             if (!target) throw new Error("There is no active file");
 
             const context = new TemplateContext(target);
-            await context.load(template, this);
+            await template.process(this, context);
             await this.renderTemplate(context, template);
         });
     }

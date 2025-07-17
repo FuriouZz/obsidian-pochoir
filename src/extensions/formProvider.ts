@@ -1,4 +1,6 @@
-import { type App, Modal, parseYaml, Setting } from "obsidian";
+import { type App, Modal, Setting } from "obsidian";
+import { parseYaml } from "utils/obsidian";
+import { createCodeBlockProcessorTests as test } from "utils/processor";
 import type { Extension } from "../environment";
 import type { TemplateContext } from "../template";
 
@@ -537,7 +539,7 @@ export default function (): Extension {
 
         env.processors.set("codeblock:form", {
             type: "codeblock",
-            test: /form/,
+            test: test([["yaml", { type: "form" }], ["form"]]),
             order: 40,
             process: async ({ codeBlock, context }) => {
                 const { name, exports } = codeBlock.attributes;
@@ -546,8 +548,10 @@ export default function (): Extension {
                     context,
                     typeof name === "string" ? name : undefined,
                 );
-                const obj = parseYaml(codeBlock.code.replace(/\t/g, " "));
-                form.fromObject(obj);
+                const obj = parseYaml<Record<string, FieldType>>(
+                    codeBlock.code.replace(/\t/g, " "),
+                );
+                if (obj) form.fromObject(obj);
 
                 if (typeof exports === "string") {
                     context.locals.exports[exports] = await form.prompt();

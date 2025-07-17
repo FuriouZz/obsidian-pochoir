@@ -19,7 +19,7 @@ export default function (): Extension {
             },
             load: async (path, context) => {
                 const template = env.cache.resolve(path);
-                await context.load(template, env);
+                await template.process(env, context);
                 return context.locals.exports;
             },
         });

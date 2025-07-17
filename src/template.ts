@@ -3,7 +3,12 @@ import type { App, TFile } from "obsidian";
 import type { Environment } from "./environment";
 import type { ParsedTemplateInfo } from "./parser";
 import { PathBuilder } from "./path-builder";
-import type { CodeBlockProcessor, PropertyProcessor } from "./processor-list";
+import type {
+    CodeBlockPreprocessor,
+    CodeBlockProcessor,
+    PropertyPreprocessor,
+    PropertyProcessor,
+} from "./processor-list";
 import { PropertiesBuilder } from "./properties-builder";
 
 export interface TemplateContextLocals {
@@ -38,22 +43,6 @@ export class TemplateContext {
         verbose("create context", this.id);
     }
 
-    async load(template: Template, env: Environment) {
-        for (const p of env.contextProviders) {
-            await Promise.resolve(p(this, template));
-        }
-
-        this.properties.merge(template.info.frontmatter.properties);
-
-        for (const processor of env.processors) {
-            if (processor.type === "codeblock") {
-                await template.processCodeBlock(this, processor);
-            } else if (processor.type === "property") {
-                await template.processProperty(this, processor);
-            }
-        }
-    }
-
     async transferProps(app: App) {
         const builder = new PropertiesBuilder();
         await app.fileManager.processFrontMatter(this.target, (fm) => {
@@ -81,18 +70,79 @@ export class Template {
             .trim();
     }
 
+    async preprocess(env: Environment) {
+        for (const processor of env.preprocessors) {
+            if (processor.type === "codeblock") {
+                await this.preprocessCodeBlock(processor);
+            } else if (processor.type === "property") {
+                await this.preprocessProperty(processor);
+            }
+        }
+    }
+
+    async preprocessCodeBlock(processor: CodeBlockPreprocessor) {
+        for (const codeBlock of this.info.codeBlocks) {
+            if (codeBlock.attributes.disabled) {
+                processor.disable?.({ codeBlock, template: this });
+                continue;
+            }
+            const isValid = testProcessor(processor, codeBlock.language, {
+                template: this,
+                codeBlock,
+            });
+            if (isValid) {
+                await processor.process({ codeBlock, template: this });
+            }
+        }
+    }
+
+    async preprocessProperty(processor: PropertyPreprocessor) {
+        for (const [key, value] of Object.entries(
+            this.info.frontmatter.properties,
+        )) {
+            const isValid = testProcessor(processor, key, {
+                template: this,
+                key,
+                value,
+            });
+            if (isValid) {
+                await processor.process({ key, value, template: this });
+            }
+        }
+    }
+
+    async process(env: Environment, context: TemplateContext) {
+        for (const p of env.contextProviders) {
+            await Promise.resolve(p(context, this));
+        }
+
+        context.properties.merge(this.info.frontmatter.properties);
+
+        for (const processor of env.processors) {
+            if (processor.type === "codeblock") {
+                await this.processCodeBlock(context, processor);
+            } else if (processor.type === "property") {
+                await this.processProperty(context, processor);
+            }
+        }
+    }
+
     async processCodeBlock(
         context: TemplateContext,
         processor: CodeBlockProcessor,
     ) {
         for (const codeBlock of this.info.codeBlocks) {
-            if (codeBlock.attributes.disabled) continue;
+            if (codeBlock.attributes.disabled) {
+                processor.disable?.({ context, codeBlock, template: this });
+                continue;
+            }
             const isValid = testProcessor(processor, codeBlock.language, {
+                template: this,
                 context,
                 codeBlock,
             });
             if (isValid) {
-                await processor.process({ context, codeBlock });
+                await processor.process({ context, codeBlock, template: this });
             }
         }
     }
@@ -103,18 +153,24 @@ export class Template {
     ) {
         for (const [key, value] of context.properties.entries()) {
             const isValid = testProcessor(processor, key, {
+                template: this,
                 context,
                 key,
                 value,
             });
             if (isValid) {
-                await processor.process({ context, key, value });
+                await processor.process({
+                    context,
+                    key,
+                    value,
+                    template: this,
+                });
             }
         }
     }
 }
 
-function testProcessor<Params extends { context: TemplateContext }>(
+function testProcessor<Params>(
     processor: {
         test?: string | RegExp | ((params: Params) => boolean);
     },
