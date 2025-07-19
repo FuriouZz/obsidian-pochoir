@@ -1,4 +1,4 @@
-```yaml {pochoir type=form exports=form name=form}
+```yaml {pochoir type="form" exports="form" name="form"}
 title:
 	type: text
 	description: Some desc

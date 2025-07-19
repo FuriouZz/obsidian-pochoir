@@ -1,4 +1,4 @@
 [tools]
 biome = "2.0.4"
-deno = "2.3.7"
+deno = "2.4.1"
 node = "23.9.0"
