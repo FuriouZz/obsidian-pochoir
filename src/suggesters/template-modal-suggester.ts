@@ -1,5 +1,10 @@
-import { type FuzzyMatch, FuzzySuggestModal, type TFolder } from "obsidian";
-import type PochoirPlugin from "../main";
+import {
+    type App,
+    type FuzzyMatch,
+    FuzzySuggestModal,
+    type TFolder,
+} from "obsidian";
+import type { Environment } from "../environment";
 import type { Template } from "../template";
 
 export enum OpenMode {
@@ -14,13 +19,13 @@ type Entry = {
 };
 
 export class TemplateModalSuggester extends FuzzySuggestModal<Entry> {
-    plugin: PochoirPlugin;
+    environment: Environment;
     openMode: OpenMode;
     folderLocation?: TFolder;
 
-    constructor(plugin: PochoirPlugin) {
-        super(plugin.app);
-        this.plugin = plugin;
+    constructor(app: App, env: Environment) {
+        super(app);
+        this.environment = env;
         this.openMode = OpenMode.InsertTemplate;
     }
 
@@ -117,7 +122,7 @@ export class TemplateModalSuggester extends FuzzySuggestModal<Entry> {
     }
 
     getItems(): Entry[] {
-        return [...this.plugin.environment.cache.templates.values()].map(
+        return [...this.environment.cache.templates.values()].map(
             (template) => ({ template, name: template.info.file.basename }),
         );
     }
@@ -129,13 +134,13 @@ export class TemplateModalSuggester extends FuzzySuggestModal<Entry> {
     onChooseItem(item: Entry, _evt: MouseEvent | KeyboardEvent): void {
         switch (this.openMode) {
             case OpenMode.InsertTemplate: {
-                this.plugin.environment.insertFromTemplate(item.template);
+                this.environment.insertFromTemplate(item.template);
                 break;
             }
             case OpenMode.CreateFromTemplate: {
                 const folder = this.folderLocation;
                 this.folderLocation = undefined;
-                this.plugin.environment.createFromTemplate(item.template, {
+                this.environment.createFromTemplate(item.template, {
                     openNote: true,
                     folder,
                 });

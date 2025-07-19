@@ -23,7 +23,7 @@ import { TemplateModalSuggester } from "./suggesters/template-modal-suggester";
 export default class PochoirPlugin extends Plugin {
     settings: ISettings = { ...DEFAULT_SETTINGS };
     environment = new Environment(this);
-    templateSuggester = new TemplateModalSuggester(this);
+    templateSuggester = new TemplateModalSuggester(this.app, this.environment);
     logger = getLogger();
 
     async onload() {
@@ -37,8 +37,8 @@ export default class PochoirPlugin extends Plugin {
             }),
         );
 
-        insertFromTemplateCommand(this);
-        createFromTemplateCommand(this);
+        insertFromTemplateCommand(this, this.templateSuggester);
+        createFromTemplateCommand(this, this.templateSuggester);
 
         this.app.workspace.onLayoutReady(() => {
             this.environment.invalidate();
