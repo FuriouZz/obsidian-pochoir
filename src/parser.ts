@@ -59,22 +59,25 @@ export class Parser {
             codeBlocks: [],
         };
 
+        let contentStart = 0;
         if (metadata.frontmatter) {
             ret.properties.merge(metadata.frontmatter);
         }
 
-        if (metadata.sections) {
-            let start = 0;
+        if (metadata.frontmatterPosition) {
+            contentStart = metadata.frontmatterPosition.end.offset;
+        }
 
+        if (metadata.sections) {
             for (const [index, section] of metadata.sections.entries()) {
                 if (section.type === "code") {
                     const codeBlock = this.parseCodeBlock(source, section);
                     if (codeBlock) {
                         ret.contentRanges.push([
-                            start,
+                            contentStart,
                             section.position.start.offset,
                         ]);
-                        start =
+                        contentStart =
                             metadata.sections[index + 1]?.position.start
                                 .offset ?? section.position.end.offset;
                         ret.codeBlocks.push(codeBlock);
@@ -82,7 +85,7 @@ export class Parser {
                 }
             }
 
-            ret.contentRanges.push([start, source.length]);
+            ret.contentRanges.push([contentStart, source.length]);
         }
 
         return ret;
@@ -99,10 +102,9 @@ export class Parser {
         if (!match) return;
 
         const attributes = match[2] ? this.parseAttributes(match[2]) : {};
-        if (!attributes.pochoir) return;
-
         const language = match[1];
         const code = match[3];
+        if (!language.startsWith("pochoir-")) return;
 
         return {
             language,

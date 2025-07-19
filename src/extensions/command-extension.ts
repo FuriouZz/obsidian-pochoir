@@ -111,9 +111,9 @@ export default function (): Extension {
             cmd.deleteAllFromPath(file.path);
         });
 
-        env.preprocessors.set("codeblock:ribbon", {
+        env.preprocessors.set("codeblock:command", {
             type: "codeblock",
-            test: test("yaml", { type: "command" }),
+            languages: { "pochoir-command": "yaml" },
             async process({ codeBlock, template }) {
                 cmd.deleteAllFromPath(template.info.file.path);
 

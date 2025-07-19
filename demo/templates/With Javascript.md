@@ -9,19 +9,19 @@ $.path: outputs/Javascript Output
 ---
 Content to copy
 
-```js {pochoir}
+```pochoir-js
 // Insert properties programmatically
 template.properties.$insertTo("tags", "inbox");
 template.properties.level = 1
 ```
 
-```js {pochoir}
+```pochoir-js
 // Rewrite file path
 template.path.name = "Hello World";
 template.path.parent = "folder";
 ```
 
-```js {pochoir}
+```pochoir-js
 // Import template
 const fn = await template.import("[[Functions]]");
 template.exports.message = fn.message();
@@ -37,14 +37,14 @@ Message sent {{date.today()}} : {{message}}
 {{/for}}
 ```
 
-```js {pochoir disabled}
+```pochoir-js {disabled}
 // Import obsidian interfaces
 const obsidian = await template.import("pochoir:obsidian");
 const app = await template.import("pochoir:obsidian:app");
 console.log(obsidian, app);
 ```
 
-```js {pochoir}
+```pochoir-js
 // Create form programmatically
 const { createForm } = await template.import("pochoir:form");
 const form = createForm();

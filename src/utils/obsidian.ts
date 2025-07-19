@@ -1,6 +1,8 @@
 import {
     parseYaml as _parseYaml,
     type App,
+    Component,
+    MarkdownRenderer,
     normalizePath,
     TFile,
     TFolder,
@@ -91,4 +93,15 @@ export async function ensurePath(app: App, filename: string, folder = "") {
 export function parseYaml<T = unknown>(str: string) {
     if (!str) return null;
     return _parseYaml(str) as T;
+}
+
+export function createMarkdownRenderer(app: App) {
+    return async (
+        content: string,
+        el: HTMLElement = document.createElement("div"),
+    ) => {
+        const component = new Component();
+        await MarkdownRenderer.render(app, content, el, "", component);
+        return el;
+    };
 }

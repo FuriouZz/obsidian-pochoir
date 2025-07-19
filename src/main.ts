@@ -1,4 +1,5 @@
 import { Plugin } from "obsidian";
+import { codeBlocksHighlighter } from "./codemirror/codeBlockHighlighter";
 import {
     createFromTemplateCommand,
     insertFromTemplateCommand,
@@ -42,6 +43,8 @@ export default class PochoirPlugin extends Plugin {
         this.app.workspace.onLayoutReady(() => {
             this.environment.invalidate();
         });
+
+        codeBlocksHighlighter(this, this.environment);
     }
 
     onunload() {

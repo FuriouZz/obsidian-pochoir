@@ -5,9 +5,12 @@ export default function (): Extension {
     return (env) => {
         env.processors.set("codeblock:javascript", {
             type: "codeblock",
-            test: /js|javascript/,
+            languages: {
+                "pochoir-js": "javascript",
+                "pochoir-javascript": "javascript",
+            },
             order: 50,
-            process: async ({ codeBlock, context }) => {
+            async process({ codeBlock, context }) {
                 const fn = createAsyncFunction(codeBlock.code, "template");
                 await fn({
                     ...context.locals,

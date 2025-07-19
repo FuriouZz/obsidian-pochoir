@@ -25,6 +25,10 @@
 		"typescript": "5.8.3"
 	},
 	"dependencies": {
+		"@codemirror/language": "^6.11.2",
+		"@codemirror/legacy-modes": "^6.5.1",
+		"@codemirror/state": "^6.5.2",
+		"@codemirror/view": "^6.38.1",
 		"ventojs": "^1.15.0"
 	},
 	"packageManager": "pnpm@10.7.1"

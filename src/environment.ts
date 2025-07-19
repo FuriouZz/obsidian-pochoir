@@ -1,10 +1,4 @@
-import {
-    type EventRef,
-    Events,
-    MarkdownView,
-    type TFile,
-    type TFolder,
-} from "obsidian";
+import { MarkdownView, type TFile, type TFolder } from "obsidian";
 import { Cache } from "./cache";
 import { Importer, type Loader } from "./importer";
 import { verbose } from "./logger";
@@ -64,6 +58,13 @@ export class Environment {
     use(extension: Extension) {
         extension(this);
         return this;
+    }
+
+    getSupportedCodeBlocks() {
+        return {
+            ...this.preprocessors.getSupportedCodeBlock(),
+            ...this.processors.getSupportedCodeBlock(),
+        };
     }
 
     async updateSettings(settings: ISettings) {

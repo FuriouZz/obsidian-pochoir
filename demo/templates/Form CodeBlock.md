@@ -1,4 +1,4 @@
-```yaml {pochoir type="form" exports="form" name="form"}
+```pochoir-form {exports="form" name="form"}
 title:
 	type: text
 	description: Some desc
@@ -23,7 +23,7 @@ level:
 	label: Level
 ```
 
-```js {pochoir}
+```pochoir-js
 // Create form programmatically
 const { getForm, getForms } = await template.import("pochoir:form");
 const form = getForm("form");

@@ -86,10 +86,12 @@ export class Template {
                 processor.disable?.({ codeBlock, template: this });
                 continue;
             }
-            const isValid = testProcessor(processor, codeBlock.language, {
-                template: this,
-                codeBlock,
-            });
+            const isValid =
+                codeBlock.language in processor.languages &&
+                testProcessor(processor, codeBlock.language, {
+                    template: this,
+                    codeBlock,
+                });
             if (isValid) {
                 await processor.process({ codeBlock, template: this });
             }
@@ -134,11 +136,13 @@ export class Template {
                 processor.disable?.({ context, codeBlock, template: this });
                 continue;
             }
-            const isValid = testProcessor(processor, codeBlock.language, {
-                template: this,
-                context,
-                codeBlock,
-            });
+            const isValid =
+                codeBlock.language in processor.languages &&
+                testProcessor(processor, codeBlock.language, {
+                    context,
+                    template: this,
+                    codeBlock,
+                });
             if (isValid) {
                 await processor.process({ context, codeBlock, template: this });
             }

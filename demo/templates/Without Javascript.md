@@ -11,12 +11,12 @@ $.aliases:
   - nojs
 $.path: outputs/{{date.today('YYYYMMDDHHmm')}}
 ---
-```form {pochoir type=form exports=form}
+```pochoir-form type=form exports=form desc="Hello World"
 due:
   type: date
 ```
 
-```yaml {pochoir type=command}
+```pochoir-command
 id: task
 icon: square-check-big
 title: Create Task

@@ -1,4 +1,4 @@
-```js {pochoir}
+```pochoir-js
 const { today } = await template.import("pochoir:date");
 
 template.exports.addCreated = (properties) => {
@@ -10,7 +10,7 @@ template.exports.message = () => {
 };
 ```
 
-```js {pochoir}
+```pochoir-js
 const { today } = await template.import("pochoir:date");
 template.exports.zid = () => today("YYYYMMDDHHmm");
 ```

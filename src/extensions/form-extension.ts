@@ -539,9 +539,9 @@ export default function (): Extension {
 
         env.processors.set("codeblock:form", {
             type: "codeblock",
-            test: test([["yaml", { type: "form" }], ["form"]]),
+            languages: { "poichoir-form": "yaml" },
             order: 40,
-            process: async ({ codeBlock, context }) => {
+            async process({ codeBlock, context }) {
                 const { name, exports } = codeBlock.attributes;
 
                 const form = formContext.createForm(

@@ -1,11 +1,35 @@
 import type { ParsedCodeBlock } from "./parser";
 import type { Template, TemplateContext } from "./template";
 
-export interface AbstractProcessor<
-    TType extends "property" | "codeblock" = "property",
-    TParams extends object = object,
-> {
-    type: TType;
+interface CodeBlockParams {
+    template: Template;
+    codeBlock: ParsedCodeBlock;
+}
+
+interface CodeBlockProcessorWithParams<TParams> {
+    type: "codeblock";
+    languages: Record<string, "javascript" | "yaml">;
+    test?: string | RegExp | ((params: TParams) => boolean);
+    order?: number;
+    process: (params: TParams) => Promise<void>;
+    disable?: (params: TParams) => void;
+    dispose?: () => void;
+}
+
+export type CodeBlockPreprocessor =
+    CodeBlockProcessorWithParams<CodeBlockParams>;
+export type CodeBlockProcessor = CodeBlockProcessorWithParams<
+    WithContext<CodeBlockParams>
+>;
+
+interface PropertyParams {
+    template: Template;
+    key: string;
+    value: unknown;
+}
+
+interface PropertyProcessorWithParams<TParams> {
+    type: "property";
     order?: number;
     test?: string | RegExp | ((params: TParams) => boolean);
     process: (params: TParams) => Promise<void>;
@@ -13,56 +37,45 @@ export interface AbstractProcessor<
     dispose?: () => void;
 }
 
-export type PropertyProcessor = AbstractProcessor<
-    "property",
-    {
-        context: TemplateContext;
-        template: Template;
-        key: string;
-        value: unknown;
-    }
+export type PropertyPreprocessor = PropertyProcessorWithParams<PropertyParams>;
+export type PropertyProcessor = PropertyProcessorWithParams<
+    WithContext<PropertyParams>
 >;
 
-export type CodeBlockProcessor = AbstractProcessor<
-    "codeblock",
-    { context: TemplateContext; template: Template; codeBlock: ParsedCodeBlock }
->;
-
-export type PropertyPreprocessor = PropertyProcessor extends AbstractProcessor<
-    infer V,
-    infer U
->
-    ? AbstractProcessor<V, Omit<U, "context">>
-    : never;
-
-export type CodeBlockPreprocessor =
-    CodeBlockProcessor extends AbstractProcessor<infer V, infer U>
-        ? AbstractProcessor<V, Omit<U, "context">>
-        : never;
+type WithContext<T> = T & { context: TemplateContext };
 
 export type Processor = PropertyProcessor | CodeBlockProcessor;
 export type Preprocessor = PropertyPreprocessor | CodeBlockPreprocessor;
 
 export class ProcessorList<T extends Processor | Preprocessor> {
-    #entries = new Map<string, T & { name: string; order: number }>();
+    #entries = new Map<string, T & { id: string; order: number }>();
     order: string[] = [];
 
-    set(name: string, processor: T) {
-        this.#entries.set(name, {
-            name,
+    getSupportedCodeBlock(languages: CodeBlockProcessor["languages"] = {}) {
+        for (const processor of this.values()) {
+            if (processor.type === "codeblock") {
+                Object.assign(languages, processor.languages);
+            }
+        }
+        return languages;
+    }
+
+    set(id: string, processor: T) {
+        this.#entries.set(id, {
+            id,
             order: 0,
             ...processor,
         });
-        if (!this.order.includes(name)) {
-            this.order.push(name);
+        if (!this.order.includes(id)) {
+            this.order.push(id);
         }
         this.sort();
         return this;
     }
 
-    delete(name: string) {
-        this.#entries.delete(name);
-        const index = this.order.indexOf(name);
+    delete(id: string) {
+        this.#entries.delete(id);
+        const index = this.order.indexOf(id);
         if (index > -1) this.order.splice(index, 1);
         return this;
     }
