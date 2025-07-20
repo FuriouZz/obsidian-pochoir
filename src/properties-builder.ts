@@ -1,4 +1,4 @@
-import { parseYaml } from "utils/obsidian";
+import { parseYaml } from "./utils/obsidian";
 
 export class PropertiesBuilder extends Map<string, unknown> {
     clone() {

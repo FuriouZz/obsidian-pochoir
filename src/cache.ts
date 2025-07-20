@@ -1,4 +1,4 @@
-import { PochoirError } from "errors";
+import { PochoirError } from "./errors";
 import { type App, type EventRef, Events, TFile } from "obsidian";
 import { verbose } from "./logger";
 import { Parser } from "./parser";

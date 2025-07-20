@@ -1,7 +1,7 @@
-import { alertError } from "utils/alert";
 import type { Extension } from "../environment";
 import { PochoirError } from "../errors";
 import { PathBuilder } from "../path-builder";
+import { alertError } from "../utils/alert";
 
 export default function (): Extension {
     return (env) => {

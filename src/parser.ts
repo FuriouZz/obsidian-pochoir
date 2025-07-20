@@ -1,5 +1,5 @@
 import type { App, CachedMetadata, SectionCache, TFile } from "obsidian";
-import { parseYaml } from "utils/obsidian";
+import { parseYaml } from "./utils/obsidian";
 import { PochoirError } from "./errors";
 import { PropertiesBuilder } from "./properties-builder";
 import { Template } from "./template";

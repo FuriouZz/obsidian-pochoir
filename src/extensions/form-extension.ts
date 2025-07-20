@@ -1,8 +1,8 @@
 import { type App, Modal, Setting } from "obsidian";
-import { parseYaml } from "utils/obsidian";
-import { createCodeBlockProcessorTests as test } from "utils/processor";
 import type { Extension } from "../environment";
 import type { TemplateContext } from "../template";
+import { parseYaml } from "../utils/obsidian";
+import { createCodeBlockProcessorTests as test } from "../utils/processor";
 
 export interface FormInfo {
     title: string;
