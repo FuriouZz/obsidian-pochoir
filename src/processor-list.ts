@@ -1,4 +1,4 @@
-import type { ParsedCodeBlock } from "parser";
+import type { ParsedCodeBlock } from "./parser";
 import type { Template, TemplateContext } from "./template";
 
 export interface AbstractProcessor<

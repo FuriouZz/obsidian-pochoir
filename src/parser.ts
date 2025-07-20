@@ -1,8 +1,8 @@
 import type { App, CachedMetadata, SectionCache, TFile } from "obsidian";
-import { parseYaml } from "./utils/obsidian";
 import { PochoirError } from "./errors";
 import { PropertiesBuilder } from "./properties-builder";
 import { Template } from "./template";
+import { CodeBlockRegex } from "./utils/processor";
 
 export interface ParsedCodeBlock {
     language: string;
@@ -12,22 +12,15 @@ export interface ParsedCodeBlock {
     attributes: Record<string, unknown>;
 }
 
-export interface ParsedFrontMatter {
-    properties: Record<string, unknown>;
-}
-
 export interface ParsedSections {
-    frontmatter: ParsedFrontMatter;
+    properties: PropertiesBuilder;
     codeBlocks: ParsedCodeBlock[];
     contentRanges: [number, number][];
 }
 
-export interface ParsedTemplateInfo {
+export interface ParsedTemplateInfo extends ParsedSections {
     file: TFile;
     source: string;
-    frontmatter: ParsedFrontMatter;
-    codeBlocks: ParsedCodeBlock[];
-    contentRanges: [number, number][];
 }
 
 export class Parser {
@@ -61,59 +54,36 @@ export class Parser {
 
     parseSections(source: string, metadata: CachedMetadata): ParsedSections {
         const ret: ParsedSections = {
-            frontmatter: {
-                properties: {},
-            },
+            properties: new PropertiesBuilder(),
             contentRanges: [],
             codeBlocks: [],
         };
 
-        if (!metadata.sections) return ret;
+        if (metadata.frontmatter) {
+            ret.properties.merge(metadata.frontmatter);
+        }
 
-        let start = 0;
+        if (metadata.sections) {
+            let start = 0;
 
-        for (const [index, section] of metadata.sections.entries()) {
-            if (section.type === "yaml") {
-                ret.frontmatter = this.parseFrontmatter(source, section);
-                start = section.position.end.offset;
-            } else if (section.type === "code") {
-                const codeBlock = this.parseCodeBlock(source, section);
-                if (codeBlock) {
-                    ret.contentRanges.push([
-                        start,
-                        section.position.start.offset,
-                    ]);
-                    start =
-                        metadata.sections[index + 1]?.position.start.offset ??
-                        section.position.end.offset;
-                    ret.codeBlocks.push(codeBlock);
+            for (const [index, section] of metadata.sections.entries()) {
+                if (section.type === "code") {
+                    const codeBlock = this.parseCodeBlock(source, section);
+                    if (codeBlock) {
+                        ret.contentRanges.push([
+                            start,
+                            section.position.start.offset,
+                        ]);
+                        start =
+                            metadata.sections[index + 1]?.position.start
+                                .offset ?? section.position.end.offset;
+                        ret.codeBlocks.push(codeBlock);
+                    }
                 }
             }
+
+            ret.contentRanges.push([start, source.length]);
         }
-
-        ret.contentRanges.push([start, source.length]);
-        return ret;
-    }
-
-    parseFrontmatter(source: string, section: SectionCache): ParsedFrontMatter {
-        const ret: ParsedFrontMatter = { properties: {} };
-        if (section.type !== "yaml") return ret;
-
-        const frontmatter = this.getSectionContent(source, section)
-            .replace(/^-{3}|-{3}$/g, "")
-            .trim();
-
-        const properties = new PropertiesBuilder();
-
-        const json = parseYaml(frontmatter);
-
-        if (json) {
-            for (const [key, value] of Object.entries(json)) {
-                properties.set(key, value);
-            }
-        }
-
-        ret.properties = properties.toObject();
 
         return ret;
     }
@@ -125,8 +95,7 @@ export class Parser {
         if (section.type !== "code") return;
         const content = this.getSectionContent(source, section);
 
-        const regex = /`{3}(\S+)\s*?(\{.*\})\n([\s\S]*?)\n`{3}/;
-        const match = content.match(regex);
+        const match = content.match(CodeBlockRegex);
         if (!match) return;
 
         const attributes = match[2] ? this.parseAttributes(match[2]) : {};

@@ -1,4 +1,6 @@
-import type { ParsedCodeBlock } from "parser";
+import type { ParsedCodeBlock } from "../parser";
+
+export const CodeBlockRegex = /`{3}(\S*)\s*(\{.*\})?([\S\s]*?)`{3}/;
 
 export function createCodeBlockProcessorTest(
     language: string,

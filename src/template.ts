@@ -97,9 +97,7 @@ export class Template {
     }
 
     async preprocessProperty(processor: PropertyPreprocessor) {
-        for (const [key, value] of Object.entries(
-            this.info.frontmatter.properties,
-        )) {
+        for (const [key, value] of this.info.properties.entries()) {
             const isValid = testProcessor(processor, key, {
                 template: this,
                 key,
@@ -116,7 +114,7 @@ export class Template {
             await Promise.resolve(p(context, this));
         }
 
-        context.properties.merge(this.info.frontmatter.properties);
+        context.properties.merge(this.info.properties);
 
         for (const processor of env.processors) {
             if (processor.type === "codeblock") {

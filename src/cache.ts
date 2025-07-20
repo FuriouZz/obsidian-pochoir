@@ -1,5 +1,5 @@
-import { PochoirError } from "./errors";
 import { type App, type EventRef, Events, TFile } from "obsidian";
+import { PochoirError } from "./errors";
 import { verbose } from "./logger";
 import { Parser } from "./parser";
 import type { Template } from "./template";

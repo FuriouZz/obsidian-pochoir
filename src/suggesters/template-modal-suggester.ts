@@ -31,8 +31,8 @@ export class TemplateModalSuggester extends FuzzySuggestModal<Entry> {
 
         const matches = items
             .map((entry) => {
-                const { properties } = entry.template.info.frontmatter;
-                const aliases = properties["$.aliases"] as string[] | undefined;
+                const { properties } = entry.template.info;
+                const aliases = properties.get("$.aliases");
                 if (!Array.isArray(aliases)) return null;
 
                 const parts = query.split(" ");
@@ -79,8 +79,8 @@ export class TemplateModalSuggester extends FuzzySuggestModal<Entry> {
         super.renderSuggestion(item, el);
         el.classList.add("pochoir-suggester");
 
-        const { properties } = item.item.template.info.frontmatter;
-        const aliases = properties["$.aliases"] as string[] | undefined;
+        const { properties } = item.item.template.info;
+        const aliases = properties.get("$.aliases");
         if (!Array.isArray(aliases)) return;
 
         const subtitle = el.createDiv({ cls: "pochoir-suggester-subtitle" });
