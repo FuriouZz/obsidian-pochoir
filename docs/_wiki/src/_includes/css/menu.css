@@ -1,0 +1,167 @@
+.menu-highlight {
+  font: var(--font-small);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  background: var(--color-line);
+  height: 52px;
+  margin-bottom: 1rem;
+  border-radius: var(--border-radius);
+  padding: 0.5rem;
+  color: inherit;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.menu-logo {
+  font: var(--font-small);
+  display: block;
+  text-decoration: none;
+  margin-bottom: 1.75rem;
+  transition: opacity 200ms;
+  width: fit-content;
+
+  &:hover {
+    opacity: 0.5;
+  }
+
+  & img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    max-height: 150px;
+  }
+
+  @media (min-width: 500px) and (max-width: 959px) {
+    float: left;
+    margin-right: 1rem;
+    max-width: 150px;
+  }
+  @media (min-width: 960px) {
+    margin-right: 1rem;
+  }
+}
+.menu-languages {
+  list-style: none;
+  margin: 0 0 1rem 0;
+  padding: 0;
+  display: flex;
+  gap: 0.5em;
+  font: var(--font-small);
+
+  a {
+    color: var(--color-dim);
+    display: block;
+    border-radius: 0.3em;
+    padding: 0.25em 0.5em;
+
+    &[aria-current="page"] {
+      text-decoration: none;
+      color: var(--color-base);
+      background-color: var(--color-line);
+    }
+  }
+}
+
+.menu {
+  display: block;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-dim) var(--color-background);
+  scrollbar-gutter: stable;
+  font: var(--font-small);
+  color: var(--color-dim);
+}
+
+.menu > ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: solid 1px var(--color-line);
+  padding-top: 1rem;
+
+  & ul {
+    list-style: none;
+    margin-left: 0.9em;
+    padding: 0;
+  }
+
+  details {
+    border: none;
+    padding: 0.3em 0;
+    /* border-top: solid 1px var(--color-line); */
+  }
+  summary {
+    --marker-image: url('data:image/svg+xml;charset=utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" viewBox="0 0 256 256"><path d="M184.49,136.49l-80,80a12,12,0,0,1-17-17L159,128,87.51,56.49a12,12,0,1,1,17-17l80,80A12,12,0,0,1,184.49,136.49Z"></path></svg>');
+    display: flex;
+    padding-top: 0;
+    padding-bottom: 0;
+    align-items: center;
+    border-radius: 0.3em;
+    background-position-x: calc(100% - 8px);
+    padding-left: 0;
+    padding-right: 2em;
+  }
+  details[open] > summary {
+    --marker-image: url('data:image/svg+xml;charset=utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" viewBox="0 0 256 256"><path d="M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z"></path></svg>');
+  }
+
+  & a,
+  & li > span {
+    display: block;
+    border-radius: 0.3em;
+    text-decoration: none;
+    padding: 0.75em 0.5em;
+  }
+
+  & a {
+    text-decoration: none;
+    color: inherit;
+    font-weight: var(--font-bold);
+
+    &:not([aria-current="page"]):hover {
+      text-decoration: underline;
+      color: var(--color-base);
+    }
+
+    @media (max-width: 949px) {
+      max-width: max-content;
+    }
+  }
+
+  & li > a[aria-current="page"],
+  & summary:has(a[aria-current="page"]) {
+    color: var(--color-base);
+    background-color: var(--color-line);
+  }
+
+  .menu-custom {
+    display: flex;
+    align-items: center;
+    column-gap: 8px;
+
+    svg {
+      width: 20px;
+      height: 20px;
+      fill: var(--color-base);
+    }
+  }
+
+  + ul {
+    margin-top: 1rem;
+  }
+}
+
+[data-theme="dark"] {
+  .menu {
+    summary {
+      --marker-image: url('data:image/svg+xml;charset=utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" viewBox="0 0 256 256"><path d="M184.49,136.49l-80,80a12,12,0,0,1-17-17L159,128,87.51,56.49a12,12,0,1,1,17-17l80,80A12,12,0,0,1,184.49,136.49Z"></path></svg>');
+    }
+    details[open] > summary {
+      --marker-image: url('data:image/svg+xml;charset=utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" viewBox="0 0 256 256"><path d="M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z"></path></svg>');
+    }
+  }
+}

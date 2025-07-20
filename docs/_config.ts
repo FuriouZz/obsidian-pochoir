@@ -1,5 +1,5 @@
 import lume from "lume/mod.ts";
-import wiki from "wiki/mod.ts";
+import wiki from "./_wiki/mod.ts";
 
 const site = lume();
 
