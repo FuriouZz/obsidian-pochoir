@@ -12,7 +12,7 @@ import { Renderer } from "./renderer";
 import type { ISettings } from "./setting-tab";
 import { type Template, TemplateContext } from "./template";
 import { alertWrap } from "./utils/alert";
-import { createNote, ensurePath } from "./utils/obsidian";
+import { ensurePath, findOrCreateNote } from "./utils/obsidian";
 
 export type Extension = (env: Environment) => void;
 
@@ -92,6 +92,22 @@ export class Environment {
     }
 
     async renderTemplate(context: TemplateContext, template: Template) {
+        // Rename file
+        if (context.path.hasChanged) {
+            const file = this.app.vault.getFileByPath(context.path.path);
+            if (!file) {
+                const path = await ensurePath(
+                    this.app,
+                    context.path.name,
+                    context.path.parent,
+                );
+                await this.app.fileManager.renameFile(context.target, path);
+            } else {
+                await this.app.vault.delete(context.target);
+                context.target = file;
+            }
+        }
+
         // Transfer properties
         const properties = await context.transferProps(this.app);
 
@@ -112,45 +128,32 @@ export class Environment {
                 (data) => data + content,
             );
         }
-
-        // Rename file
-        if (context.path.hasChanged) {
-            const path = await ensurePath(
-                this.app,
-                context.path.name,
-                context.path.parent,
-            );
-            await this.app.fileManager.renameFile(context.target, path);
-        }
     }
 
     async createFromTemplate(
         template: Template,
         {
-            filename = "Untitled",
+            filename = "Untitled.md",
             folder,
             openNote = true,
         }: { folder?: TFolder; filename?: string; openNote?: boolean } = {},
     ) {
-        let createdNote: TFile | undefined;
-        return alertWrap(
-            async () => {
-                const target = await createNote(this.app, filename, folder);
-                createdNote = target;
+        return alertWrap(async () => {
+            const target = await findOrCreateNote(
+                this.app,
+                folder ? `${folder.path}/${filename}` : filename,
+            );
 
-                const context = new TemplateContext(target);
-                await template.process(this, context);
-                await this.renderTemplate(context, template);
+            const context = new TemplateContext(target);
+            await template.process(this, context);
+            await this.renderTemplate(context, template);
 
-                if (openNote) {
-                    await this.app.workspace.getLeaf(false).openFile(target);
-                }
-            },
-            () => {
-                if (!createdNote) return;
-                this.app.vault.delete(createdNote);
-            },
-        );
+            if (openNote) {
+                await this.app.workspace
+                    .getLeaf(false)
+                    .openFile(context.target);
+            }
+        });
     }
 
     insertFromTemplate(template: Template) {

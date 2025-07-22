@@ -47,7 +47,7 @@ export class TemplateContext {
         const builder = new PropertiesBuilder();
         await app.fileManager.processFrontMatter(this.target, (fm) => {
             builder.merge(fm);
-            builder.merge(this.properties.toObject());
+            builder.merge(this.properties);
             builder.toObject(fm);
         });
         return builder.toObject();

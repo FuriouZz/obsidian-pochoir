@@ -85,6 +85,27 @@ export class PropertiesBuilder extends Map<string, unknown> {
         return fm;
     }
 
+    toYAML() {
+        const isIterable = (value: unknown): value is Iterable<unknown> => {
+            return Array.isArray(value) || value instanceof Set;
+        };
+
+        let str = "";
+
+        for (const [key, value] of this.entries()) {
+            if (isIterable(value)) {
+                const v = [...value]
+                    .map((v) => `- ${JSON.stringify(v)}`)
+                    .join("\n");
+                str += `${key}: \n${v}\n`;
+            } else {
+                str += `${key}: ${JSON.stringify(value)}\n`;
+            }
+        }
+
+        return `---\n${str.trim()}\n---`;
+    }
+
     createProxy() {
         const proxy = new Proxy(this, {
             get(target, p: string) {
