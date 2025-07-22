@@ -2,7 +2,6 @@ import { type App, Modal, Setting } from "obsidian";
 import type { Extension } from "../environment";
 import type { TemplateContext } from "../template";
 import { parseYaml } from "../utils/obsidian";
-import { createCodeBlockProcessorTests as test } from "../utils/processor";
 
 export interface FormInfo {
     title: string;
@@ -539,7 +538,7 @@ export default function (): Extension {
 
         env.processors.set("codeblock:form", {
             type: "codeblock",
-            languages: { "poichoir-form": "yaml" },
+            languages: { "pochoir-form": "yaml" },
             order: 40,
             async process({ codeBlock, context }) {
                 const { name, exports } = codeBlock.attributes;

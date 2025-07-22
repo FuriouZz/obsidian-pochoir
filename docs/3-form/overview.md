@@ -29,7 +29,7 @@ desc:
 
 In this template, we have:
 - A `yaml` code block with these attributes:
-  - `poichoir` indicating the plugin to evaluate this code block
+  - `pochoir` indicating the plugin to evaluate this code block
   - `type=form` indicating a form description
   - `exports=data` exposing form results to the variable `data`
 - Two inputs are declared in `yaml`:
