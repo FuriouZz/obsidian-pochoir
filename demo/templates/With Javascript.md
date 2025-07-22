@@ -37,7 +37,7 @@ Message sent {{date.today()}} : {{message}}
 {{/for}}
 ```
 
-```pochoir-js {disabled}
+```pochoir-js disabled
 // Import obsidian interfaces
 const obsidian = await template.import("pochoir:obsidian");
 const app = await template.import("pochoir:obsidian:app");

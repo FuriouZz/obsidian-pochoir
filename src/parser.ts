@@ -3,6 +3,7 @@ import { PochoirError } from "./errors";
 import { PropertiesBuilder } from "./properties-builder";
 import { Template } from "./template";
 import { CodeBlockRegex } from "./utils/processor";
+import { verbose } from "./logger";
 
 export interface ParsedCodeBlock {
     language: string;
@@ -101,10 +102,11 @@ export class Parser {
         const match = content.match(CodeBlockRegex);
         if (!match) return;
 
-        const attributes = match[2] ? this.parseAttributes(match[2]) : {};
         const language = match[1];
-        const code = match[3];
         if (!language.startsWith("pochoir-")) return;
+
+        const attributes = match[2] ? this.parseAttributes(match[2]) : {};
+        const code = match[3] ?? "";
 
         return {
             language,
@@ -116,25 +118,69 @@ export class Parser {
     }
 
     parseAttributes(source: string) {
-        const pairs = source.replace(/^\{|\}$/g, "").split(/\s/);
         const attributes: Record<string, unknown> = {};
 
-        for (const pair of pairs) {
-            let [key, value] = pair.split("=");
-            if (value === undefined) {
-                attributes[key] = true;
-            } else if (/true|false/.test(value)) {
-                attributes[key] = Boolean(value);
-            } else {
-                value = value.replace(/^"|"$/g, "");
-                const num = Number(value);
-                if (Number.isNaN(num)) {
-                    attributes[key] = value;
+        let key = "";
+        let value = "";
+        let escaped = false;
+        let target: "key" | "value" = "key";
+        let insideQuote = false;
+
+        const close = () => {
+            target = "key";
+
+            key = key.trim();
+            value = value.trim();
+
+            if (key) {
+                if (value.length === 0) {
+                    attributes[key] = true;
+                } else if (value === "true" || value === "false") {
+                    attributes[key] = Boolean(value);
                 } else {
-                    attributes[key] = num;
+                    const num = Number(value);
+                    if (Number.isNaN(num)) {
+                        attributes[key] = value;
+                    } else {
+                        attributes[key] = num;
+                    }
                 }
             }
+
+            key = "";
+            value = "";
+        };
+
+        let i = 0;
+        const len = source.length;
+        while (i <= len) {
+            const char = source[i];
+
+            if (typeof char === "undefined") {
+                close();
+            } else if (char === "\\" && !escaped) {
+                escaped = true;
+            } else if (char === '"' && !escaped) {
+                if (insideQuote) {
+                    insideQuote = false;
+                    close();
+                } else {
+                    insideQuote = true;
+                }
+            } else if (char === " " && !insideQuote) {
+                close();
+            } else if (char === "=") {
+                target = "value";
+            } else {
+                if (target === "key") key += char;
+                else if (target === "value") value += char;
+                escaped = false;
+            }
+
+            i++;
         }
+
+        verbose(source.trim(), attributes);
 
         return attributes;
     }

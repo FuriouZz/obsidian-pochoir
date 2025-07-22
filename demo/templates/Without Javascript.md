@@ -11,7 +11,7 @@ $.aliases:
   - nojs
 $.path: outputs/{{date.today('YYYYMMDDHHmm')}}
 ---
-```pochoir-form type=form exports=form desc="Hello World"
+```pochoir-form exports="form"
 due:
   type: date
 ```
