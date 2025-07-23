@@ -15,7 +15,7 @@ html {
   justify-content: center;
   align-content: start;
   row-gap: 2em;
-  column-gap: 4em;
+  column-gap: 2em;
   grid-template-columns: minmax(0, 800px);
   grid-template-areas:
     "toolbar"
