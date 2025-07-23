@@ -1,18 +1,26 @@
 import { PluginSettingTab, Setting } from "obsidian";
+import { EXTENSION_SETTINGS } from "./constants";
 import type PochoirPlugin from "./main";
 import { FileInputSuggester } from "./suggesters/file-input-suggester";
 
-export type ActivableExtension = "javascript" | "command";
+export type ActivableExtension =
+    | "special-properties"
+    | "javascript"
+    | "command"
+    | "form";
+
+export type ActivableExtensionList = [
+    ActivableExtension,
+    {
+        label: string;
+        desc: string | (() => string | DocumentFragment);
+    },
+][];
 
 export interface ISettings {
     templates_folder: string;
-    disabled_extension: ActivableExtension[];
+    extensions: ActivableExtension[];
 }
-
-export const DEFAULT_SETTINGS: ISettings = {
-    templates_folder: "templates",
-    disabled_extension: ["javascript", "command"],
-};
 
 export class SettingTab extends PluginSettingTab {
     plugin: PochoirPlugin;
@@ -44,30 +52,18 @@ export class SettingTab extends PluginSettingTab {
                 });
             });
 
-        new Setting(containerEl)
-            .setName("Enable Javascript extension")
-            .setDesc(
-                "Use Javascript for more complex template or expose new functions",
-            )
-            .addToggle((toggle) => {
-                toggle.setValue(this.plugin.hasExtension("javascript"));
-                toggle.onChange(async (value) => {
-                    value
-                        ? await this.plugin.addExtension("javascript")
-                        : await this.plugin.removeExtension("javascript");
+        for (const [extension, { label, desc }] of EXTENSION_SETTINGS) {
+            new Setting(containerEl)
+                .setName(label)
+                .setDesc(typeof desc === "string" ? desc : desc())
+                .addToggle((toggle) => {
+                    toggle.setValue(this.plugin.hasExtension(extension));
+                    toggle.onChange(async (value) => {
+                        value
+                            ? await this.plugin.addExtension(extension)
+                            : await this.plugin.removeExtension(extension);
+                    });
                 });
-            });
-
-        new Setting(containerEl)
-            .setName("Enable Command extension")
-            .setDesc("Trigger template from command palette or ribbon action")
-            .addToggle((toggle) => {
-                toggle.setValue(this.plugin.hasExtension("command"));
-                toggle.onChange(async (value) => {
-                    value
-                        ? await this.plugin.addExtension("command")
-                        : await this.plugin.removeExtension("command");
-                });
-            });
+        }
     }
 }

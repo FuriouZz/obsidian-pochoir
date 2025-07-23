@@ -4,17 +4,17 @@ import {
     createFromTemplateCommand,
     insertFromTemplateCommand,
 } from "./commands";
+import { DEFAULT_SETTINGS } from "./constants";
 import { Environment } from "./environment";
 import commandExtension from "./extensions/command-extension";
 import dateExtension from "./extensions/date-extension";
 import formExtension from "./extensions/form-extension";
-import internalPropertiesExtension from "./extensions/internal-properties-extension";
 import javascriptExtension from "./extensions/javascript-extension";
 import minimalExtension from "./extensions/minimal-extension";
+import specialPropertiesExtension from "./extensions/special-properties-extension";
 import { getLogger } from "./logger";
 import {
     type ActivableExtension,
-    DEFAULT_SETTINGS,
     type ISettings,
     SettingTab,
 } from "./setting-tab";
@@ -66,35 +66,38 @@ export default class PochoirPlugin extends Plugin {
         this.environment.cleanup();
         this.environment.use(minimalExtension());
         this.environment.use(dateExtension());
-        this.environment.use(formExtension());
-        this.environment.use(internalPropertiesExtension());
+        if (this.hasExtension("special-properties")) {
+            this.environment.use(specialPropertiesExtension());
+        }
         if (this.hasExtension("javascript")) {
             this.environment.use(javascriptExtension());
         }
         if (this.hasExtension("command")) {
             this.environment.use(commandExtension());
         }
+        if (this.hasExtension("form")) {
+            this.environment.use(formExtension());
+        }
         await this.environment.updateSettings(this.settings);
     }
 
     async addExtension(name: ActivableExtension) {
-        const arr = this.settings.disabled_extension;
-        const index = arr.indexOf(name);
-        if (index > -1) {
-            arr.splice(index, 1);
+        const arr = this.settings.extensions;
+        if (!arr.includes(name)) {
+            arr.push(name);
             await this.saveSettings();
         }
     }
 
     hasExtension(name: ActivableExtension) {
-        const arr = this.settings.disabled_extension;
-        return !arr.includes(name);
+        return this.settings.extensions.includes(name);
     }
 
     async removeExtension(name: ActivableExtension) {
-        const arr = this.settings.disabled_extension;
-        if (!arr.includes(name)) {
-            arr.push(name);
+        const arr = this.settings.extensions;
+        const index = arr.indexOf(name);
+        if (index > -1) {
+            arr.splice(index, 1);
             await this.saveSettings();
         }
     }
