@@ -26,19 +26,8 @@ export default class PochoirPlugin extends Plugin {
         this.logger.level = "DEBUG";
         this.addSettingTab(new SettingTab(this));
 
-        this.registerEvent(
-            this.app.metadataCache.on("changed", (file) => {
-                this.environment.invalidateFile(file);
-            }),
-        );
-
         insertFromTemplateCommand(this, this.templateSuggester);
         createFromTemplateCommand(this, this.templateSuggester);
-
-        this.app.workspace.onLayoutReady(() => {
-            this.environment.invalidate();
-        });
-
         codeBlocksHighlighter(this, this.environment);
 
         this.environment.extensions.use(minimalExtension());
@@ -47,6 +36,9 @@ export default class PochoirPlugin extends Plugin {
         this.environment.extensions.use(formExtension());
         this.environment.extensions.use(commandExtension());
         this.environment.extensions.use(javascriptExtension());
+        this.app.workspace.onLayoutReady(() => {
+            this.register(this.environment.cache.enable());
+        });
 
         await this.loadSettings();
     }
@@ -70,28 +62,7 @@ export default class PochoirPlugin extends Plugin {
     async #updateEnvironment() {
         this.logger.verbose("updateEnvironment");
         this.environment.cleanup();
+        this.environment.updateSettings(this.settings);
         this.environment.extensions.run(this.environment);
-        await this.environment.updateSettings(this.settings);
-    }
-
-    async addExtgnsion(name: string) {
-        const arr = this.settings.extensions;
-        if (!arr.includes(name)) {
-            arr.push(name);
-            await this.saveSettings();
-        }
-    }
-
-    hasExtension(name: string) {
-        return this.settings.extensions.includes(name);
-    }
-
-    async removeExtension(name: string) {
-        const arr = this.settings.extensions;
-        const index = arr.indexOf(name);
-        if (index > -1) {
-            arr.splice(index, 1);
-            await this.saveSettings();
-        }
     }
 }

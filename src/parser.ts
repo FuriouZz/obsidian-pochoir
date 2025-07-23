@@ -1,9 +1,7 @@
 import type { App, CachedMetadata, SectionCache, TFile } from "obsidian";
-import { PochoirError } from "./errors";
 import { PropertiesBuilder } from "./properties-builder";
 import { Template } from "./template";
 import { CodeBlockRegex } from "./utils/processor";
-import { verbose } from "./logger";
 
 export interface ParsedCodeBlock {
     language: string;
@@ -31,26 +29,14 @@ export class Parser {
         this.app = app;
     }
 
-    async parse(file: TFile) {
-        const info = await this.parseFile(file);
-        if (!info) {
-            throw new PochoirError(`Cannot parse template: ${file.basename}`, {
-                notice: false,
-            });
-        }
-        return new Template(info);
-    }
-
-    async parseFile(file: TFile): Promise<ParsedTemplateInfo | null> {
+    async parse(file: TFile, metadata: CachedMetadata) {
         const source = await this.app.vault.cachedRead(file);
-        const metadata = this.app.metadataCache.getFileCache(file);
-        if (!metadata) return null;
-
-        return {
+        const info: ParsedTemplateInfo = {
             file,
             source,
             ...this.parseSections(source, metadata),
         };
+        return new Template(info);
     }
 
     parseSections(source: string, metadata: CachedMetadata): ParsedSections {
@@ -179,8 +165,6 @@ export class Parser {
 
             i++;
         }
-
-        verbose(source.trim(), attributes);
 
         return attributes;
     }

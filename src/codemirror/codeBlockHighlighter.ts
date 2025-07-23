@@ -1,10 +1,5 @@
 import { syntaxTree } from "@codemirror/language";
-import {
-    type EditorState,
-    RangeSetBuilder,
-    StateEffect,
-    StateField,
-} from "@codemirror/state";
+import { type EditorState, RangeSetBuilder } from "@codemirror/state";
 import { Decoration, ViewPlugin, type ViewUpdate } from "@codemirror/view";
 import type { Plugin } from "obsidian";
 import type { Environment } from "../environment";
@@ -133,9 +128,11 @@ async function buildDecoration({
 function highlighter({
     env,
     render,
+    onUpdate,
 }: {
     env: Environment;
     render: (content: string, el?: HTMLElement) => Promise<HTMLElement>;
+    onUpdate: (cb: () => void) => void;
 }) {
     return [
         ViewPlugin.define(
@@ -161,10 +158,7 @@ function highlighter({
                 };
 
                 _build(view.state);
-
-                // env.on("settings-change", () => {
-                //     _build(view.state);
-                // });
+                onUpdate(() => _build(view.state));
 
                 return { getDecorations, update };
             },
@@ -176,6 +170,13 @@ function highlighter({
 }
 
 export function codeBlocksHighlighter(plugin: Plugin, env: Environment) {
+    const onUpdate = (cb: () => void) => {
+        plugin.register(
+            env.cache.events.on((event) => {
+                if (event.name === "queue-cleared") cb();
+            }),
+        );
+    };
     const render = createMarkdownRenderer(plugin.app);
-    plugin.registerEditorExtension(highlighter({ env, render }));
+    plugin.registerEditorExtension(highlighter({ env, render, onUpdate }));
 }

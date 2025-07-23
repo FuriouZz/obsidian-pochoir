@@ -1,62 +1,99 @@
-import { type App, type EventRef, Events, TFile } from "obsidian";
+import { type App, type CachedMetadata, TFile } from "obsidian";
 import { PochoirError } from "./errors";
+import { EventEmitter } from "./event-emitter";
+import { FileWatcher, type FileWatcherEvent } from "./file-watcher";
 import { verbose } from "./logger";
 import { Parser } from "./parser";
 import type { Template } from "./template";
 import { alertWrap } from "./utils/alert";
-import {
-    findLinkPath,
-    getFilesAtLocation,
-    LinkPathRegex,
-} from "./utils/obsidian";
+import { findLinkPath, LinkPathRegex } from "./utils/obsidian";
 
-export class Cache extends Events {
+export type CacheEvent =
+    | { name: "template-change"; template: Template }
+    | { name: "queue-cleared" };
+
+export class Cache {
     app: App;
-    parser: Parser;
     templates = new Map<string, Template>();
-    #templateFolder: string | undefined;
+    events = new EventEmitter<CacheEvent>();
 
-    declare on: (
-        name: "template-changed",
-        callback: (template: Template) => unknown,
-        ctx?: unknown,
-    ) => EventRef;
+    #parser: Parser;
+    #watcher: FileWatcher;
+    #queue: {
+        processing: boolean;
+        items: FileWatcherEvent[];
+    } = { processing: false, items: [] };
 
     constructor(app: App) {
-        super();
         this.app = app;
-        this.parser = new Parser(app);
+        this.#parser = new Parser(app);
+        this.#watcher = new FileWatcher(app);
     }
 
-    get templateFolder() {
-        return this.#templateFolder;
+    setFolder(path: string | undefined) {
+        this.#watcher.setFolder(path);
     }
 
-    set templateFolder(path: string | undefined) {
-        this.#templateFolder = path;
-    }
-
-    getFiles() {
-        return getFilesAtLocation(this.app, this.#templateFolder ?? "/");
-    }
-
-    async refresh() {
-        this.templates.clear();
-        return Promise.all(
-            this.getFiles().map((file) => this.invalidate(file)),
+    enable() {
+        return EventEmitter.join(
+            this.#watcher.events.on((event) => {
+                this.#addQueue(event);
+            }),
+            this.#watcher.enable(),
         );
     }
 
-    async invalidate(file: TFile) {
-        if (file.parent?.path !== this.#templateFolder) return;
+    refresh() {
+        this.templates.clear();
+        for (const [path, metadata] of this.#watcher.metadatas) {
+            this.#addQueue({ name: "change", path, metadata });
+        }
+    }
+
+    #addQueue(event: FileWatcherEvent) {
+        if (!this.#queue.processing) {
+            this.#process(event);
+        } else {
+            this.#queue.items.push(event);
+        }
+    }
+
+    async #process(event: FileWatcherEvent) {
+        this.#queue.processing = true;
+        await alertWrap(async () => {
+            verbose(event);
+            if (event.name === "change") {
+                const file = this.app.vault.getFileByPath(event.path);
+                if (file) await this.#invalidate(file, event.metadata);
+            } else if (event.name === "delete") {
+                this.templates.delete(event.path);
+            }
+        });
+        this.#queue.processing = false;
+    }
+
+    async #invalidate(file: TFile, metadata: CachedMetadata) {
+        this.#queue.processing = true;
         this.templates.delete(file.path);
-        verbose("parse", file.basename);
-        const template = await alertWrap(() => this.parser.parse(file));
+
+        verbose("parse", file.path);
+
+        const template = await alertWrap(() =>
+            this.#parser.parse(file, metadata),
+        );
         if (template) {
             this.templates.set(template.info.file.path, template);
-            this.trigger("template-changed", template);
+            this.events.trigger({ name: "template-change", template });
         }
-        return template;
+
+        this.#queue.processing = false;
+
+        if (this.#queue.items.length === 0) {
+            this.events.trigger({ name: "queue-cleared" });
+        } else {
+            const item = this.#queue.items.pop();
+            if (item) this.#process(item);
+        }
     }
 
     resolve(path: string | TFile) {

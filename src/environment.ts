@@ -1,8 +1,7 @@
-import { Events, MarkdownView, type TFile, type TFolder } from "obsidian";
+import { Events, MarkdownView, type TFolder } from "obsidian";
 import { Cache } from "./cache";
 import { ExtensionList } from "./extension-list";
 import { Importer, type Loader } from "./importer";
-import { verbose } from "./logger";
 import type PochoirPlugin from "./main";
 import {
     type Preprocessor,
@@ -14,6 +13,7 @@ import type { ISettings } from "./setting-tab";
 import { type Template, TemplateContext } from "./template";
 import { alertWrap } from "./utils/alert";
 import { ensurePath, findOrCreateNote } from "./utils/obsidian";
+import { EventEmitter } from "./event-emitter";
 
 export interface Extension {
     name: string;
@@ -55,12 +55,6 @@ export class Environment extends Events {
         this.renderer = new Renderer(this.app, { findTemplate });
         this.importer = new Importer(this);
         this.extensions = new ExtensionList();
-
-        this.plugin.registerEvent(
-            this.cache.on("template-changed", async (template) => {
-                await template.preprocess(this);
-            }),
-        );
     }
 
     get app() {
@@ -74,20 +68,27 @@ export class Environment extends Events {
         };
     }
 
-    async updateSettings(settings: ISettings) {
-        this.cache.templateFolder = settings.templates_folder;
-        await this.invalidate();
-        this.trigger("settings-change");
+    updateSettings(settings: ISettings) {
+        this.cache.setFolder(settings.templates_folder);
     }
 
-    async invalidate() {
-        verbose("invalidate");
-        await this.cache.refresh();
-    }
-
-    async invalidateFile(file: TFile) {
-        this.renderer.vento.cache.delete(file.path);
-        await this.cache.invalidate(file);
+    enable() {
+        const off = EventEmitter.join(
+            this.cache.events.on((event) => {
+                if (event.name === "queue-cleared") {
+                    for (const template of this.cache.templates.values()) {
+                        template.preprocess(this);
+                    }
+                } else if (event.name === "template-change") {
+                    this.renderer.vento.cache.delete(
+                        event.template.info.file.path,
+                    );
+                }
+            }),
+            this.cache.enable(),
+        );
+        this.cache.refresh();
+        return off;
     }
 
     cleanup() {
