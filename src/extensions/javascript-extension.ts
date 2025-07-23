@@ -5,7 +5,7 @@ export default function (): Extension {
     return {
         name: "javascript",
         settings: {
-            label: "Enable [Javascript](https://furiouzz.github.io/obsidian-pochoir/javascript/overview/)",
+            label: "Enable [pochoir-js](https://furiouzz.github.io/obsidian-pochoir/javascript/overview/) code block",
             desc: "Use Javascript for more complex template or expose new functions",
         },
         setup(env) {

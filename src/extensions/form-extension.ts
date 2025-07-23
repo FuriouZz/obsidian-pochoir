@@ -7,7 +7,7 @@ export default function (): Extension {
     return {
         name: "form",
         settings: {
-            label: "Enable [Form](https://furiouzz.github.io/obsidian-pochoir/form/overview/)",
+            label: "Enable [pochoir-form](https://furiouzz.github.io/obsidian-pochoir/form/overview/) code block",
             desc: "Fill your template from a modal form",
         },
         setup(env) {

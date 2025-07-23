@@ -8,7 +8,7 @@ export default function (): Extension {
     return {
         name: "command",
         settings: {
-            label: "Enable [Command](https://furiouzz.github.io/obsidian-pochoir/command/overview/)",
+            label: "Enable [pochoir-command](https://furiouzz.github.io/obsidian-pochoir/command/overview/) code block",
             desc: "Trigger template from command palette or ribbon action",
         },
         setup(env) {
