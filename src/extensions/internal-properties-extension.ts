@@ -3,25 +3,10 @@ import type { Extension } from "../environment";
 export default function (): Extension {
     return (env) => {
         env.processors
-            .set("property:merge-properties", {
+            .set("property:imports-template", {
                 type: "property",
-                test: "$.properties",
-                order: 70,
-                async process({ context, value: properties }) {
-                    if (!isStringList(properties)) return;
-                    for (const t of properties) {
-                        const { context: ctx } = await env.importer.load(
-                            t,
-                            context,
-                        );
-                        context.properties.merge(ctx.properties);
-                    }
-                },
-            })
-            .set("property:merge-exports", {
-                type: "property",
-                test: "$.exports",
-                order: 80,
+                test: "$.imports",
+                order: 40,
                 async process({ context, value: properties }) {
                     if (!isStringList(properties)) return;
                     for (const t of properties) {
@@ -33,6 +18,21 @@ export default function (): Extension {
                             context.locals.exports,
                             ctx.locals.exports,
                         );
+                    }
+                },
+            })
+            .set("property:merge-properties", {
+                type: "property",
+                test: "$.properties",
+                order: 80,
+                async process({ context, value: properties }) {
+                    if (!isStringList(properties)) return;
+                    for (const t of properties) {
+                        const { context: ctx } = await env.importer.load(
+                            t,
+                            context,
+                        );
+                        context.properties.merge(ctx.properties);
                     }
                 },
             })

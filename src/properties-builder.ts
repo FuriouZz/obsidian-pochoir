@@ -14,6 +14,12 @@ export class PropertiesBuilder extends Map<string, unknown> {
         return set as string[];
     }
 
+    list(key: string) {
+        const set = this.get(key);
+        if (!Array.isArray(set)) return null;
+        return set;
+    }
+
     insertTo(key: string, ...values: string[]) {
         const set = this.#findArray(key);
         for (const value of values) {
@@ -47,7 +53,11 @@ export class PropertiesBuilder extends Map<string, unknown> {
         return builder;
     }
 
-    merge(obj: object | PropertiesBuilder) {
+    merge(obj: string | object | PropertiesBuilder) {
+        if (typeof obj === "string") {
+            return this.mergeYaml(obj);
+        }
+
         const entries =
             obj instanceof PropertiesBuilder
                 ? obj.entries()
@@ -56,6 +66,8 @@ export class PropertiesBuilder extends Map<string, unknown> {
         for (const [key, value] of entries) {
             this.set(key, value);
         }
+
+        return this;
     }
 
     mergeYaml(yaml: string) {
@@ -66,6 +78,7 @@ export class PropertiesBuilder extends Map<string, unknown> {
             );
         }
         this.merge(json);
+        return this;
     }
 
     toObject(fm: Record<string, unknown> = {}) {

@@ -3,7 +3,7 @@ import { PochoirError } from "../errors";
 import type { Template } from "../template";
 import { alertWrap } from "../utils/alert";
 import { parseYaml } from "../utils/obsidian";
-import { createCodeBlockProcessorTest as test } from "../utils/processor";
+import { toSlug } from "@furiouzz/lol/string/string";
 
 export type CommandTrigger = "ribbon" | "command";
 
@@ -12,7 +12,7 @@ export interface Command {
     icon: string;
     title: string;
     action: "create" | "insert";
-    triggers: CommandTrigger[] | CommandTrigger;
+    triggers: CommandTrigger[];
 }
 
 export class CommandManager {
@@ -24,7 +24,7 @@ export class CommandManager {
     }
 
     add(template: Template, command: Command) {
-        const triggers = [command.triggers].flat();
+        const triggers = command.triggers;
         if (triggers.includes("ribbon")) {
             this.addRibon(template, command);
         }
@@ -117,24 +117,32 @@ export default function (): Extension {
             async process({ codeBlock, template }) {
                 cmd.deleteAllFromPath(template.info.file.path);
 
-                const command = {
-                    title: template.info.file.basename,
-                    icon: "shield-question-mark",
-                    action: "create",
-                    ...parseYaml<Partial<Command> & { id: string }>(
-                        codeBlock.code,
-                    ),
-                } as Command;
+                const json = parseYaml<
+                    Partial<
+                        Omit<Command, "triggers"> & {
+                            trigger: CommandTrigger | CommandTrigger[];
+                            triggers: CommandTrigger | CommandTrigger[];
+                        }
+                    >
+                >(codeBlock.code);
 
-                alertWrap(() => {
-                    if (typeof command.id !== "string") {
-                        throw new PochoirError("id is missing");
-                    }
-                    if (!command.triggers) {
-                        throw new PochoirError("triggers is missing");
-                    }
-                    cmd.add(template, command);
-                });
+                const triggers: CommandTrigger[] = [];
+                if (json?.trigger) triggers.push(...[json.trigger].flat());
+                if (json?.triggers) triggers.push(...[json.triggers].flat());
+                if (triggers.length === 0) triggers.push("command");
+
+                const command: Command = {
+                    id:
+                        json?.id ??
+                        toSlug(json?.title ?? template.info.file.basename),
+                    title: template.info.file.basename,
+                    icon: "file-question-mark",
+                    action: "create",
+                    ...json,
+                    triggers,
+                };
+
+                alertWrap(() => cmd.add(template, command));
             },
             disable({ template }) {
                 cmd.deleteAllFromPath(template.info.file.path);

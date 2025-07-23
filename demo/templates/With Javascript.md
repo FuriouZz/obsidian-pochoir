@@ -65,4 +65,4 @@ template.exports.form = await form.prompt();
 
 End of content
 
-{{ include "[[Inherit Properties]]" }}
+{{ include "[[Properties - Author Template]]" }}
