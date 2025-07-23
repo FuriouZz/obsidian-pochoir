@@ -1,9 +1,14 @@
 import { syntaxTree } from "@codemirror/language";
-import { type EditorState, RangeSetBuilder } from "@codemirror/state";
+import {
+    type EditorState,
+    RangeSetBuilder,
+    StateEffect,
+    StateField,
+} from "@codemirror/state";
 import { Decoration, ViewPlugin, type ViewUpdate } from "@codemirror/view";
 import type { Plugin } from "obsidian";
+import type { Environment } from "../environment";
 import { createMarkdownRenderer } from "../utils/obsidian";
-import { Environment } from "../environment";
 
 async function highlight({
     builder,
@@ -156,6 +161,10 @@ function highlighter({
                 };
 
                 _build(view.state);
+
+                // env.on("settings-change", () => {
+                //     _build(view.state);
+                // });
 
                 return { getDecorations, update };
             },

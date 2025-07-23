@@ -1,4 +1,4 @@
-import { MarkdownView, type TFile, type TFolder } from "obsidian";
+import { Events, MarkdownView, type TFile, type TFolder } from "obsidian";
 import { Cache } from "./cache";
 import { ExtensionList } from "./extension-list";
 import { Importer, type Loader } from "./importer";
@@ -29,7 +29,7 @@ export type ContextProvider = (
     template: Template,
 ) => void | Promise<void>;
 
-export class Environment {
+export class Environment extends Events {
     plugin: PochoirPlugin;
     cache: Cache;
     renderer: Renderer;
@@ -42,6 +42,8 @@ export class Environment {
     loaders: Loader[] = [];
 
     constructor(plugin: PochoirPlugin) {
+        super();
+
         const findTemplate = (path: string) => {
             const file = this.app.vault.getFileByPath(path);
             if (!file) return null;
@@ -75,6 +77,7 @@ export class Environment {
     async updateSettings(settings: ISettings) {
         this.cache.templateFolder = settings.templates_folder;
         await this.invalidate();
+        this.trigger("settings-change");
     }
 
     async invalidate() {

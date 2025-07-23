@@ -24,7 +24,6 @@ export default class PochoirPlugin extends Plugin {
 
     async onload() {
         this.logger.level = "DEBUG";
-        await this.loadSettings();
         this.addSettingTab(new SettingTab(this));
 
         this.registerEvent(
@@ -48,6 +47,8 @@ export default class PochoirPlugin extends Plugin {
         this.environment.extensions.use(formExtension());
         this.environment.extensions.use(commandExtension());
         this.environment.extensions.use(javascriptExtension());
+
+        await this.loadSettings();
     }
 
     onunload() {
