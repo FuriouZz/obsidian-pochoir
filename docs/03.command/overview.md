@@ -2,9 +2,8 @@
 hide_menu: false
 order: 3
 title: Overview
-description: How to trigger a template from the command palette or a ribbon
 ---
-# Overview
+# Command overview
 
 The `pochoir-command` code block allows you to trigger a template from the [command palette](https://help.obsidian.md/plugins/command-palette) and/or a [ribbon](https://help.obsidian.md/ribbon).
 

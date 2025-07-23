@@ -8,8 +8,8 @@ Pochoir is a plugin for [Obsidian](https://obsidian.md/) enabling you to generat
 
 From now, I invite you to:
 - Follow the [installation](/installation) process to use the plugin in your vault
-- Use powerful [properties](/special-properties) without coding skills
-- Enhance your template generation with a [form](/form-code-block)
-- [Trigger](/command-code-block) your template from command palette or ribbon actions
-- Use [Javascript](/javascript-code-block) if you are an advanced users
+- Use powerful [properties](/special-properties/overview) without coding skills
+- Enhance your template generation with a [form](/form/overview)
+- [Trigger](/command) your template from command palette or ribbon actions
+- Use [Javascript](/javascript/overview) if you are an advanced users
 - Read [vento.js](https://vento.js.org) documentation to improve your templates

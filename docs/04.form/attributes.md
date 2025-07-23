@@ -2,7 +2,7 @@
 hide_menu: false
 title: Attributes
 ---
-# Form Attributes
+# Form attributes
 
 To create a form, you need to create a `pochoir-form` code block.
 
