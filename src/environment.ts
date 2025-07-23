@@ -1,5 +1,6 @@
 import { MarkdownView, type TFile, type TFolder } from "obsidian";
 import { Cache } from "./cache";
+import { ExtensionList } from "./extension-list";
 import { Importer, type Loader } from "./importer";
 import { verbose } from "./logger";
 import type PochoirPlugin from "./main";
@@ -14,7 +15,14 @@ import { type Template, TemplateContext } from "./template";
 import { alertWrap } from "./utils/alert";
 import { ensurePath, findOrCreateNote } from "./utils/obsidian";
 
-export type Extension = (env: Environment) => void;
+export interface Extension {
+    name: string;
+    settings?: {
+        label?: string;
+        desc?: string;
+    };
+    setup(env: Environment): void;
+}
 
 export type ContextProvider = (
     context: TemplateContext,
@@ -26,6 +34,7 @@ export class Environment {
     cache: Cache;
     renderer: Renderer;
     importer: Importer;
+    extensions: ExtensionList;
 
     preprocessors = new ProcessorList<Preprocessor>();
     processors = new ProcessorList<Processor>();
@@ -43,6 +52,7 @@ export class Environment {
         this.cache = new Cache(this.app);
         this.renderer = new Renderer(this.app, { findTemplate });
         this.importer = new Importer(this);
+        this.extensions = new ExtensionList();
 
         this.plugin.registerEvent(
             this.cache.on("template-changed", async (template) => {
@@ -53,11 +63,6 @@ export class Environment {
 
     get app() {
         return this.plugin.app;
-    }
-
-    use(extension: Extension) {
-        extension(this);
-        return this;
     }
 
     getSupportedCodeBlocks() {

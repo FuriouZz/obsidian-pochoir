@@ -3,6 +3,47 @@ import type { Extension } from "../environment";
 import type { TemplateContext } from "../template";
 import { parseYaml } from "../utils/obsidian";
 
+export default function (): Extension {
+    return {
+        name: "form",
+        settings: {
+            label: "Enable [Form](https://furiouzz.github.io/obsidian-pochoir/form/overview/)",
+            desc: "Fill your template from a modal form",
+        },
+        setup(env) {
+            const formContext = new FormContext(env.app);
+
+            env.loaders.push({
+                contextMode: "shared",
+                test: "pochoir:form",
+                load: async (_, ctx) => formContext.createAPI(ctx),
+            });
+
+            env.processors.set("codeblock:form", {
+                type: "codeblock",
+                languages: { "pochoir-form": "yaml" },
+                order: 40,
+                async process({ codeBlock, context }) {
+                    const { name, exports } = codeBlock.attributes;
+
+                    const form = formContext.createForm(
+                        context,
+                        typeof name === "string" ? name : undefined,
+                    );
+                    const obj = parseYaml<Record<string, FieldType>>(
+                        codeBlock.code.replace(/\t/g, " "),
+                    );
+                    if (obj) form.fromObject(obj);
+
+                    if (typeof exports === "string") {
+                        context.locals.exports[exports] = await form.prompt();
+                    }
+                },
+            });
+        },
+    };
+}
+
 export interface FormInfo {
     title: string;
     description: string;
@@ -524,38 +565,4 @@ class FormContext {
             },
         };
     }
-}
-
-export default function (): Extension {
-    return (env) => {
-        const formContext = new FormContext(env.app);
-
-        env.loaders.push({
-            contextMode: "shared",
-            test: "pochoir:form",
-            load: async (_, ctx) => formContext.createAPI(ctx),
-        });
-
-        env.processors.set("codeblock:form", {
-            type: "codeblock",
-            languages: { "pochoir-form": "yaml" },
-            order: 40,
-            async process({ codeBlock, context }) {
-                const { name, exports } = codeBlock.attributes;
-
-                const form = formContext.createForm(
-                    context,
-                    typeof name === "string" ? name : undefined,
-                );
-                const obj = parseYaml<Record<string, FieldType>>(
-                    codeBlock.code.replace(/\t/g, " "),
-                );
-                if (obj) form.fromObject(obj);
-
-                if (typeof exports === "string") {
-                    context.locals.exports[exports] = await form.prompt();
-                }
-            },
-        });
-    };
 }

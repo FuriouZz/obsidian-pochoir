@@ -1,25 +1,11 @@
 import { PluginSettingTab, Setting } from "obsidian";
-import { EXTENSION_SETTINGS } from "./constants";
 import type PochoirPlugin from "./main";
 import { FileInputSuggester } from "./suggesters/file-input-suggester";
-
-export type ActivableExtension =
-    | "special-properties"
-    | "javascript"
-    | "command"
-    | "form";
-
-export type ActivableExtensionList = [
-    ActivableExtension,
-    {
-        label: string;
-        desc: string | (() => string | DocumentFragment);
-    },
-][];
+import { minidownFragment } from "./utils/minidown";
 
 export interface ISettings {
     templates_folder: string;
-    extensions: ActivableExtension[];
+    extensions: string[];
 }
 
 export class SettingTab extends PluginSettingTab {
@@ -52,16 +38,19 @@ export class SettingTab extends PluginSettingTab {
                 });
             });
 
-        for (const [extension, { label, desc }] of EXTENSION_SETTINGS) {
+        const env = this.plugin.environment;
+
+        for (const { settings, name } of env.extensions.values()) {
+            if (!settings) continue;
+
             new Setting(containerEl)
-                .setName(label)
-                .setDesc(typeof desc === "string" ? desc : desc())
+                .setName(minidownFragment(settings.label ?? ""))
+                .setDesc(minidownFragment(settings.desc ?? ""))
                 .addToggle((toggle) => {
-                    toggle.setValue(this.plugin.hasExtension(extension));
+                    toggle.setValue(env.extensions.enabled.has(name));
                     toggle.onChange(async (value) => {
-                        value
-                            ? await this.plugin.addExtension(extension)
-                            : await this.plugin.removeExtension(extension);
+                        env.extensions.enabled.toggle(name, value);
+                        await this.plugin.saveSettings();
                     });
                 });
         }

@@ -1,9 +1,67 @@
+import { toSlug } from "@furiouzz/lol/string/string";
 import type { Environment, Extension } from "../environment";
-import { PochoirError } from "../errors";
 import type { Template } from "../template";
 import { alertWrap } from "../utils/alert";
 import { parseYaml } from "../utils/obsidian";
-import { toSlug } from "@furiouzz/lol/string/string";
+
+export default function (): Extension {
+    return {
+        name: "command",
+        settings: {
+            label: "Enable [Command](https://furiouzz.github.io/obsidian-pochoir/command/overview/)",
+            desc: "Trigger template from command palette or ribbon action",
+        },
+        setup(env) {
+            const cmd = new CommandManager(env);
+
+            env.plugin.app.metadataCache.on("deleted", (file) => {
+                cmd.deleteAllFromPath(file.path);
+            });
+
+            env.preprocessors.set("codeblock:command", {
+                type: "codeblock",
+                languages: { "pochoir-command": "yaml" },
+                async process({ codeBlock, template }) {
+                    cmd.deleteAllFromPath(template.info.file.path);
+
+                    const json = parseYaml<
+                        Partial<
+                            Omit<Command, "triggers"> & {
+                                trigger: CommandTrigger | CommandTrigger[];
+                                triggers: CommandTrigger | CommandTrigger[];
+                            }
+                        >
+                    >(codeBlock.code);
+
+                    const triggers: CommandTrigger[] = [];
+                    if (json?.trigger) triggers.push(...[json.trigger].flat());
+                    if (json?.triggers)
+                        triggers.push(...[json.triggers].flat());
+                    if (triggers.length === 0) triggers.push("command");
+
+                    const command: Command = {
+                        id:
+                            json?.id ??
+                            toSlug(json?.title ?? template.info.file.basename),
+                        title: template.info.file.basename,
+                        icon: "file-question-mark",
+                        action: "create",
+                        ...json,
+                        triggers,
+                    };
+
+                    alertWrap(() => cmd.add(template, command));
+                },
+                disable({ template }) {
+                    cmd.deleteAllFromPath(template.info.file.path);
+                },
+                dispose() {
+                    cmd.clear();
+                },
+            });
+        },
+    };
+}
 
 export type CommandTrigger = "ribbon" | "command";
 
@@ -101,55 +159,4 @@ export class CommandManager {
             this.deleteAllFromPath(path);
         }
     }
-}
-
-export default function (): Extension {
-    return (env) => {
-        const cmd = new CommandManager(env);
-
-        env.plugin.app.metadataCache.on("deleted", (file) => {
-            cmd.deleteAllFromPath(file.path);
-        });
-
-        env.preprocessors.set("codeblock:command", {
-            type: "codeblock",
-            languages: { "pochoir-command": "yaml" },
-            async process({ codeBlock, template }) {
-                cmd.deleteAllFromPath(template.info.file.path);
-
-                const json = parseYaml<
-                    Partial<
-                        Omit<Command, "triggers"> & {
-                            trigger: CommandTrigger | CommandTrigger[];
-                            triggers: CommandTrigger | CommandTrigger[];
-                        }
-                    >
-                >(codeBlock.code);
-
-                const triggers: CommandTrigger[] = [];
-                if (json?.trigger) triggers.push(...[json.trigger].flat());
-                if (json?.triggers) triggers.push(...[json.triggers].flat());
-                if (triggers.length === 0) triggers.push("command");
-
-                const command: Command = {
-                    id:
-                        json?.id ??
-                        toSlug(json?.title ?? template.info.file.basename),
-                    title: template.info.file.basename,
-                    icon: "file-question-mark",
-                    action: "create",
-                    ...json,
-                    triggers,
-                };
-
-                alertWrap(() => cmd.add(template, command));
-            },
-            disable({ template }) {
-                cmd.deleteAllFromPath(template.info.file.path);
-            },
-            dispose() {
-                cmd.clear();
-            },
-        });
-    };
 }

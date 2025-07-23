@@ -13,11 +13,7 @@ import javascriptExtension from "./extensions/javascript-extension";
 import minimalExtension from "./extensions/minimal-extension";
 import specialPropertiesExtension from "./extensions/special-properties-extension";
 import { getLogger } from "./logger";
-import {
-    type ActivableExtension,
-    type ISettings,
-    SettingTab,
-} from "./setting-tab";
+import { type ISettings, SettingTab } from "./setting-tab";
 import { TemplateModalSuggester } from "./suggesters/template-modal-suggester";
 
 export default class PochoirPlugin extends Plugin {
@@ -45,6 +41,13 @@ export default class PochoirPlugin extends Plugin {
         });
 
         codeBlocksHighlighter(this, this.environment);
+
+        this.environment.extensions.use(minimalExtension());
+        this.environment.extensions.use(specialPropertiesExtension());
+        this.environment.extensions.use(dateExtension());
+        this.environment.extensions.use(formExtension());
+        this.environment.extensions.use(commandExtension());
+        this.environment.extensions.use(javascriptExtension());
     }
 
     onunload() {
@@ -53,10 +56,12 @@ export default class PochoirPlugin extends Plugin {
 
     async loadSettings() {
         this.settings = { ...this.settings, ...(await this.loadData()) };
+        this.environment.extensions.enabled.join(this.settings.extensions);
         await this.#updateEnvironment();
     }
 
     async saveSettings() {
+        this.settings.extensions = [...this.environment.extensions.enabled];
         await this.saveData(this.settings);
         await this.#updateEnvironment();
     }
@@ -64,24 +69,11 @@ export default class PochoirPlugin extends Plugin {
     async #updateEnvironment() {
         this.logger.verbose("updateEnvironment");
         this.environment.cleanup();
-        this.environment.use(minimalExtension());
-        this.environment.use(dateExtension());
-        if (this.hasExtension("special-properties")) {
-            this.environment.use(specialPropertiesExtension());
-        }
-        if (this.hasExtension("javascript")) {
-            this.environment.use(javascriptExtension());
-        }
-        if (this.hasExtension("command")) {
-            this.environment.use(commandExtension());
-        }
-        if (this.hasExtension("form")) {
-            this.environment.use(formExtension());
-        }
+        this.environment.extensions.run(this.environment);
         await this.environment.updateSettings(this.settings);
     }
 
-    async addExtension(name: ActivableExtension) {
+    async addExtgnsion(name: string) {
         const arr = this.settings.extensions;
         if (!arr.includes(name)) {
             arr.push(name);
@@ -89,11 +81,11 @@ export default class PochoirPlugin extends Plugin {
         }
     }
 
-    hasExtension(name: ActivableExtension) {
+    hasExtension(name: string) {
         return this.settings.extensions.includes(name);
     }
 
-    async removeExtension(name: ActivableExtension) {
+    async removeExtension(name: string) {
         const arr = this.settings.extensions;
         const index = arr.indexOf(name);
         if (index > -1) {
