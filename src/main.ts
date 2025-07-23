@@ -11,6 +11,7 @@ import dateExtension from "./extensions/date-extension";
 import formExtension from "./extensions/form-extension";
 import javascriptExtension from "./extensions/javascript-extension";
 import minimalExtension from "./extensions/minimal-extension";
+import propertiesExtension from "./extensions/properties-extension";
 import specialPropertiesExtension from "./extensions/special-properties-extension";
 import { getLogger } from "./logger";
 import { type ISettings, SettingTab } from "./setting-tab";
@@ -36,6 +37,8 @@ export default class PochoirPlugin extends Plugin {
         this.environment.extensions.use(formExtension());
         this.environment.extensions.use(commandExtension());
         this.environment.extensions.use(javascriptExtension());
+        this.environment.extensions.use(propertiesExtension());
+
         this.app.workspace.onLayoutReady(() => {
             this.register(this.environment.cache.enable());
         });
