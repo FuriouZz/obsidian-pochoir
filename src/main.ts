@@ -24,7 +24,7 @@ export default class PochoirPlugin extends Plugin {
     logger = getLogger();
 
     async onload() {
-        this.logger.level = "DEBUG";
+        this.logger.level = "VERBOSE";
         this.addSettingTab(new SettingTab(this));
 
         insertFromTemplateCommand(this, this.templateSuggester);
@@ -40,7 +40,7 @@ export default class PochoirPlugin extends Plugin {
         this.environment.extensions.use(propertiesExtension());
 
         this.app.workspace.onLayoutReady(() => {
-            this.register(this.environment.cache.enable());
+            this.register(this.environment.enable());
         });
 
         await this.loadSettings();

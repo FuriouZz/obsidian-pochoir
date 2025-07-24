@@ -76,20 +76,16 @@ export class Cache {
         this.#queue.processing = true;
         this.templates.delete(file.path);
 
-        verbose("parse", file.path);
-
-        const template = await alertWrap(() =>
-            this.#parser.parse(file, metadata),
-        );
-        if (template) {
-            this.templates.set(template.info.file.path, template);
-            this.events.trigger({ name: "template-change", template });
-        }
+        const template = await this.#parser.parse(file, metadata);
+        this.templates.set(template.info.file.path, template);
+        this.events.trigger({ name: "template-change", template });
+        verbose("template-change", file.path);
 
         this.#queue.processing = false;
 
         if (this.#queue.items.length === 0) {
             this.events.trigger({ name: "queue-cleared" });
+            verbose("queue-cleared");
         } else {
             const item = this.#queue.items.pop();
             if (item) this.#process(item);
