@@ -1,0 +1,59 @@
+@import "wiki/src/styles.css";
+@import "css/shiki.css";
+/* @import "css/shiki-extra.css"; */
+
+.menu ul summary:has(:not(a)) {
+    padding: 0.75em 0.5em;
+}
+
+.code-block {
+    position: relative;
+
+    header {
+      padding: 0.5em 0.5em;
+      position: absolute;
+      pointer-events: none;
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .attribute-lang {
+        font-size: 12px;
+        font-weight: var(--font-bold);
+        color: var(--color-dim);
+        pointer-events: none;
+        transition: all 0.25s;
+    }
+
+    .copy {
+        position: absolute;
+        right: 0.65em;
+        top: 0.15em;
+        pointer-events: auto;
+        opacity: 0;
+        transition: all 0.25s;
+        font-size: 12px;
+        font-weight: var(--font-bold);
+        color: var(--color-dim);
+        border: 0;
+        padding: 0;
+
+        &:before {
+            content: "copy";
+        }
+
+        &:hover {
+            opacity: 1;
+        }
+
+        &.copied:before {
+            content: "copied";
+        }
+    }
+
+    .copy:hover + .attribute-lang {
+        opacity: 0;
+    }
+}
+

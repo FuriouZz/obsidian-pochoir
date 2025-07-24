@@ -1,0 +1,6 @@
+.shiki {
+    border: 1px solid var(--code-border);
+    border-radius: var(--pagefind-ui-border-radius);
+    padding: 1em;
+    overflow-x: auto;
+}

@@ -30,3 +30,6 @@ data.json
 # vault
 demo/.obsidian/workspace.json
 demo/outputs
+
+*.blend*
+!*.blend

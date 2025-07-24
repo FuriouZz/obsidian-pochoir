@@ -13,20 +13,10 @@ I liked the simplicity of the core **Template plugin**:
 
 But it is too limited.
 
-With **Pochoir**, I want to offer an easy and powerful user experience in template creation with small **yaml** and **javascript** code blocks.
+With **Pochoir**, we want to offer an easy and powerful user experience in template creation with small **yaml** and **javascript** code blocks.
 
-I took the inspiration of using code block from 
-[Silverbullet's space-lua](https://silverbullet.md/Space%20Lua) code block to configure SilverBullet.
-
-With **yaml** code block, you can:
-- Rename your note
-- Generate a form
-- Trigger your template from command palette or ribbon action
-- Trigger a template by its aliases
-- Merge properties from multiple templates
-- Combine multiple templates
-
-With **javascript** code block, you can:
-- Extend the template engine with custom variables and functions
-- Share variables and functions between templates
-- Do everything above, programmatically
+We took inspiration from amazing works done on:
+- [Silverbullet's space-lua](https://silverbullet.md/Space%20Lua)
+- [Templater](https://github.com/SilentVoid13/Templater)
+- [Varinote](https://github.com/gsarig/obsidian-varinote)
+- [Modal Form](https://github.com/danielo515/obsidian-modal-form)

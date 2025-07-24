@@ -2,8 +2,9 @@
   "imports": {
     "lume/": "https://deno.land/x/lume@v3.0.5/",
     "lume/jsx-runtime": "https://deno.land/x/ssx@v0.1.10/jsx-runtime.ts",
-    "wiki/": "https://deno.land/x/lume_theme_simple_wiki@v0.13.0/",
-    "lume/cms/": "https://cdn.jsdelivr.net/gh/lumeland/cms@0.12.5/"
+    "wiki/": "https://deno.land/x/lume_theme_simple_wiki@v0.14.0/",
+    "lume/cms/": "https://cdn.jsdelivr.net/gh/lumeland/cms@0.12.5/",
+    "shiki/": "https://deno.land/x/lume_shiki@0.0.20/"
   },
   "tasks": {
     "lume": "echo \"import 'lume/cli.ts'\" | deno run -A -",

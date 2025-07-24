@@ -23,10 +23,10 @@ To configure the plugin, open `Settings` and go to `Pochoir`.
 
 This is where your template are located (defaults to the root of your vault).
 
-### Enable Javascript
+### Extensions
 
-Enables `pochoir-js` and `pochoir-javascript` code block.
-
-### Enable Command
-
-Enables `pochoir-command` code block.
+- Enable/Disable [Special properties](/special-properties/overview)
+- Enable/Disable [Form](/form/overview)
+- Enable/Disable [Command](/command/overview)
+- Enable/Disable [Javascript](/javascript/overview)
+- Enable/Disable [pochoir-properties](/properties/overview)
