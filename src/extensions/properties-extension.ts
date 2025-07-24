@@ -17,7 +17,9 @@ export default function (): Extension {
                     "pochoir-properties": "yaml",
                 },
                 async process({ context, codeBlock }) {
-                    context.properties.clear();
+                    if (!codeBlock.attributes.noclear) {
+                        context.properties.clear();
+                    }
                     const originalPath = new PathBuilder(context.target);
                     const yaml = await env.renderer.render(codeBlock.code, {
                         originalPath: originalPath.createProxy(),

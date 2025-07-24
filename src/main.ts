@@ -32,12 +32,12 @@ export default class PochoirPlugin extends Plugin {
         codeBlocksHighlighter(this, this.environment);
 
         this.environment.extensions.use(minimalExtension());
+        this.environment.extensions.use(propertiesExtension());
         this.environment.extensions.use(specialPropertiesExtension());
         this.environment.extensions.use(dateExtension());
         this.environment.extensions.use(formExtension());
         this.environment.extensions.use(commandExtension());
         this.environment.extensions.use(javascriptExtension());
-        this.environment.extensions.use(propertiesExtension());
 
         this.app.workspace.onLayoutReady(() => {
             this.register(this.environment.enable());
