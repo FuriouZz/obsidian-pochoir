@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.0.7]
+### Added
+- Introduce new `pochoir-props` code block to keep separate template frontmatter from note frontmatter
+- Open form in a custom view instead of modal on mobile
+
+### Changed
+- Use custom code block, now this is `pochoir-js`, `pochoir-form` and `pochoir-command`
+- Documentation updated
+- New attribute parsed, attributes does not need bracks `{}` anymore
+- Update plugin settings
+
+### Fixed
+- Template list was not updated when file is renamed or moved
+
 ## [0.0.6]
 ### Added
 - Implement template preprocessor. Preprocessor are called after template parsing without a `TemplateContext`.
@@ -66,6 +80,7 @@ action: create # or "insert"
 
 First version
 
+[0.0.7]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.3...v0.0.4
