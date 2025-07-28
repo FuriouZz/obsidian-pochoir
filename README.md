@@ -1,23 +1,22 @@
 # Pochoir, an Obsidian Plugin
 
-**Pochoir** is a template plugin for Obsidian (https://obsidian.md).
+Pochoir is an [Obsidian](https://obsidian.md/) plugin for note templating.
+
+With simplicity in mind, we want note templating made easy, with few configurations and no coding experience.
 
 ## Status
 
-This plugin is very experimental and I use it only for my use cases. If you are looking for a more mature alternative, I recommand [Templater](https://github.com/SilentVoid13/Templater).
+This plugin is very experimental and I use it only for my use cases.
+
+If you are looking for a more mature alternative, I recommand [Templater](https://github.com/SilentVoid13/Templater).
+
+## Getting Started
+
+Follow the instruction on the [webpage](https://furiouzz.github.io/obsidian-pochoir/).
 
 ## Dependencies
 - [ventojs](https://github.com/ventojs/vento)
-
-## Why?
-
-I wanted to create a plugin similar to [Templater](https://github.com/SilentVoid13/Templater) but with less scripting and has features out-of-the-box.
-
-## Features
-
-This plugin provides two approachs:
-- Write template without code with special properties prefixed with `$.`
-- Write complex template with javascript code block
+- [valibot](https://valibot.dev/)
 
 ## More information
 
