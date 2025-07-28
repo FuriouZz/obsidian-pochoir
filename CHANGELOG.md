@@ -6,14 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-## [0.0.8]
+## [0.0.8] - 2025-07-28
 ### Fixed
 - Highlight code blocks in Reading mode
 
 ### Changed
 - Update documentation
 
-## [0.0.7]
+## [0.0.7] - 2025-07-28
 ### Added
 - Introduce new `pochoir-props` code block to keep separate template frontmatter from note frontmatter
 - Open form in a custom view instead of modal on mobile
@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Template list was not updated when file is renamed or moved
 
-## [0.0.6]
+## [0.0.6] - 2025-07-17
 ### Added
 - Implement template preprocessor. Preprocessor are called after template parsing without a `TemplateContext`.
 - `(pre)processor.disable(params)` is a new function for (pre)processor. It is called when a code block is disabled.
