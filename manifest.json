@@ -3,7 +3,7 @@
 	"name": "Pochoir",
 	"version": "0.0.8",
 	"minAppVersion": "0.15.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
+	"description": "Note templating made easy with few configuration and no coding experience",
 	"author": "furiouzz",
 	"authorUrl": "https://chrsmsln.com",
 	"isDesktopOnly": false
