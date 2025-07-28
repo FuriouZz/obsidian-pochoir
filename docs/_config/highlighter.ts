@@ -38,7 +38,7 @@ function codeBlockHighlighter(): ShikiTransformer {
 function shikiCopyLang() {
     const scriptPath = import.meta.resolve("./scripts/copy.js");
     return (site: Site) => {
-        const path = site.url("scripts/shiki/copy.js");
+        const path = "/scripts/shiki/copy.js";
         site.remoteFile(path, scriptPath);
         site.copy(path);
         site.use(
