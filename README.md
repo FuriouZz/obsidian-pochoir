@@ -14,13 +14,65 @@ If you are looking for a more mature alternative, I recommand [Templater](https:
 
 Follow the instruction on the [webpage](https://furiouzz.github.io/obsidian-pochoir/).
 
+## Example
+
+### Create a unique note
+
+The following example do:
+- Create a new note at path `Inbox/YYYYMMDDHHmm.md`
+- Include `date` and `tags` properties
+- Register the template to a ribbon action
+
+````md
+---
+date: "{{date.today('YYYY-MM-DD')}}"
+tags:
+- inbox
+$.path: "Inbox/{{date.today('YYYYMMDDHHmm')}}"
+---
+
+```pochoir-command
+id: create-unique-note
+title: Create Unique Note
+action: create
+trigger: ribbon
+```
+````
+
+### Create a task note
+
+The following example do:
+- Create a form that will be displayed at template execution
+- The value `form.due` is filled by the form result
+- `date`, `due`, `complete` and `tags` properties are included to the note
+- Register an alias `tsk` for a quicker suggestion in the template list
+- Create the note at path `References/Tasks/YYYYMMDDHHmm.md`
+
+````md
+---
+date: "{{date.today('YYYY-MM-DD')}}"
+due: "{{form.due}}"
+complete: false
+tags:
+- tasks
+$.aliases:
+- tsk
+$.path: "References/Tasks/{{date.today('YYYYMMDDHHmm')}}"
+---
+
+```pochoir-form exports=form
+due:
+  type: date
+```
+````
+
+### More examples
+
+For more example, we invite you to check the `./demo` vault or to read the [documentation](https://furiouzz.github.io/obsidian-pochoir/).
+
 ## Dependencies
 - [ventojs](https://github.com/ventojs/vento)
 - [valibot](https://valibot.dev/)
-
-## More information
-
-For more complex templates, check the `./demo` vault.
 
 ## Inspiration
 
