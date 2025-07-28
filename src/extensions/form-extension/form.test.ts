@@ -8,6 +8,8 @@ describe("createForm", () => {
         const form = createForm();
         form.text("title").label("Title").initialValue("Untitled");
         assert.deepEqual(form.toJSON(), {
+            title: "Insert template",
+            description: "Please fill in the form",
             fields: [
                 {
                     label: "Title",
@@ -25,9 +27,15 @@ describe("createForm", () => {
             .initialValue("Untitled");
 
         const form = createForm();
-        form.fromJSON({ fields: [title.toJSON()] });
+        form.fromJSON({
+            title: "MyForm",
+            description: "MyForm description",
+            fields: [title.toJSON()],
+        });
 
         assert.deepEqual(form.toJSON(), {
+            title: "MyForm",
+            description: "MyForm description",
             fields: [
                 {
                     label: "Title",
