@@ -5,8 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.0.8]
 ### Fixed
 - Highlight code blocks in Reading mode
+
+### Changed
+- Update documentation
 
 ## [0.0.7]
 ### Added
@@ -82,7 +87,8 @@ action: create # or "insert"
 
 First version
 
-[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.7...main
+[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.8...main
+[0.0.8]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.4...v0.0.5
