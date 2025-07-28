@@ -24,10 +24,8 @@ level:
 ```
 
 ```pochoir-js
-// Create form programmatically
-const { getForm } = await template.import("pochoir:form");
-const form = getForm("form");
-template.exports.form = await form.prompt();
+const { prompt } = await template.import("pochoir:form");
+template.exports.form = await prompt("form");
 ```
 
 ```yaml

@@ -16,6 +16,7 @@ import specialPropertiesExtension from "./extensions/special-properties-extensio
 import { getLogger } from "./logger";
 import { type ISettings, SettingTab } from "./setting-tab";
 import { TemplateModalSuggester } from "./suggesters/template-modal-suggester";
+import { FormView } from "./extensions/form-extension/obsidian";
 
 export default class PochoirPlugin extends Plugin {
     settings: ISettings = { ...DEFAULT_SETTINGS };
@@ -42,6 +43,8 @@ export default class PochoirPlugin extends Plugin {
         this.app.workspace.onLayoutReady(() => {
             this.register(this.environment.enable());
         });
+
+        this.registerView(FormView.type, (leaf) => new FormView(leaf));
 
         await this.loadSettings();
     }

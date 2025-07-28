@@ -46,14 +46,14 @@ console.log(obsidian, app);
 
 ```pochoir-js
 // Create form programmatically
-const { createForm } = await template.import("pochoir:form");
-const form = createForm();
-form.text("title").label("Title").defaultValue("Untitled");
+const { create, prompt } = await template.import("pochoir:form");
+const form = create();
+form.text("title").label("Title").initialValue("Untitled");
 form.textarea("content").label("Content");
 form.number("age").label("Age");
 form.slider("rank").label("Rank");
 form.date("birthday").label("Birthday");
-template.exports.form = await form.prompt();
+template.exports.form = await prompt(form);
 ```
 
 ```yml
