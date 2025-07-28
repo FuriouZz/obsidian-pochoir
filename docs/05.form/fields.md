@@ -11,7 +11,7 @@ A form accepts a variety of fields.
 ```yaml
 type: text # required
 label: "" # optional
-defaultValue: "" # optional
+initialValue: "" # optional
 ```
 
 ### Textarea field
@@ -19,7 +19,7 @@ defaultValue: "" # optional
 ```yaml
 type: textarea # required
 label: "" # optional
-defaultValue: "" # optional
+initialValue: "" # optional
 ```
 
 ### Date field
@@ -27,7 +27,7 @@ defaultValue: "" # optional
 ```yaml
 type: date # required
 label: "" # optional
-defaultValue: "" # optional
+initialValue: "" # optional
 ```
 
 ### Time field
@@ -35,7 +35,7 @@ defaultValue: "" # optional
 ```yaml
 type: time # required
 label: "" # optional
-defaultValue: "" # optional
+initialValue: "" # optional
 ```
 
 ### Number field
@@ -43,10 +43,7 @@ defaultValue: "" # optional
 ```yaml
 type: number # required
 label: "" # optional
-defaultValue: 0 # optional
-min: 0 # optional
-max: 1 # optional
-step: 0.1 # optional
+initialValue: 0 # optional
 ```
 
 ### Slider field
@@ -54,10 +51,7 @@ step: 0.1 # optional
 ```yaml
 type: slider # required
 label: "" # optional
-defaultValue: 0 # optional
-min: 0 # optional
-max: 5 # optional
-step: 1 # optional
+initialValue: 0 # optional
 ```
 
 ### Toggle field
@@ -65,10 +59,7 @@ step: 1 # optional
 ```yaml
 type: slider # required
 label: "" # optional
-defaultValue: false # optional
-min: 0 # optional
-max: 5 # optional
-step: 1 # optional
+initialValue: false # optional
 ```
 
 ### Dropdown field
@@ -76,7 +67,7 @@ step: 1 # optional
 ```yaml
 type: dropdown # required
 label: "" # optional
-defaultValue: "" # optional
+initialValue: "" # optional
 options: # required
   key0: value0
   key1: value1

@@ -18,7 +18,11 @@
       justify-content: flex-end;
     }
 
-    .attribute-lang {
+    header + pre {
+        padding-top: 2em;
+    }
+
+    .attribute-lang, .attribute-filename {
         font-size: 12px;
         font-weight: var(--font-bold);
         color: var(--color-dim);
@@ -26,34 +30,24 @@
         transition: all 0.25s;
     }
 
-    .copy {
+    .attribute-filename {
         position: absolute;
-        right: 0.65em;
-        top: 0.15em;
+        width: 100%;
+        text-align: center;
+    }
+
+    .copy {
+        /* position: absolute; */
+        /* right: 0.65em; */
+        /* top: 0.25em; */
         pointer-events: auto;
-        opacity: 0;
         transition: all 0.25s;
         font-size: 12px;
         font-weight: var(--font-bold);
         color: var(--color-dim);
         border: 0;
         padding: 0;
-
-        &:before {
-            content: "copy";
-        }
-
-        &:hover {
-            opacity: 1;
-        }
-
-        &.copied:before {
-            content: "copied";
-        }
-    }
-
-    .copy:hover + .attribute-lang {
-        opacity: 0;
+        min-height: 0;
     }
 }
 

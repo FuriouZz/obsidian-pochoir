@@ -13,9 +13,9 @@ The property accepts a **list** of templates.
 
 ## Inherits properties from another template
 
-I have the template `[[JohnTemplate]]` with the content below:
+Here a template with some properties:
 
-```md
+```md {filename="John Template.md"}
 ---
 tags:
 - toreview
@@ -24,20 +24,20 @@ year: {{today('YYYY')}}
 ---
 ```
 
-I can inherits `[[JohnTemplate]]` with `$.properties`:
+I can inherits them by adding `$.properties` to my other template:
 
-```md
+```md {filename="Another Template.md"}
 ---
 tags:
 - book
 $.properties:
-- "[[JohnTemplate]]"
+- "[[John Template]]"
 ---
 ```
 
 The results will be:
 
-```md
+```md {filename="Note.md"}
 ---
 title: My Book
 author: John Doe

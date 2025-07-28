@@ -47,10 +47,10 @@ title:
 ```
 
 ```pochoir-js
-const { getForm } = await template.import("pochoir:form");
-const form = getForm("my-form");
-console.log(form.fields); // Print a field list to the console
-template.exports.myForm = await form.prompt();
+const form = await template.import("pochoir:form");
+const myForm = form.get("my-form");
+console.log(myForm.toJSON()); // Print a field list to the console
+template.exports.myForm = await form.prompt(myForm);
 ```
 
 # {{myForm.title}}

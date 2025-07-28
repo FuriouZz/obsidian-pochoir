@@ -35,6 +35,34 @@ function codeBlockHighlighter(): ShikiTransformer {
     };
 }
 
+function shikiCopyLang() {
+    const scriptPath = import.meta.resolve("./scripts/copy.js");
+    return (site: Site) => {
+        const path = site.url("scripts/shiki/copy.js");
+        site.remoteFile(path, scriptPath);
+        site.copy(path);
+        site.use(
+            attribute({
+                attribute: "lang",
+                format(content, document) {
+                    const button = document.createElement("button");
+                    button.setAttribute("class", "copy");
+                    button.textContent = content;
+                    return button;
+                },
+                getDefaultValue(el) {
+                    const className = el.getAttribute("class");
+                    const match = className?.match(/language-(.+)/);
+                    if (!match) return;
+
+                    const [, lang] = match;
+                    return lang;
+                },
+            }),
+        );
+    };
+}
+
 export function highlighter() {
     return (site: Site) => {
         site.preprocess([".html"], (pages) => {
@@ -64,9 +92,8 @@ export function highlighter() {
                 transformers: [codeBlockHighlighter()],
             }),
         );
-        site.use(copy());
-        site.use(attribute({ attribute: "filename" }));
-        site.use(lang());
+        site.use(attribute({ attribute: "filename", order: 1 }));
+        site.use(shikiCopyLang());
         site.use(css());
 
         for (const [filename, url] of Object.entries({

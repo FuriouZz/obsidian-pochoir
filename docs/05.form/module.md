@@ -23,19 +23,20 @@ desc:
 ```
 
 ```pochoir-js
-const { getForm } = await template.import("pochoir:form");
-template.exports.myForm = await getForm("my-form").prompt();
+const { prompt } = await template.import("pochoir:form");
+template.exports.myForm = await prompt("my-form");
 ```
 ````
 
 You can also recreate the same example entirely in Javascript:
+
 ````md
 ```pochoir-js
-const { createForm } = await template.import("pochoir:form");
-const form = createForm();
+const { create, prompt } = await template.import("pochoir:form");
+const form = create();
 form.text("title").label("Title");
 form.textarea("desc").label("Description");
-template.exports.myForm = await form.prompt();
+template.exports.myForm = await prompt(form);
 ```
 ````
 

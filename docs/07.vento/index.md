@@ -13,9 +13,9 @@ Please follow the [documentation](https://vento.js.org/) for more details.
 - Use [include tag](https://vento.js.org/syntax/include/) to insert a template
 - Use [import/export tag](https://vento.js.org/syntax/import-export/) to share functions between template
 
-For example, in `[[Template 1]]`:
+For example, we have this template:
 
-```vento
+```vento {filename="Template 1.md" lang="md"}
 {{ export message }}
 Hello World
 {{ /export }}
@@ -27,9 +27,9 @@ Hello, {{name}}!
 Some content
 ```
 
-I can import `[[Template 1]]` variables/functions:
+We can import its variables and functions:
 
-```vento
+```vento {filename="Template 2.md" lang="md"}
 {{ import { message, greeting } from "[[Template 1]]" }}
 
 {{- message -}}
@@ -37,19 +37,19 @@ I can import `[[Template 1]]` variables/functions:
 ```
 
 Outputs:
-```md
+```md {filename="Note.md"}
 Hello World
 Hello, John!
 ```
 
-You can also include `[[Template 1]]` content:
+We can also include its content:
 
-```vento
+```vento {filename="Template 3.md" lang="md"}
 {{ include "[[Template 1]]" }}
 ```
 
 Outputs:
-```md
+```md {filename="Note 2.md"}
 Some content
 ```
 

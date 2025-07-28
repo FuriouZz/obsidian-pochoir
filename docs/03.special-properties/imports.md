@@ -11,9 +11,9 @@ The property accepts a **list** of templates.
 
 ### Share variables to multiple template
 
-I have this template `[[Functions]]`:
+Here a template exporting a function:
 
-````md {filename="[[Functions]]"}
+````md {filename="Functions.md"}
 ```pochoir-js
 template.exports.fullname = () => {
     return "John Doe";
@@ -21,9 +21,9 @@ template.exports.fullname = () => {
 ```
 ````
 
-I can import "[[Functions]]" and use its exported functions:
+I can import functions from the template below with `$.imports`;
 
-```md
+```md {filename="Anoter Template.md"}
 ---
 author: "{{fullname()}}"
 $.imports:
@@ -33,7 +33,7 @@ $.imports:
 
 Output:
 
-```md
+```md {filename="Note.md"}
 ---
 author: "John Doe"
 ---
