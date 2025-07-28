@@ -19,4 +19,4 @@ Most plugin features are provided by some [special properties](/special-properti
 - Use [Javascript](/javascript/overview) for more advanced usage
 - Powered by [vento.js](https://vento.js.org) as our template engine
 
-Follow the [installation](/installation) process to use the plugin in your vault
+Follow the [installation](/overview/installation) process to use the plugin in your vault
