@@ -82,6 +82,7 @@ action: create # or "insert"
 
 First version
 
+[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.7...main
 [0.0.7]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.4...v0.0.5
