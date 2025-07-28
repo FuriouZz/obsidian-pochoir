@@ -25,7 +25,7 @@ export default class PochoirPlugin extends Plugin {
     logger = getLogger();
 
     async onload() {
-        this.logger.level = "VERBOSE";
+        this.logger.level = "DEBUG";
         this.addSettingTab(new SettingTab(this));
 
         insertFromTemplateCommand(this, this.templateSuggester);

@@ -170,10 +170,28 @@ function highlighter({
 }
 
 export function codeBlocksHighlighter(plugin: Plugin, env: Environment) {
+    const registered: string[] = [];
+
     const onUpdate = (cb: () => void) => {
         plugin.register(
             env.cache.events.on((event) => {
-                if (event.name === "queue-cleared") cb();
+                if (event.name === "queue-cleared") {
+                    const langs = env.getSupportedCodeBlocks();
+                    for (const [from, to] of Object.entries(langs)) {
+                        if (registered.includes(from)) continue;
+                        registered.push(from);
+                        plugin.registerMarkdownCodeBlockProcessor(
+                            from,
+                            async (source, el) => {
+                                await render(
+                                    `\`\`\`${to}\n${source}\n\`\`\``,
+                                    el,
+                                );
+                            },
+                        );
+                    }
+                    cb();
+                }
             }),
         );
     };
