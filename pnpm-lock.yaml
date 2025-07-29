@@ -27,8 +27,8 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0(typescript@5.8.3)
       ventojs:
-        specifier: ^1.15.0
-        version: 1.15.0
+        specifier: ^1.15.2
+        version: 1.15.2
     devDependencies:
       '@types/node':
         specifier: ^16.18.126
@@ -1544,8 +1544,8 @@ packages:
       typescript:
         optional: true
 
-  ventojs@1.15.0:
-    resolution: {integrity: sha512-ZAQfFi1SIY7A2MQkEQiFHCJ08qn4QbAgrWu4B3cI/U47ouyvNncrNOvEO4CmkT7D96IudZW6FY4FQ8w/69b1pQ==}
+  ventojs@1.15.2:
+    resolution: {integrity: sha512-/vparUOEKeL4fNzkOhZe3brXCJn/uiJBj3Q/rzrreap3Ef+rjJTT60jvI+Vnc0IhHiU8b5wwmDNLJtTQWJJ14g==}
 
   verror@1.10.0:
     resolution: {integrity: sha512-ZZKSmDAEFOijERBLkmYfJ+vmk3w+7hOLYDNkRCuRuMJGEmqYNCNLyBBFwWKVMhfwaEF3WOd0Zlw86U/WC/+nYw==}
@@ -3027,7 +3027,7 @@ snapshots:
     optionalDependencies:
       typescript: 5.8.3
 
-  ventojs@1.15.0:
+  ventojs@1.15.2:
     dependencies:
       estree-walker: 3.0.3
       meriyah: 6.0.5
