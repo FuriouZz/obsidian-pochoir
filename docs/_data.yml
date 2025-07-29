@@ -1,4 +1,4 @@
 menu_links:
     - text: Github Repository
-      url: https://github.com/furiouzz/obsidian-pochoir
+      href: https://github.com/furiouzz/obsidian-pochoir
       icon: github-logo
