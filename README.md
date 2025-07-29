@@ -1,3 +1,5 @@
+![](./docs/favicon.png)
+
 # Pochoir, an Obsidian Plugin
 
 Pochoir is an [Obsidian](https://obsidian.md/) plugin for note templating.

@@ -7,7 +7,13 @@ const site = lume({
     location: new URL("https://furiouzz.github.io/obsidian-pochoir/"),
 });
 
-site.use(wiki());
+site.use(
+    wiki({
+        favicon: {
+            input: "/favicon.png",
+        },
+    }),
+);
 site.use(highlighter());
 site.use(cssOverrides());
 
