@@ -9,6 +9,7 @@ import { Environment } from "./environment";
 import commandExtension from "./extensions/command-extension";
 import dateExtension from "./extensions/date-extension";
 import formExtension from "./extensions/form-extension";
+import { FormView } from "./extensions/form-extension/obsidian";
 import javascriptExtension from "./extensions/javascript-extension";
 import minimalExtension from "./extensions/minimal-extension";
 import propertiesExtension from "./extensions/properties-extension";
@@ -16,7 +17,6 @@ import specialPropertiesExtension from "./extensions/special-properties-extensio
 import { getLogger } from "./logger";
 import { type ISettings, SettingTab } from "./setting-tab";
 import { TemplateModalSuggester } from "./suggesters/template-modal-suggester";
-import { FormView } from "./extensions/form-extension/obsidian";
 
 export default class PochoirPlugin extends Plugin {
     settings: ISettings = { ...DEFAULT_SETTINGS };
@@ -25,7 +25,7 @@ export default class PochoirPlugin extends Plugin {
     logger = getLogger();
 
     async onload() {
-        this.logger.level = "DEBUG";
+        this.logger.level = import.meta.env.DEV ? "VERBOSE" : "DEBUG";
         this.addSettingTab(new SettingTab(this));
 
         insertFromTemplateCommand(this, this.templateSuggester);
