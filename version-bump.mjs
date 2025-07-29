@@ -17,5 +17,5 @@ writeFileSync("versions.json", JSON.stringify(versions, null, "\t"));
 
 const opts = { shell: true, stdio: "inherit" };
 spawnSync("git add .", opts);
-spawnSync(`git commit -m "Bump v${targetVersion}"`, opts);
+spawnSync(`git commit -m "chore(release): ${targetVersion}"`, opts);
 spawnSync(`git tag -a ${targetVersion} -m "${targetVersion}"`, opts);
