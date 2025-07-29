@@ -1,4 +1,3 @@
-{{ export function hello (name) }}
+{{ export function hello (name) |> trim }}
 Hello, {{name}} !
 {{ /export }}
-Some content
