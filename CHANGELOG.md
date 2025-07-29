@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- Prevent autoTrim plugin to trim unwanted tag
 
 ## [0.0.8] - 2025-07-28
 ### Fixed
