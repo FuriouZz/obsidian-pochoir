@@ -1,4 +1,4 @@
-<img src="./assets/logo-256x256.png" width="128" height="128" />
+<img src="./docs/favicon.png" width="128" height="128" />
 
 # Pochoir
 
