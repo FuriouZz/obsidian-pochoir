@@ -1,6 +1,6 @@
-![](./docs/favicon.png)
+<img src="./assets/logo-256x256.png" width="128" height="128" />
 
-# Pochoir, an Obsidian Plugin
+# Pochoir
 
 Pochoir is an [Obsidian](https://obsidian.md/) plugin for note templating.
 
