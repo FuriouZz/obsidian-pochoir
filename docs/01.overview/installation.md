@@ -29,4 +29,4 @@ This is where your template are located (defaults to the root of your vault).
 - Enable/Disable [Form](/form/overview)
 - Enable/Disable [Command](/command/overview)
 - Enable/Disable [Javascript](/javascript/overview)
-- Enable/Disable [pochoir-properties](/properties/overview)
+- Enable/Disable [Properties code block](/properties/overview)

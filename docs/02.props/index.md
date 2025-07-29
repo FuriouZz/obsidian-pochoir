@@ -10,6 +10,9 @@ For example, you have a template with a tag `inbox`, but you do not want it to a
 
 **Pochoir** offers `pochoir-props` (or `pochoir-properties`) code block to set properties for your future note.
 
+> [!info]
+> [Special properties](/special-properties/), variables and functions also works in `pochoir-props`.
+
 ## Attributes
 
 ### disabled
