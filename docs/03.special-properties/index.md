@@ -6,6 +6,8 @@ title: Special properties
 
 With **Pochoir** you can use special properties to create powerful templates.
 
+**You need to enable Special Properties in plugin settings.**
+
 Special properties offers super powers to your template:
 
 - Use [$.path](/special-properties/path) to rename a note

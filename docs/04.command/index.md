@@ -6,6 +6,8 @@ title: Command
 
 The `pochoir-command` code block allows you to trigger a template from the [command palette](https://help.obsidian.md/plugins/command-palette) and/or a [ribbon](https://help.obsidian.md/ribbon).
 
+**You need to enable `pochoir-command` code block in plugin settings.**
+
 For example, let's add a ribbon action to create a new unique note from `[[Unique note template]]`:
 
 ````md

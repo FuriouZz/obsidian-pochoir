@@ -55,7 +55,7 @@ template.properties.date = today("YYYY-MM-DD");
 
 Outputs a note at `inbox/{{ today('YYYYMMDDHHmm') }}.md`:
 
-````md
+````md {filename="inbox/{{ today('YYYYMMDDHHmm') }}.md"}
 ---
 date: {{today('YYYY-MM-DD')}}
 tags:

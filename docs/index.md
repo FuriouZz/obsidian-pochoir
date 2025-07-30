@@ -1,7 +1,7 @@
 ---
 id: index
 hide_menu: false
-logo: favicon.png
+logo: /favicon.png
 ---
 # Pochoir
 

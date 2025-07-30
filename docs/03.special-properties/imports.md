@@ -7,6 +7,10 @@ Use `$.imports` to import variables from another template.
 
 The property accepts a **list** of templates.
 
+> [!warning]
+> To write expose variables/functions you need to enable `pochoir-js` in plugin settings.
+> See [JavaScript API](/javascript) for more information.
+
 ## Example
 
 ### Share variables to multiple template
@@ -23,7 +27,7 @@ template.exports.fullname = () => {
 
 I can import functions from the template below with `$.imports`;
 
-```md {filename="Anoter Template.md"}
+```md {filename="Another Template.md"}
 ---
 author: "{{fullname()}}"
 $.imports:

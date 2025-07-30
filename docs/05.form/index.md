@@ -9,6 +9,8 @@ The `form` code block enables you:
 - prompt a modal
 - and use the result in your template
 
+**You need to enable `pochoir-form` code block in plugin settings.**
+
 Let's take an example with the code below:
 ````md
 ```pochoir-form exports="myForm"

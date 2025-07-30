@@ -1,10 +1,12 @@
 ---
 hide_menu: false
-title: Javascript
+title: JavaScript
 ---
-# Javascript
+# JavaScript
 
 The `pochoir-js` code block allows you to execute Javascript code.
+
+**You need to enable `pochoir-js` code block in plugin settings.**
 
 > [!warning]
 > It can be dangerous to execute Javascript code. We recommand to use code that you understand.
