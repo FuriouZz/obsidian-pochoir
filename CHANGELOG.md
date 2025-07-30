@@ -5,8 +5,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.0.9] - 2025-07-30
+### Added
+- New logo
+
+### Changed
+- Update markdownPostProcessor for code highlighting in preview mode
+- Documentation updated
+
 ### Fixed
 - Prevent autoTrim plugin to trim unwanted tag
+- Apply obsidian-releases requested changes
 
 ## [0.0.8] - 2025-07-28
 ### Fixed
@@ -89,7 +99,8 @@ action: create # or "insert"
 
 First version
 
-[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.8...main
+[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.9...main
+[0.0.9]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.8...v0.0.9
 [0.0.8]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/FuriouZz/obsidian-pochoir/compare/v0.0.5...v0.0.6
