@@ -1,7 +1,18 @@
 import { syntaxTree } from "@codemirror/language";
-import { type EditorState, RangeSetBuilder } from "@codemirror/state";
-import { Decoration, ViewPlugin, type ViewUpdate } from "@codemirror/view";
-import type { Plugin } from "obsidian";
+import {
+    type EditorState,
+    RangeSetBuilder,
+    StateEffect,
+    StateField,
+} from "@codemirror/state";
+import {
+    Decoration,
+    EditorView,
+    PluginValue,
+    ViewPlugin,
+    type ViewUpdate,
+} from "@codemirror/view";
+import { MarkdownView, type Plugin } from "obsidian";
 import type { Environment } from "../environment";
 import { createMarkdownRenderer } from "../utils/obsidian";
 
@@ -125,76 +136,65 @@ async function buildDecoration({
     return builder.finish();
 }
 
-function highlighter({
-    env,
-    render,
-    onUpdate,
-}: {
-    env: Environment;
-    render: (content: string, el?: HTMLElement) => Promise<HTMLElement>;
-    onUpdate: (cb: () => void) => void;
-}) {
-    return [
-        ViewPlugin.define(
-            (view) => {
-                let _decorations = Decoration.none;
-                const getDecorations = () => _decorations;
+export function codeBlocksHighlighter(plugin: Plugin, env: Environment) {
+    const render = createMarkdownRenderer(plugin.app);
 
-                const update = (update: ViewUpdate) => {
+    plugin.registerMarkdownPostProcessor(async (el) => {
+        const langs = env.getSupportedCodeBlocks();
+        for (const [from, to] of Object.entries(langs)) {
+            const block = el.querySelector<HTMLElement>(
+                `pre:has(code.language-${from})`,
+            );
+            if (!block) continue;
+
+            const source = block.querySelector("code")?.innerHTML;
+            if (!source) continue;
+
+            const res = await render(`\`\`\`${to}\n${source.trim()}\n\`\`\``);
+            const pre = res.querySelector("pre:has(code)");
+            if (!pre) continue;
+
+            block.replaceWith(pre);
+        }
+    });
+
+    plugin.registerEditorExtension([
+        ViewPlugin.fromClass(
+            class implements PluginValue {
+                decorations = Decoration.none;
+
+                constructor(view: EditorView) {
+                    this.buildDecorations(view);
+
+                    plugin.register(
+                        env.cache.events.on((event) => {
+                            if (event.name === "queue-cleared") {
+                                this.buildDecorations(view);
+                            }
+                        }),
+                    );
+                }
+
+                update(update: ViewUpdate) {
                     if (update.viewportChanged || update.docChanged) {
-                        _build(update.view.state);
+                        this.buildDecorations(update.view);
                     }
-                };
+                }
 
-                const _build = (state: EditorState) => {
+                buildDecorations(view: EditorView) {
                     buildDecoration({
-                        state,
+                        state: view.state,
                         languages: env.getSupportedCodeBlocks(),
                         render,
                     }).then((decorations) => {
-                        _decorations = decorations;
+                        this.decorations = decorations;
                         view.update([]);
                     });
-                };
-
-                _build(view.state);
-                onUpdate(() => _build(view.state));
-
-                return { getDecorations, update };
+                }
             },
             {
-                decorations: (value) => value.getDecorations(),
+                decorations: (v) => v.decorations,
             },
         ),
-    ];
-}
-
-export function codeBlocksHighlighter(plugin: Plugin, env: Environment) {
-    const registered: string[] = [];
-
-    const onUpdate = (cb: () => void) => {
-        plugin.register(
-            env.cache.events.on((event) => {
-                if (event.name === "queue-cleared") {
-                    const langs = env.getSupportedCodeBlocks();
-                    for (const [from, to] of Object.entries(langs)) {
-                        if (registered.includes(from)) continue;
-                        registered.push(from);
-                        plugin.registerMarkdownCodeBlockProcessor(
-                            from,
-                            async (source, el) => {
-                                await render(
-                                    `\`\`\`${to}\n${source}\n\`\`\``,
-                                    el,
-                                );
-                            },
-                        );
-                    }
-                    cb();
-                }
-            }),
-        );
-    };
-    const render = createMarkdownRenderer(plugin.app);
-    plugin.registerEditorExtension(highlighter({ env, render, onUpdate }));
+    ]);
 }
