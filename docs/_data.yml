@@ -2,3 +2,5 @@ menu_links:
     - text: Github Repository
       href: https://github.com/furiouzz/obsidian-pochoir
       icon: github-logo
+extra_head:
+    - <script src="/script.js"></script>

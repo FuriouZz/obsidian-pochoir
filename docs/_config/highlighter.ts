@@ -2,10 +2,9 @@ import { ShikiTransformer } from "shiki/deps.ts";
 import vento from "./vento.grammar.json" with { type: "json" };
 import Site from "lume/core/site.ts";
 import shiki from "shiki/mod.ts";
-import copy from "shiki/plugins/copy/mod.ts";
 import attribute from "shiki/plugins/attribute/mod.ts";
-import lang from "shiki/plugins/lang/mod.ts";
 import css from "shiki/plugins/css/mod.ts";
+import { insertContent } from "lume/core/utils/page_content.ts";
 
 function codeBlockHighlighter(): ShikiTransformer {
     const aliases = {
@@ -36,11 +35,17 @@ function codeBlockHighlighter(): ShikiTransformer {
 }
 
 function shikiCopyLang() {
-    const scriptPath = import.meta.resolve("./scripts/copy.js");
+    const scriptPath = import.meta
+        .resolve("./scripts/copy.js")
+        .replace("file://", "");
+
     return (site: Site) => {
-        const path = "/scripts/shiki/copy.js";
-        site.remoteFile(path, scriptPath);
-        site.copy(path);
+        site.process(async () => {
+            const content = await Deno.readTextFile(scriptPath);
+            const page = await site.getOrCreatePage(site.options.jsFile);
+            page.text = insertContent(page.text, content);
+        });
+
         site.use(
             attribute({
                 attribute: "lang",
@@ -65,19 +70,6 @@ function shikiCopyLang() {
 
 export function highlighter() {
     return (site: Site) => {
-        site.preprocess([".html"], (pages) => {
-            for (const page of pages) {
-                const comment = page.document.createComment(" shiki-imports ");
-                page.document.head.append(comment);
-            }
-        });
-        site.process([".html"], (pages) => {
-            for (const page of pages) {
-                const script = page.document.createElement("script");
-                script.setAttribute("src", site.url("/scripts/shiki/copy.js"));
-                page.document.head.append(script);
-            }
-        });
         site.use(
             shiki({
                 highlighter: {

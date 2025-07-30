@@ -10,7 +10,8 @@
 		"test": "vitest src/",
 		"build": "npm run lint && node esbuild.config.mjs production",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
-		"docs": "cd docs && deno task serve"
+		"docs:serve": "cd docs && deno task serve",
+		"docs:build": "cd docs && deno task build"
 	},
 	"keywords": [],
 	"author": "",
