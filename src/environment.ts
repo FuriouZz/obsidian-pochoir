@@ -112,7 +112,7 @@ export class Environment extends Events {
                 );
                 await this.app.fileManager.renameFile(context.target, path);
             } else {
-                await this.app.vault.delete(context.target);
+                await this.app.vault.trash(context.target, false);
                 context.target = file;
             }
         }

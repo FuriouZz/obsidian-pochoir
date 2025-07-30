@@ -39,8 +39,11 @@ export function minidown(content: string) {
 
 export function minidownFragment(content: string) {
     const fragment = new DocumentFragment();
-    const element = document.createElement("div");
-    element.innerHTML = minidown(content);
-    fragment.append(element);
+    const result = minidown(content);
+    const parser = new DOMParser();
+    const document = parser.parseFromString(result, "text/html");
+    document.body.childNodes.forEach((node) => {
+        fragment.append(node.cloneNode(true));
+    });
     return fragment;
 }

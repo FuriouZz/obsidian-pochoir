@@ -58,18 +58,14 @@ export async function findOrCreateFolder(app: App, path: string) {
 }
 
 export async function findOrCreateNote(app: App, path: string) {
-    let file = app.vault.getAbstractFileByPath(path);
+    const file = app.vault.getAbstractFileByPath(path);
+    if (file instanceof TFile) return file;
     if (file instanceof TFolder) {
         throw new Error(`There is already a folder: ${file.path}`);
     }
-    if (!file) {
-        const folder = parentFolderPath(path);
-        if (folder) {
-            await findOrCreateFolder(app, folder);
-        }
-        file = await app.vault.create(path, "");
-    }
-    return file as TFile;
+    const folder = parentFolderPath(path);
+    if (folder) await findOrCreateFolder(app, folder);
+    return app.vault.create(path, "");
 }
 
 export async function createNote(app: App, filename: string, folder?: TFolder) {

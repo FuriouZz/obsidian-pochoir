@@ -123,19 +123,19 @@ export class CommandManager {
         }
     }
 
-    addCommand(template: Template, command: Command) {
+    addCommand(template: Template, { id, title: name, action }: Command) {
         this.env.plugin.addCommand({
-            id: command.id,
-            name: command.title,
+            id,
+            name,
             callback: async () => {
-                if (command.action === "insert") {
+                if (action === "insert") {
                     await this.env.insertFromTemplate(template);
                 } else {
                     await this.env.createFromTemplate(template);
                 }
             },
         });
-        this.map.set(command.id, template.info.file.path);
+        this.map.set(id, template.info.file.path);
     }
 
     removeCommand(id: string) {
