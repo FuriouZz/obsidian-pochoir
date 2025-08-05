@@ -6,7 +6,11 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+.pochoir-suggester .pochoir-suggester-title {
+    font-weight: 400;
+}
 .pochoir-suggester .pochoir-suggester-subtitle {
     font-size: 0.8em;
+    font-weight: 400;
     color: var(--text-muted);
 }

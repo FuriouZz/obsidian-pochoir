@@ -2,6 +2,8 @@ import {
     type App,
     type FuzzyMatch,
     FuzzySuggestModal,
+    SearchMatches,
+    SearchMatchPart,
     type TFolder,
 } from "obsidian";
 import type { Environment } from "../environment";
@@ -12,13 +14,13 @@ export enum OpenMode {
     CreateFromTemplate,
 }
 
-type Entry = {
+export type TemplateModalEntry = {
     template: Template;
-    name: string;
-    alias?: { text: string; match: RegExpMatchArray | null };
+    title: string;
+    subtitle?: string;
 };
 
-export class TemplateModalSuggester extends FuzzySuggestModal<Entry> {
+export class TemplateModalSuggester extends FuzzySuggestModal<TemplateModalEntry> {
     environment: Environment;
     openMode: OpenMode;
     folderLocation?: TFolder;
@@ -29,109 +31,98 @@ export class TemplateModalSuggester extends FuzzySuggestModal<Entry> {
         this.openMode = OpenMode.InsertTemplate;
     }
 
+    getItems(): TemplateModalEntry[] {
+        let items = Array.from(
+            this.environment.cache.templates.values(),
+        ).map<TemplateModalEntry>((template) => ({
+            template,
+            title: template.getDisplayName(),
+        }));
+
+        for (const suggester of this.environment.templateSuggesters) {
+            items = suggester.getItems?.({ suggester: this, items }) ?? items;
+        }
+
+        return items;
+    }
+
     override getSuggestions(query: string) {
-        const suggestions = super.getSuggestions(query);
-
-        const items = this.getItems();
-
-        const matches = items
-            .map((entry) => {
-                const { properties } = entry.template.info;
-                const aliases = properties.get("$.aliases");
-                if (!Array.isArray(aliases)) return null;
-
-                const parts = query.split(" ");
-                const alias = aliases.find((item) =>
-                    parts.find((part) => item.contains(part)),
-                );
-
-                if (!alias) return null;
-
-                return {
-                    entry,
-                    alias,
-                    match: alias.match(new RegExp(query)),
-                };
-            })
-            .filter((entry) => entry !== null);
-
-        if (matches.length === 0) return suggestions;
-
-        for (const { entry, alias: text, match } of matches) {
-            const sug = suggestions.find(
-                (item) => item.item.name === entry.name,
-            );
-            if (sug) {
-                sug.item.alias = { text, match };
-            } else {
-                suggestions.push({
-                    item: {
-                        ...entry,
-                        alias: { text, match },
-                    },
-                    match: {
-                        matches: [],
-                        score: 0,
-                    },
-                });
-            }
+        for (const suggester of this.environment.templateSuggesters) {
+            const suggestions = suggester.getSuggestions?.({
+                suggester: this,
+                query,
+            });
+            if (suggestions) return suggestions;
         }
 
-        return suggestions;
+        return super.getSuggestions(query);
     }
 
-    override renderSuggestion(item: FuzzyMatch<Entry>, el: HTMLElement): void {
-        super.renderSuggestion(item, el);
+    override renderSuggestion(
+        match: FuzzyMatch<TemplateModalEntry>,
+        el: HTMLElement,
+    ): void {
+        const {
+            item: { title, subtitle },
+            match: { matches },
+        } = match;
+
         el.classList.add("pochoir-suggester");
+        const titleEl = el.createDiv({ cls: "pochoir-suggester-title" });
+        this.highlightMatches(titleEl, title, matches);
+        if (subtitle) {
+            el.createDiv({ cls: "pochoir-suggester-subtitle" }).setText(
+                subtitle,
+            );
+        }
+    }
 
-        const { properties } = item.item.template.info;
-        const aliases = properties.get("$.aliases");
-        if (!Array.isArray(aliases)) return;
+    createSearchMatches(text: string, pattern: string) {
+        const matches: SearchMatches = [];
+        const results = text.matchAll(new RegExp(pattern, "g"));
+        let score = 0;
 
-        const subtitle = el.createDiv({ cls: "pochoir-suggester-subtitle" });
+        for (const match of results) {
+            if (match[0].length == 0) continue;
+            matches.push([match.index, match.index + match[0].length]);
 
-        const aliasMatched = item.item.alias;
-        for (const [index, alias] of (aliases as string[]).entries()) {
-            if (index > 0) {
-                subtitle.createSpan({ text: ", " });
-            }
+            score = Math.max(match[0].length / text.length, score);
+        }
 
-            if (alias === aliasMatched?.text && aliasMatched?.match) {
-                let start = 0;
-                const parts: [number, number, "span" | "strong"][] = [];
+        return { matches, score };
+    }
 
-                parts.push([start, aliasMatched.match.index ?? 0, "span"]);
-                start = aliasMatched.match.index ?? 0;
-                parts.push([
-                    start,
-                    start + aliasMatched.match[0].length,
-                    "strong",
-                ]);
-                start = start + aliasMatched.match[0].length;
-                parts.push([start, alias.length, "span"]);
+    highlightMatches(el: HTMLElement, text: string, matches: SearchMatches) {
+        let i = 0;
+        let start = 0;
+        let ret: SearchMatchPart;
 
-                for (const part of parts) {
-                    const text = alias.slice(part[0], part[1]);
-                    if (!text) continue;
-                    subtitle.createEl(part[2], { text });
-                }
+        while (i <= matches.length) {
+            ret = matches[i];
+
+            if (ret) {
+                const [from, to] = ret;
+
+                el.createEl("span").setText(text.slice(start, from));
+                el.createEl("b").setText(text.slice(from, to));
+                start = to;
+
+                i++;
             } else {
-                subtitle.createSpan({ text: alias });
+                el.createEl("span").setText(text.slice(start, text.length));
+                break;
             }
         }
     }
 
-    getItems(): Entry[] {
-        return [...this.environment.cache.templates.values()].map(
-            (template) => ({ template, name: template.getDisplayName() }),
-        );
+    getItemText(item: TemplateModalEntry): string {
+        return item.template.getDisplayName();
     }
 
-    getItemText(item: Entry): string {
-        return item.name;
-    }
-
-    onChooseItem(item: Entry, _evt: MouseEvent | KeyboardEvent): void {
+    onChooseItem(
+        item: TemplateModalEntry,
+        _evt: MouseEvent | KeyboardEvent,
+    ): void {
         switch (this.openMode) {
             case OpenMode.InsertTemplate: {
                 this.environment.insertFromTemplate(item.template);
@@ -149,19 +140,14 @@ export class TemplateModalSuggester extends FuzzySuggestModal<Entry> {
         }
     }
 
-    async #open() {
-        // await this.plugin.environment.invalidate();
-        this.open();
-    }
-
     insertTemplate() {
         this.openMode = OpenMode.InsertTemplate;
-        this.#open();
+        this.open();
     }
 
     createFromTemplate(folderLocation?: TFolder) {
         this.openMode = OpenMode.CreateFromTemplate;
         this.folderLocation = folderLocation;
-        this.#open();
+        this.open();
     }
 }

@@ -69,6 +69,10 @@ export class Template {
         return this.info.identifier;
     }
 
+    isSnippet() {
+        return this.info.identifier.contains("#");
+    }
+
     getContent() {
         const { source } = this.info;
 

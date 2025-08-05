@@ -36,6 +36,46 @@ export default function (): Extension {
                     env.cache.add(template);
                 },
             });
+
+            env.templateSuggesters.add({
+                getItems({ items }) {
+                    return items.map((item) => ({
+                        ...item,
+                        subtitle: item.template.isSnippet()
+                            ? "Snippet"
+                            : item.subtitle,
+                    }));
+                },
+
+                getSuggestions({ suggester, query }) {
+                    if (!query.startsWith("#")) return;
+
+                    const q = query.slice(1);
+                    return suggester
+                        .getItems()
+                        .filter((item) => item.template.isSnippet())
+                        .map((entry) => {
+                            const { matches, score } =
+                                suggester.createSearchMatches(
+                                    entry.title.toLowerCase(),
+                                    q.toLowerCase(),
+                                );
+
+                            return {
+                                item: {
+                                    type: "snippet",
+                                    template: entry.template,
+                                    title: entry.title,
+                                    subtitle: entry.template.info.file.basename,
+                                },
+                                match: {
+                                    matches,
+                                    score,
+                                },
+                            };
+                        });
+                },
+            });
         },
     };
 }

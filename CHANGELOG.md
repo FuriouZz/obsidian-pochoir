@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Autocompletion for `pochoir-command` and `pochoir-javascript`
 - Introduce new `pochoir-snippet` code block to have a single template for all your snippet
+- Added `#` prefix to query snippets in template modal suggester
+
+### Changed
+- Use `@` prefix to query a template by its alias in template modal suggester
 
 ## [0.0.9] - 2025-07-30
 ### Added

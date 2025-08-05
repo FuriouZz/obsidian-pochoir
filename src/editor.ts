@@ -12,12 +12,12 @@ export class Editor {
 
     enableEditorSuggest(env: Environment) {
         this.suggester = new CodeEditorSuggester(env.app);
-        this.updateCommandSuggestion(env);
+        this.updateEditorSuggestions(env);
         env.plugin.registerEditorSuggest(this.suggester);
         env.plugin.register(
             env.cache.events.on((e) => {
                 if (e.name === "queue-cleared") {
-                    this.updateCommandSuggestion(env);
+                    this.updateEditorSuggestions(env);
                 }
             }),
         );
@@ -33,7 +33,7 @@ export class Editor {
         });
     }
 
-    updateCommandSuggestion(env: Environment) {
+    updateEditorSuggestions(env: Environment) {
         if (!this.suggester) return;
         const l = env.preprocessors.getSuggestions();
         env.processors.getSuggestions(l);

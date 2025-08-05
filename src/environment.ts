@@ -1,5 +1,6 @@
 import { Events, MarkdownView, type TFolder } from "obsidian";
 import { Cache } from "./cache";
+import { Editor } from "./editor";
 import { EventEmitter } from "./event-emitter";
 import { ExtensionList } from "./extension-list";
 import { Importer, type Loader } from "./importer";
@@ -14,7 +15,7 @@ import type { ISettings } from "./setting-tab";
 import { type Template, TemplateContext } from "./template";
 import { alertWrap } from "./utils/alert";
 import { ensurePath, findOrCreateNote } from "./utils/obsidian";
-import { Editor } from "./editor";
+import { TemplateSuggesterSet } from "./template-suggester-set";
 
 export interface Extension {
     name: string;
@@ -37,6 +38,7 @@ export class Environment extends Events {
     importer: Importer;
     extensions: ExtensionList;
     editor: Editor;
+    templateSuggesters: TemplateSuggesterSet;
 
     preprocessors = new ProcessorList<Preprocessor>();
     processors = new ProcessorList<Processor>();
@@ -58,6 +60,7 @@ export class Environment extends Events {
         this.importer = new Importer(this);
         this.extensions = new ExtensionList();
         this.editor = new Editor(this);
+        this.templateSuggesters = new TemplateSuggesterSet();
     }
 
     get app() {
@@ -66,7 +69,6 @@ export class Environment extends Events {
 
     updateSettings(settings: ISettings) {
         this.cache.setFolder(settings.templates_folder);
-        this.editor.updateCommandSuggestion(this);
     }
 
     enable() {
@@ -95,6 +97,7 @@ export class Environment extends Events {
         this.preprocessors.clear();
         this.cache.templates.clear();
         this.renderer.vento.cache.clear();
+        this.templateSuggesters.clear();
     }
 
     async renderContent(context: TemplateContext, template: Template) {

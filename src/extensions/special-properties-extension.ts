@@ -1,4 +1,5 @@
 import type { Extension } from "../environment";
+import { Template } from "../template";
 
 export default function (): Extension {
     return {
@@ -65,10 +66,52 @@ export default function (): Extension {
                         context.properties.delete(key);
                     },
                 });
+
+            env.templateSuggesters.add({
+                getSuggestions({ suggester, query }) {
+                    if (!query.startsWith("@")) return;
+                    const q = query.slice(1);
+                    return suggester
+                        .getItems()
+                        .map((entry) => {
+                            const aliases = getAliases(entry.template);
+                            return aliases?.map((alias) => {
+                                const { matches, score } =
+                                    suggester.createSearchMatches(
+                                        alias.toLowerCase(),
+                                        q.toLowerCase(),
+                                    );
+
+                                return {
+                                    item: {
+                                        type: "alias",
+                                        template: entry.template,
+                                        title: alias,
+                                        subtitle:
+                                            entry.template.getDisplayName(),
+                                    },
+                                    match: {
+                                        matches,
+                                        score,
+                                    },
+                                };
+                            });
+                        })
+                        .filter((entry) => !!entry)
+                        .flat()
+                        .sort((a, b) => b.match.score - a.match.score);
+                },
+            });
         },
     };
 }
 
 function isStringList(a: unknown): a is string[] {
     return Array.isArray(a);
+}
+
+function getAliases(template: Template): string[] | undefined {
+    const aliases = template.info.properties.get("$.aliases");
+    if (!Array.isArray(aliases)) return undefined;
+    return aliases;
 }
