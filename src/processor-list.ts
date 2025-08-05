@@ -14,6 +14,12 @@ interface CodeBlockProcessorWithParams<TParams> {
     process: (params: TParams) => Promise<void>;
     disable?: (params: TParams) => void;
     dispose?: () => void;
+    suggestions?: {
+        suggestion: string;
+        novar?: boolean;
+        trigger?: string;
+        display?: string;
+    }[];
 }
 
 export type CodeBlockPreprocessor =
@@ -58,6 +64,23 @@ export class ProcessorList<T extends Processor | Preprocessor> {
             }
         }
         return languages;
+    }
+
+    getSuggestions(
+        suggestions: Record<
+            string,
+            Required<CodeBlockProcessor>["suggestions"]
+        > = {},
+    ) {
+        for (const processor of this.values()) {
+            if (processor.type === "codeblock" && processor.suggestions) {
+                const entries = Object.keys(processor.languages).map(
+                    (key) => [key, processor.suggestions] as const,
+                );
+                Object.assign(suggestions, Object.fromEntries(entries));
+            }
+        }
+        return suggestions;
     }
 
     set(id: string, processor: T) {

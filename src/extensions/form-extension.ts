@@ -1,8 +1,8 @@
-import { Platform, type App } from "obsidian";
+import { type App, Platform } from "obsidian";
 import type { InferOutput } from "valibot";
 import type { Extension } from "../environment";
 import type { TemplateContext } from "../template";
-import { parseYaml } from "../utils/obsidian";
+import { tryParseYaml } from "../utils/obsidian";
 import { createForm, type FormBuilder } from "./form-extension/createForm";
 import type { TextField } from "./form-extension/fields";
 import { promptForm } from "./form-extension/obsidian";
@@ -34,7 +34,7 @@ export default function (): Extension {
                         context,
                         typeof name === "string" ? name : undefined,
                     );
-                    const obj = parseYaml<
+                    const obj = tryParseYaml<
                         Record<string, InferOutput<typeof TextField>>
                     >(codeBlock.code.replace(/\t/g, " "));
 

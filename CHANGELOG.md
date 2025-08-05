@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Autocompletion for `pochoir-command` and `pochoir-javascript`
 
 ## [0.0.9] - 2025-07-30
 ### Added

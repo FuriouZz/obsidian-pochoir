@@ -91,6 +91,14 @@ export function parseYaml<T = unknown>(str: string) {
     return _parseYaml(str) as T;
 }
 
+export function tryParseYaml<T = unknown>(str: string) {
+    if (!str) return null;
+    try {
+        return parseYaml<T>(str);
+    } catch (_) {}
+    return null;
+}
+
 export function createMarkdownRenderer(app: App) {
     return async (
         content: string,

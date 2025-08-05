@@ -85,88 +85,13 @@ export class Parser {
         if (section.type !== "code") return;
         const content = this.getSectionContent(source, section);
 
-        const match = content.match(CodeBlockRegex);
-        if (!match) return;
-
-        const language = match[1];
-        if (!language.startsWith("pochoir-")) return;
-
-        const attributes = match[2] ? this.parseAttributes(match[2]) : {};
-        const code = match[3] ?? "";
+        const codeBlock = parseCodeBlock(content);
+        if (!codeBlock) return;
 
         return {
-            language,
+            ...codeBlock,
             section,
-            content,
-            code,
-            attributes,
         };
-    }
-
-    parseAttributes(source: string) {
-        const attributes: Record<string, unknown> = {};
-
-        let key = "";
-        let value = "";
-        let escaped = false;
-        let target: "key" | "value" = "key";
-        let insideQuote = false;
-
-        const close = () => {
-            target = "key";
-
-            key = key.trim();
-            value = value.trim();
-
-            if (key) {
-                if (value.length === 0) {
-                    attributes[key] = true;
-                } else if (value === "true" || value === "false") {
-                    attributes[key] = Boolean(value);
-                } else {
-                    const num = Number(value);
-                    if (Number.isNaN(num)) {
-                        attributes[key] = value;
-                    } else {
-                        attributes[key] = num;
-                    }
-                }
-            }
-
-            key = "";
-            value = "";
-        };
-
-        let i = 0;
-        const len = source.length;
-        while (i <= len) {
-            const char = source[i];
-
-            if (typeof char === "undefined") {
-                close();
-            } else if (char === "\\" && !escaped) {
-                escaped = true;
-            } else if (char === '"' && !escaped) {
-                if (insideQuote) {
-                    insideQuote = false;
-                    close();
-                } else {
-                    insideQuote = true;
-                }
-            } else if (char === " " && !insideQuote) {
-                close();
-            } else if (char === "=") {
-                target = "value";
-            } else {
-                if (target === "key") key += char;
-                else if (target === "value") value += char;
-                escaped = false;
-            }
-
-            i++;
-        }
-
-        return attributes;
     }
 
     getSectionContent(source: string, section: SectionCache) {
@@ -175,4 +100,90 @@ export class Parser {
             section.position.end.offset,
         );
     }
+}
+
+export function parseCodeBlock(
+    content: string,
+): Omit<ParsedCodeBlock, "section"> | undefined {
+    const match = content.match(CodeBlockRegex);
+    if (!match) return;
+
+    const language = match[1];
+    if (!language.startsWith("pochoir-")) return;
+
+    const attributes = match[2] ? parseAttributes(match[2]) : {};
+    const code = match[3] ?? "";
+
+    return {
+        language,
+        content,
+        code,
+        attributes,
+    };
+}
+
+export function parseAttributes(source: string) {
+    const attributes: Record<string, unknown> = {};
+
+    let key = "";
+    let value = "";
+    let escaped = false;
+    let target: "key" | "value" = "key";
+    let insideQuote = false;
+
+    const close = () => {
+        target = "key";
+
+        key = key.trim();
+        value = value.trim();
+
+        if (key) {
+            if (value.length === 0) {
+                attributes[key] = true;
+            } else if (value === "true" || value === "false") {
+                attributes[key] = Boolean(value);
+            } else {
+                const num = Number(value);
+                if (Number.isNaN(num)) {
+                    attributes[key] = value;
+                } else {
+                    attributes[key] = num;
+                }
+            }
+        }
+
+        key = "";
+        value = "";
+    };
+
+    let i = 0;
+    const len = source.length;
+    while (i <= len) {
+        const char = source[i];
+
+        if (typeof char === "undefined") {
+            close();
+        } else if (char === "\\" && !escaped) {
+            escaped = true;
+        } else if (char === '"' && !escaped) {
+            if (insideQuote) {
+                insideQuote = false;
+                close();
+            } else {
+                insideQuote = true;
+            }
+        } else if (char === " " && !insideQuote) {
+            close();
+        } else if (char === "=") {
+            target = "value";
+        } else {
+            if (target === "key") key += char;
+            else if (target === "value") value += char;
+            escaped = false;
+        }
+
+        i++;
+    }
+
+    return attributes;
 }

@@ -1,5 +1,6 @@
 import { Events, MarkdownView, type TFolder } from "obsidian";
 import { Cache } from "./cache";
+import { EventEmitter } from "./event-emitter";
 import { ExtensionList } from "./extension-list";
 import { Importer, type Loader } from "./importer";
 import type PochoirPlugin from "./main";
@@ -13,7 +14,7 @@ import type { ISettings } from "./setting-tab";
 import { type Template, TemplateContext } from "./template";
 import { alertWrap } from "./utils/alert";
 import { ensurePath, findOrCreateNote } from "./utils/obsidian";
-import { EventEmitter } from "./event-emitter";
+import { Editor } from "./editor";
 
 export interface Extension {
     name: string;
@@ -35,6 +36,7 @@ export class Environment extends Events {
     renderer: Renderer;
     importer: Importer;
     extensions: ExtensionList;
+    editor: Editor;
 
     preprocessors = new ProcessorList<Preprocessor>();
     processors = new ProcessorList<Processor>();
@@ -55,21 +57,16 @@ export class Environment extends Events {
         this.renderer = new Renderer(this.app, { findTemplate });
         this.importer = new Importer(this);
         this.extensions = new ExtensionList();
+        this.editor = new Editor(this);
     }
 
     get app() {
         return this.plugin.app;
     }
 
-    getSupportedCodeBlocks() {
-        return {
-            ...this.preprocessors.getSupportedCodeBlock(),
-            ...this.processors.getSupportedCodeBlock(),
-        };
-    }
-
     updateSettings(settings: ISettings) {
         this.cache.setFolder(settings.templates_folder);
+        this.editor.updateCommandSuggestion(this);
     }
 
     enable() {

@@ -2,7 +2,7 @@ import { toSlug } from "@furiouzz/lol/string/string";
 import type { Environment, Extension } from "../environment";
 import type { Template } from "../template";
 import { alertWrap } from "../utils/alert";
-import { parseYaml } from "../utils/obsidian";
+import { tryParseYaml } from "../utils/obsidian";
 
 export default function (): Extension {
     return {
@@ -24,7 +24,7 @@ export default function (): Extension {
                 async process({ codeBlock, template }) {
                     cmd.deleteAllFromPath(template.info.file.path);
 
-                    const json = parseYaml<
+                    const json = tryParseYaml<
                         Partial<
                             Omit<Command, "triggers"> & {
                                 trigger: CommandTrigger | CommandTrigger[];
@@ -58,6 +58,14 @@ export default function (): Extension {
                 dispose() {
                     cmd.clear();
                 },
+                suggestions: [
+                    { suggestion: "title: {title}" },
+                    { suggestion: "icon: {icon}" },
+                    { suggestion: "trigger: ribbon" },
+                    { suggestion: "trigger: command" },
+                    { suggestion: "action: insert" },
+                    { suggestion: "action: create" },
+                ],
             });
         },
     };

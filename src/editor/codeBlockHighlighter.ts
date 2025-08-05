@@ -1,18 +1,12 @@
 import { syntaxTree } from "@codemirror/language";
-import {
-    type EditorState,
-    RangeSetBuilder,
-    StateEffect,
-    StateField,
-} from "@codemirror/state";
+import { type EditorState, RangeSetBuilder } from "@codemirror/state";
 import {
     Decoration,
-    EditorView,
-    PluginValue,
+    type EditorView,
+    type PluginValue,
     ViewPlugin,
     type ViewUpdate,
 } from "@codemirror/view";
-import { MarkdownView, type Plugin } from "obsidian";
 import type { Environment } from "../environment";
 import { createMarkdownRenderer } from "../utils/obsidian";
 
@@ -136,11 +130,16 @@ async function buildDecoration({
     return builder.finish();
 }
 
-export function codeBlocksHighlighter(plugin: Plugin, env: Environment) {
-    const render = createMarkdownRenderer(plugin.app);
+export function codeBlocksHighlighter(
+    env: Environment,
+    {
+        getSupportedCodeBlocks,
+    }: { getSupportedCodeBlocks: () => Record<string, string> },
+) {
+    const render = createMarkdownRenderer(env.plugin.app);
 
-    plugin.registerMarkdownPostProcessor(async (el) => {
-        const langs = env.getSupportedCodeBlocks();
+    env.plugin.registerMarkdownPostProcessor(async (el) => {
+        const langs = getSupportedCodeBlocks();
         for (const [from, to] of Object.entries(langs)) {
             const block = el.querySelector<HTMLElement>(
                 `pre:has(code.language-${from})`,
@@ -158,7 +157,7 @@ export function codeBlocksHighlighter(plugin: Plugin, env: Environment) {
         }
     });
 
-    plugin.registerEditorExtension([
+    env.plugin.registerEditorExtension([
         ViewPlugin.fromClass(
             class implements PluginValue {
                 decorations = Decoration.none;
@@ -166,7 +165,7 @@ export function codeBlocksHighlighter(plugin: Plugin, env: Environment) {
                 constructor(view: EditorView) {
                     this.buildDecorations(view);
 
-                    plugin.register(
+                    env.plugin.register(
                         env.cache.events.on((event) => {
                             if (event.name === "queue-cleared") {
                                 this.buildDecorations(view);
@@ -184,7 +183,7 @@ export function codeBlocksHighlighter(plugin: Plugin, env: Environment) {
                 buildDecorations(view: EditorView) {
                     buildDecoration({
                         state: view.state,
-                        languages: env.getSupportedCodeBlocks(),
+                        languages: getSupportedCodeBlocks(),
                         render,
                     }).then((decorations) => {
                         this.decorations = decorations;
