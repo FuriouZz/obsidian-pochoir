@@ -97,7 +97,7 @@ export class Environment extends Events {
         this.renderer.vento.cache.clear();
     }
 
-    async renderTemplate(context: TemplateContext, template: Template) {
+    async renderContent(context: TemplateContext, template: Template) {
         // Rename file
         if (context.path.hasChanged) {
             const file = this.app.vault.getFileByPath(context.path.path);
@@ -152,7 +152,7 @@ export class Environment extends Events {
 
             const context = new TemplateContext(target);
             await template.process(this, context);
-            await this.renderTemplate(context, template);
+            await this.renderContent(context, template);
 
             if (openNote) {
                 await this.app.workspace
@@ -170,7 +170,7 @@ export class Environment extends Events {
 
             const context = new TemplateContext(target);
             await template.process(this, context);
-            await this.renderTemplate(context, template);
+            await this.renderContent(context, template);
         });
     }
 }

@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - Autocompletion for `pochoir-command` and `pochoir-javascript`
+- Introduce new `pochoir-snippet` code block to have a single template for all your snippet
 
 ## [0.0.9] - 2025-07-30
 ### Added

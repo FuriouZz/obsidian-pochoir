@@ -4,6 +4,7 @@ import { Template } from "./template";
 import { CodeBlockRegex } from "./utils/processor";
 
 export interface ParsedCodeBlock {
+    id: number;
     language: string;
     section: SectionCache;
     content: string;
@@ -20,6 +21,8 @@ export interface ParsedSections {
 export interface ParsedTemplateInfo extends ParsedSections {
     file: TFile;
     source: string;
+    identifier: string;
+    displayName: string;
 }
 
 export class Parser {
@@ -34,6 +37,8 @@ export class Parser {
         const info: ParsedTemplateInfo = {
             file,
             source,
+            identifier: file.path,
+            displayName: file.basename,
             ...this.parseSections(source, metadata),
         };
         return new Template(info);
@@ -68,6 +73,7 @@ export class Parser {
                             metadata.sections[index + 1]?.position.start
                                 .offset ?? section.position.end.offset;
                         ret.codeBlocks.push(codeBlock);
+                        codeBlock.id = ret.codeBlocks.length;
                     }
                 }
             }
@@ -115,6 +121,7 @@ export function parseCodeBlock(
     const code = match[3] ?? "";
 
     return {
+        id: 0,
         language,
         content,
         code,

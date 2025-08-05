@@ -61,6 +61,14 @@ export class Template {
         this.info = info;
     }
 
+    getDisplayName() {
+        return this.info.displayName;
+    }
+
+    getIdentifier() {
+        return this.info.identifier;
+    }
+
     getContent() {
         const { source } = this.info;
 

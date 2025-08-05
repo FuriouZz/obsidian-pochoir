@@ -123,7 +123,7 @@ export class TemplateModalSuggester extends FuzzySuggestModal<Entry> {
 
     getItems(): Entry[] {
         return [...this.environment.cache.templates.values()].map(
-            (template) => ({ template, name: template.info.file.basename }),
+            (template) => ({ template, name: template.getDisplayName() }),
         );
     }
 

@@ -8,7 +8,7 @@ interface CodeBlockParams {
 
 interface CodeBlockProcessorWithParams<TParams> {
     type: "codeblock";
-    languages: Record<string, "javascript" | "yaml">;
+    languages: Record<string, "javascript" | "yaml" | "md">;
     test?: string | RegExp | ((params: TParams) => boolean);
     order?: number;
     process: (params: TParams) => Promise<void>;

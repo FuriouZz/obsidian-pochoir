@@ -66,7 +66,7 @@ export class Cache {
                 const file = this.app.vault.getFileByPath(event.path);
                 if (file) await this.#invalidate(file, event.metadata);
             } else if (event.name === "delete") {
-                this.templates.delete(event.path);
+                this.remove(event.path);
             }
         });
         this.#queue.processing = false;
@@ -74,12 +74,10 @@ export class Cache {
 
     async #invalidate(file: TFile, metadata: CachedMetadata) {
         this.#queue.processing = true;
-        this.templates.delete(file.path);
+        this.remove(file.path);
 
         const template = await this.#parser.parse(file, metadata);
-        this.templates.set(template.info.file.path, template);
-        this.events.trigger({ name: "template-change", template });
-        verbose("template-change", file.path);
+        this.add(template);
 
         this.#queue.processing = false;
 
@@ -92,18 +90,46 @@ export class Cache {
         }
     }
 
+    add(template: Template) {
+        const id = template.getIdentifier();
+        this.templates.set(id, template);
+        this.events.trigger({ name: "template-change", template });
+        verbose("template-change", id);
+    }
+
+    remove(path: string) {
+        const template = this.templates.get(path);
+        if (!template) return;
+
+        // Get template and its snippets
+        const templates = [...this.templates.values()].filter(
+            (t) => t.info.file.path === path,
+        );
+
+        for (const template of templates) {
+            this.templates.delete(template.getIdentifier());
+        }
+    }
+
     resolve(path: string | TFile) {
+        let template: Template | undefined;
         let file: TFile | null = null;
         if (path instanceof TFile) {
             file = path;
         } else {
-            file = LinkPathRegex.test(path)
-                ? findLinkPath(this.app, path)
-                : this.app.vault.getFileByPath(path);
-        }
-        if (!file) throw new PochoirError(`File does not exist: ${path}`);
+            template = this.templates.get(path);
 
-        const template = this.templates.get(file.path);
+            if (!template) {
+                file = LinkPathRegex.test(path)
+                    ? findLinkPath(this.app, path)
+                    : this.app.vault.getFileByPath(path);
+            }
+        }
+
+        if (file) {
+            template = this.templates.get(file.path);
+        }
+
         if (!template) {
             throw new PochoirError(`Template does not exist: ${path}`);
         }
