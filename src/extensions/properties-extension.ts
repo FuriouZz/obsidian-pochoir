@@ -9,6 +9,17 @@ export default function (): Extension {
             desc: "Instead of using template properties, use a code block",
         },
         setup(env) {
+            env.preprocessors.set("codeblock:properties", {
+                type: "codeblock",
+                languages: {
+                    "pochoir-props": "yaml",
+                    "pochoir-properties": "yaml",
+                },
+                async process({ codeBlock, template }) {
+                    template.info.properties.clear();
+                    template.info.properties.merge(codeBlock.code);
+                },
+            });
             env.processors.set("codeblock:properties", {
                 type: "codeblock",
                 order: 99,
