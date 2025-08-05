@@ -26,7 +26,6 @@ export default function (): Extension {
                         path: context.path.createProxy(),
                         ...context.locals.exports,
                     });
-                    console.log(yaml);
                     context.properties.mergeYaml(yaml);
                 },
             });
