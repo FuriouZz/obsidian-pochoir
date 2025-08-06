@@ -24,19 +24,11 @@ export class Editor {
     }
 
     enableHighlighter(env: Environment) {
-        codeBlocksHighlighter(env, {
-            getSupportedCodeBlocks: () => {
-                const l = env.preprocessors.getSupportedCodeBlock();
-                env.processors.getSupportedCodeBlock(l);
-                return l;
-            },
-        });
+        codeBlocksHighlighter(env);
     }
 
     updateEditorSuggestions(env: Environment) {
         if (!this.suggester) return;
-        const l = env.preprocessors.getSuggestions();
-        env.processors.getSuggestions(l);
-        this.suggester.suggestionByCodeBlock = l;
+        this.suggester.suggestionByCodeBlock = env.processors.getSuggestions();
     }
 }

@@ -10,13 +10,13 @@ export default function (): Extension {
             desc: "Instead of creating a template by file, use a code block",
         },
         setup(env) {
-            env.preprocessors.set("codeblock:snippet", {
+            env.processors.set("codeblock:snippet", {
                 type: "codeblock",
                 order: 130,
                 languages: {
                     "pochoir-snippet": "md",
                 },
-                async process({ codeBlock, template: parent }) {
+                async preprocess({ codeBlock, template: parent }) {
                     const identifier = `${parent.info.file.path}#${codeBlock.id}`;
                     const displayName =
                         (codeBlock.attributes.title as string) ||

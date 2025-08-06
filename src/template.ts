@@ -3,12 +3,7 @@ import type { Environment } from "./environment";
 import { verbose } from "./logger";
 import type { ParsedTemplateInfo } from "./parser";
 import { PathBuilder } from "./path-builder";
-import type {
-    CodeBlockPreprocessor,
-    CodeBlockProcessor,
-    PropertyPreprocessor,
-    PropertyProcessor,
-} from "./processor-list";
+import type { CodeBlockProcessor, PropertyProcessor } from "./processor-list";
 import { PropertiesBuilder } from "./properties-builder";
 
 export interface TemplateContextLocals {
@@ -83,7 +78,8 @@ export class Template {
     }
 
     async preprocess(env: Environment) {
-        for (const processor of env.preprocessors) {
+        for (const processor of env.processors) {
+            if (!processor.preprocess) continue;
             if (processor.type === "codeblock") {
                 await this.preprocessCodeBlock(processor);
             } else if (processor.type === "property") {
@@ -92,7 +88,7 @@ export class Template {
         }
     }
 
-    async preprocessCodeBlock(processor: CodeBlockPreprocessor) {
+    async preprocessCodeBlock(processor: CodeBlockProcessor) {
         for (const codeBlock of this.info.codeBlocks) {
             if (codeBlock.attributes.disabled) {
                 processor.disable?.({ codeBlock, template: this });
@@ -105,12 +101,12 @@ export class Template {
                     codeBlock,
                 });
             if (isValid) {
-                await processor.process({ codeBlock, template: this });
+                await processor.preprocess?.({ codeBlock, template: this });
             }
         }
     }
 
-    async preprocessProperty(processor: PropertyPreprocessor) {
+    async preprocessProperty(processor: PropertyProcessor) {
         for (const [key, value] of this.info.properties.entries()) {
             const isValid = testProcessor(processor, key, {
                 template: this,
@@ -118,7 +114,7 @@ export class Template {
                 value,
             });
             if (isValid) {
-                await processor.process({ key, value, template: this });
+                await processor.preprocess?.({ key, value, template: this });
             }
         }
     }
@@ -131,6 +127,7 @@ export class Template {
         context.properties.merge(this.info.properties);
 
         for (const processor of env.processors) {
+            if (!processor.process) continue;
             if (processor.type === "codeblock") {
                 await this.processCodeBlock(context, processor);
             } else if (processor.type === "property") {
@@ -156,7 +153,11 @@ export class Template {
                     codeBlock,
                 });
             if (isValid) {
-                await processor.process({ context, codeBlock, template: this });
+                await processor.process?.({
+                    context,
+                    codeBlock,
+                    template: this,
+                });
             }
         }
     }
@@ -173,7 +174,7 @@ export class Template {
                 value,
             });
             if (isValid) {
-                await processor.process({
+                await processor.process?.({
                     context,
                     key,
                     value,

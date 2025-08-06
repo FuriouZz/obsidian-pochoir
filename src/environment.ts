@@ -5,17 +5,13 @@ import { EventEmitter } from "./event-emitter";
 import { ExtensionList } from "./extension-list";
 import { Importer, type Loader } from "./importer";
 import type PochoirPlugin from "./main";
-import {
-    type Preprocessor,
-    type Processor,
-    ProcessorList,
-} from "./processor-list";
+import { type Processor, ProcessorList } from "./processor-list";
 import { Renderer } from "./renderer";
 import type { ISettings } from "./setting-tab";
 import { type Template, TemplateContext } from "./template";
+import { TemplateSuggesterSet } from "./template-suggester-set";
 import { alertWrap } from "./utils/alert";
 import { ensurePath, findOrCreateNote } from "./utils/obsidian";
-import { TemplateSuggesterSet } from "./template-suggester-set";
 
 export interface Extension {
     name: string;
@@ -40,7 +36,6 @@ export class Environment extends Events {
     editor: Editor;
     templateSuggesters: TemplateSuggesterSet;
 
-    preprocessors = new ProcessorList<Preprocessor>();
     processors = new ProcessorList<Processor>();
     contextProviders: ContextProvider[] = [];
     loaders: Loader[] = [];
@@ -94,7 +89,6 @@ export class Environment extends Events {
         this.contextProviders.length = 0;
         this.loaders.length = 0;
         this.processors.clear();
-        this.preprocessors.clear();
         this.cache.templates.clear();
         this.renderer.vento.cache.clear();
         this.templateSuggesters.clear();

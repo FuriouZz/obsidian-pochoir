@@ -18,10 +18,10 @@ export default function (): Extension {
                 cmd.deleteAllFromPath(file.path);
             });
 
-            env.preprocessors.set("codeblock:command", {
+            env.processors.set("codeblock:command", {
                 type: "codeblock",
                 languages: { "pochoir-command": "yaml" },
-                async process({ codeBlock, template }) {
+                async preprocess({ codeBlock, template }) {
                     cmd.deleteAllFromPath(template.info.file.path);
 
                     const json = tryParseYaml<

@@ -9,10 +9,14 @@ interface CodeBlockParams {
 interface CodeBlockProcessorWithParams<TParams> {
     type: "codeblock";
     languages: Record<string, "javascript" | "yaml" | "md">;
-    test?: string | RegExp | ((params: TParams) => boolean);
+    test?:
+        | string
+        | RegExp
+        | ((params: WithOptionalContext<TParams>) => boolean);
     order?: number;
-    process: (params: TParams) => Promise<void>;
-    disable?: (params: TParams) => void;
+    preprocess?: (params: TParams) => Promise<void>;
+    process?: (params: WithContext<TParams>) => Promise<void>;
+    disable?: (params: WithOptionalContext<TParams>) => void;
     dispose?: () => void;
     suggestions?: {
         suggestion: string;
@@ -22,11 +26,7 @@ interface CodeBlockProcessorWithParams<TParams> {
     }[];
 }
 
-export type CodeBlockPreprocessor =
-    CodeBlockProcessorWithParams<CodeBlockParams>;
-export type CodeBlockProcessor = CodeBlockProcessorWithParams<
-    WithContext<CodeBlockParams>
->;
+export type CodeBlockProcessor = CodeBlockProcessorWithParams<CodeBlockParams>;
 
 interface PropertyParams {
     template: Template;
@@ -38,22 +38,20 @@ interface PropertyProcessorWithParams<TParams> {
     type: "property";
     order?: number;
     test?: string | RegExp | ((params: TParams) => boolean);
-    process: (params: TParams) => Promise<void>;
+    preprocess?: (params: TParams) => Promise<void>;
+    process?: (params: WithContext<TParams>) => Promise<void>;
     disable?: (params: TParams) => void;
     dispose?: () => void;
 }
 
-export type PropertyPreprocessor = PropertyProcessorWithParams<PropertyParams>;
-export type PropertyProcessor = PropertyProcessorWithParams<
-    WithContext<PropertyParams>
->;
+export type WithContext<T> = T & { context: TemplateContext };
+export type WithOptionalContext<T> = T & { context?: TemplateContext };
 
-type WithContext<T> = T & { context: TemplateContext };
+export type PropertyProcessor = PropertyProcessorWithParams<PropertyParams>;
 
 export type Processor = PropertyProcessor | CodeBlockProcessor;
-export type Preprocessor = PropertyPreprocessor | CodeBlockPreprocessor;
 
-export class ProcessorList<T extends Processor | Preprocessor> {
+export class ProcessorList<T extends Processor> {
     #entries = new Map<string, T & { id: string; order: number }>();
     order: string[] = [];
 

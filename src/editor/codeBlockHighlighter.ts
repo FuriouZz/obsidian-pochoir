@@ -130,16 +130,11 @@ async function buildDecoration({
     return builder.finish();
 }
 
-export function codeBlocksHighlighter(
-    env: Environment,
-    {
-        getSupportedCodeBlocks,
-    }: { getSupportedCodeBlocks: () => Record<string, string> },
-) {
+export function codeBlocksHighlighter(env: Environment) {
     const render = createMarkdownRenderer(env.plugin.app);
 
     env.plugin.registerMarkdownPostProcessor(async (el) => {
-        const langs = getSupportedCodeBlocks();
+        const langs = env.processors.getSupportedCodeBlock();
         for (const [from, to] of Object.entries(langs)) {
             const block = el.querySelector<HTMLElement>(
                 `pre:has(code.language-${from})`,
@@ -183,7 +178,7 @@ export function codeBlocksHighlighter(
                 buildDecorations(view: EditorView) {
                     buildDecoration({
                         state: view.state,
-                        languages: getSupportedCodeBlocks(),
+                        languages: env.processors.getSupportedCodeBlock(),
                         render,
                     }).then((decorations) => {
                         this.decorations = decorations;
