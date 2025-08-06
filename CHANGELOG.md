@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+## [0.0.11] - 2025-08-06
+
+### Fixed
+- aliases in pochoir-props code block were not visible in template suggester
 
 ## [0.0.10] - 2025-08-05
 ### Added
@@ -108,7 +112,8 @@ action: create # or "insert"
 
 First version
 
-[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.9...main
+[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.11...main
+[0.0.11]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.10...0.0.11
 [0.0.10]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.9...0.0.10
 [0.0.9]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.8...0.0.9
 [0.0.8]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.7...0.0.8
