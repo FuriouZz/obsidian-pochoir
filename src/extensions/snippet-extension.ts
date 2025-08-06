@@ -73,7 +73,8 @@ export default function (): Extension {
                                     score,
                                 },
                             };
-                        });
+                        })
+                        .sort((a, b) => b.match.score - a.match.score);
                 },
             });
         },
