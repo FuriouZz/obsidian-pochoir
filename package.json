@@ -9,7 +9,7 @@
 		"lint": "biome check src/ && tsc -noEmit -skipLibCheck",
 		"test": "vitest src/",
 		"build": "npm run lint && node esbuild.config.mjs production",
-		"version": "node version-bump.mjs && git add manifest.json versions.json",
+		"bump": "NODE_NO_WARNINGS=1 node --experimental-strip-types version-bump.mts",
 		"docs:serve": "cd docs && deno task serve",
 		"docs:build": "cd docs && deno task build"
 	},
