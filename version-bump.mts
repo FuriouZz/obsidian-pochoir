@@ -25,6 +25,30 @@ const api = {
     },
 };
 
+function diff(from: string, to: string) {
+    spawnSync(`git --no-pager diff ${from} ${to}`, {
+        shell: true,
+        stdio: "inherit",
+    });
+}
+
+async function prompt(message: string) {
+    return new Promise<string>((resolve) => {
+        process.stdin.resume();
+        process.stdin.setEncoding("utf8");
+        process.stdout.write(message);
+        process.stdin.once("data", (data) => {
+            resolve(data.toString().trim());
+            process.stdin.pause();
+        });
+    });
+}
+
+function date() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate() + 1).padStart(2, "0")}`;
+}
+
 function bump({ readJSON, readText, writeJSON, writeText, spawn }: typeof api) {
     const packageData = readJSON("package.json");
     const targetVersion =
@@ -44,7 +68,10 @@ function bump({ readJSON, readText, writeJSON, writeText, spawn }: typeof api) {
 
     // update changelog
     const changelog = readText("CHANGELOG.md")
-        .replace("## [Unreleased]", `## [Unreleased]\n\n## [${targetVersion}]`)
+        .replace(
+            "## [Unreleased]",
+            `## [Unreleased]\n\n## [${targetVersion}] - ${date()}`,
+        )
         .replace(
             `compare/${previousVersion}...main`,
             `compare/${targetVersion}...main`,
@@ -69,25 +96,6 @@ function bump({ readJSON, readText, writeJSON, writeText, spawn }: typeof api) {
     spawn("git add .");
     spawn(`git commit -m "chore(release): ${targetVersion}"`);
     spawn(`git tag -a ${targetVersion} -m "${targetVersion}"`);
-}
-
-function diff(from: string, to: string) {
-    spawnSync(`git --no-pager diff ${from} ${to}`, {
-        shell: true,
-        stdio: "inherit",
-    });
-}
-
-async function prompt(message: string) {
-    return new Promise<string>((resolve) => {
-        process.stdin.resume();
-        process.stdin.setEncoding("utf8");
-        process.stdout.write(message);
-        process.stdin.once("data", (data) => {
-            resolve(data.toString().trim());
-            process.stdin.pause();
-        });
-    });
 }
 
 async function main() {
