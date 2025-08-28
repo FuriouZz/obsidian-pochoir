@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.0.13]
+
 ### Fixed
 - Use safe method Element.getHTML() instead of Element.innerHTML
 
@@ -121,7 +123,8 @@ action: create # or "insert"
 
 First version
 
-[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.12...main
+[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.13...main
+[0.0.13]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.12...0.0.13
 [0.0.12]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.11...0.0.12
 [0.0.11]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.10...0.0.11
 [0.0.10]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.9...0.0.10
