@@ -141,7 +141,7 @@ export function codeBlocksHighlighter(env: Environment) {
             );
             if (!block) continue;
 
-            const source = block.querySelector("code")?.innerHTML;
+            const source = block.querySelector("code")?.getHTML();
             if (!source) continue;
 
             const res = await render(`\`\`\`${to}\n${source.trim()}\n\`\`\``);

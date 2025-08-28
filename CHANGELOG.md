@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- Use safe method Element.getHTML() instead of Element.innerHTML
+
 ## [0.0.12] - 2025-08-06
 
 ### Fixed
