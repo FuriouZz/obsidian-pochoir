@@ -4,6 +4,7 @@ import {
     Component,
     MarkdownRenderer,
     normalizePath,
+    Plugin,
     TFile,
     TFolder,
     Vault,
@@ -21,19 +22,8 @@ export function parentFolderPath(path: string) {
     return path.replace(/\/?[^/]*$/, "") || "/";
 }
 
-export function getNewFileLocation(app: App) {
-    switch (app.vault.getConfig("newFileLocation")) {
-        case "folder": {
-            return app.fileManager.getNewFileParent("");
-        }
-        case "current": {
-            const folder = app.workspace.getActiveFile()?.parent;
-            return folder ?? app.vault.getRoot();
-        }
-        default: {
-            return app.vault.getRoot();
-        }
-    }
+export function getNewFileLocation(app: App, filename: string) {
+    return app.fileManager.getNewFileParent(filename);
 }
 
 export function getFilesAtLocation(app: App, location: string) {
@@ -48,7 +38,7 @@ export function getFilesAtLocation(app: App, location: string) {
 
 export async function findOrCreateFolder(app: App, path: string) {
     let folder = app.vault.getAbstractFileByPath(path);
-    if (folder instanceof TFile) {
+    if (folder instanceof TFolder) {
         throw new Error(`There is already a file: ${folder.path}`);
     }
     if (!folder) {
@@ -69,7 +59,7 @@ export async function findOrCreateNote(app: App, path: string) {
 }
 
 export async function createNote(app: App, filename: string, folder?: TFolder) {
-    const location = folder ?? getNewFileLocation(app);
+    const location = folder ?? getNewFileLocation(app, filename);
     const path = app.vault.getAvailablePath(
         normalizePath(`${location.path}/${filename}`),
         "md",
@@ -99,13 +89,12 @@ export function tryParseYaml<T = unknown>(str: string) {
     return null;
 }
 
-export function createMarkdownRenderer(app: App) {
+export function createMarkdownRenderer(plugin: Plugin) {
     return async (
         content: string,
         el: HTMLElement = document.createElement("div"),
     ) => {
-        const component = new Component();
-        await MarkdownRenderer.render(app, content, el, "", component);
+        await MarkdownRenderer.render(plugin.app, content, el, "", plugin);
         return el;
     };
 }

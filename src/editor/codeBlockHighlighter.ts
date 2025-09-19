@@ -131,7 +131,7 @@ async function buildDecoration({
 }
 
 export function codeBlocksHighlighter(env: Environment) {
-    const render = createMarkdownRenderer(env.plugin.app);
+    const render = createMarkdownRenderer(env.plugin);
 
     env.plugin.registerMarkdownPostProcessor(async (el) => {
         const langs = env.processors.getSupportedCodeBlock();
