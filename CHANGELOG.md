@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Snippet are evaluated like a normal template. You can use variables and custom properties inside a snippet
 
+### Fixed
+- Allow nested code blocks
+
 ## [0.0.13] - 2025-08-28
 
 ### Fixed

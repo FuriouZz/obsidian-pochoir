@@ -1,7 +1,6 @@
 import type { App, CachedMetadata, SectionCache, TFile } from "obsidian";
 import { PropertiesBuilder } from "./properties-builder";
 import { Template } from "./template";
-import { CodeBlockRegex } from "./utils/processor";
 
 export interface ParsedCodeBlock {
     id: number;
@@ -129,23 +128,28 @@ export class Parser {
 }
 
 export function parseCodeBlock(
-    content: string,
+    source: string,
 ): Omit<ParsedCodeBlock, "section"> | undefined {
-    const match = content.match(CodeBlockRegex);
-    if (!match) return;
+    const newline = "\n";
 
-    const language = match[1];
+    const firstNewline = source.indexOf(newline) + 1;
+    const lastNewline = source.lastIndexOf(newline);
+
+    const code = source.slice(firstNewline, lastNewline);
+    const fence = source.slice(lastNewline, source.length).trim();
+
+    const [language, ...attributes] = source
+        .slice(fence.length, firstNewline)
+        .split(/\s/);
+
     if (!language.startsWith("pochoir-")) return;
-
-    const attributes = match[2] ? parseAttributes(match[2]) : {};
-    const code = match[3] ?? "";
 
     return {
         id: 0,
         language,
-        content,
+        content: source,
         code,
-        attributes,
+        attributes: parseAttributes(attributes.join(" ")),
     };
 }
 
