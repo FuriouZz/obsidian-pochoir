@@ -8,6 +8,7 @@ title: Imports and exports
 
 Use `template.exports` object, to expose variables or functions to your template.
 
+{{echo}}
 ````md
 ```pochoir-js
 template.exports.who = "John Doe";
@@ -15,6 +16,7 @@ template.exports.who = "John Doe";
 
 I am {{who}}.
 ````
+{{/echo}}
 
 Output:
 
@@ -24,6 +26,7 @@ I am John Doe.
 
 You can even export a function use it in properties
 
+{{echo}}
 ````md
 ---
 author: "{{fullname()}}"
@@ -37,6 +40,7 @@ template.exports.fullname = () => {
 
 Article created by {{fullname()}}.
 ````
+{{/echo}}
 
 Output:
 ````md
@@ -64,6 +68,7 @@ template.exports.fakeAge = () => {
 
 and another template:
 
+{{echo}}
 ````md
 ```pochoir-js
 const { fakeAge } = await template.import("[[Functions]]");
@@ -72,6 +77,7 @@ template.exports.age = fakeAge;
 
 I am {{age()}} years old.
 ````
+{{/echo}}
 
 Output:
 ````md

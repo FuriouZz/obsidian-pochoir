@@ -12,6 +12,7 @@ Use `$.aliases` property to give a **list** of aliases to the template.
 
 In the template picker, I can type `tsk` to preselect the following template:
 
+{{echo}}
 ```md
 ---
 date: "{{date.today()}}"
@@ -21,3 +22,4 @@ $.aliases:
 - tsk
 ---
 ```
+{{/echo}}

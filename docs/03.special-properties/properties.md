@@ -1,7 +1,6 @@
 ---
 order: 2
 title: Properties
-templateEngine: [vto, md]
 ---
 {{ import { today } from "../_includes/functions.vto" }}
 

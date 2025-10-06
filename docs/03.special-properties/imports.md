@@ -27,6 +27,7 @@ template.exports.fullname = () => {
 
 I can import functions from the template below with `$.imports`;
 
+{{echo}}
 ```md {filename="Another Template.md"}
 ---
 author: "{{fullname()}}"
@@ -34,6 +35,7 @@ $.imports:
 - "[[Functions]]"
 ---
 ```
+{{/echo}}
 
 Output:
 

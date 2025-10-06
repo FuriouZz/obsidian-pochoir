@@ -24,12 +24,14 @@ The `date` object provides functions related to dates.
 
 Create unique note.
 
+{{echo}}
 ```md
 ---
 date: "{{date.today()}}"
 $.path: "inbox/{{date.today('YYYMMDDHHmmss')}}"
 ---
 ```
+{{/echo}}
 
 ### path and originalPath
 
@@ -45,11 +47,13 @@ Use `path` to get the note file path. If you want the file path before change yo
 
 A snippet to append date to a note file name.
 
+{{echo}}
 ```md
 ---
 $.path: "{{path.parent}}/{{date.today('YYYMMDDHHmm')}} {{path.name}}"
 ---
 ```
+{{/echo}}
 
 ## Custom variables
 

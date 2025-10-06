@@ -15,6 +15,7 @@ Please follow the [documentation](https://vento.js.org/) for more details.
 
 For example, we have this template:
 
+{{echo}}
 ```vento {filename="Template 1.md" lang="md"}
 {{ export message }}
 Hello World
@@ -26,15 +27,18 @@ Hello, {{name}}!
 
 Some content
 ```
+{{/echo}}
 
 We can import its variables and functions:
 
+{{echo}}
 ```vento {filename="Template 2.md" lang="md"}
 {{ import { message, greeting } from "[[Template 1]]" }}
 
 {{- message -}}
 {{- greeting("John") -}}
 ```
+{{/echo}}
 
 Outputs:
 ```md {filename="Note.md"}
@@ -44,9 +48,11 @@ Hello, John!
 
 We can also include its content:
 
+{{echo}}
 ```vento {filename="Template 3.md" lang="md"}
 {{ include "[[Template 1]]" }}
 ```
+{{/echo}}
 
 Outputs:
 ```md {filename="Note 2.md"}

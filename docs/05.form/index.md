@@ -11,7 +11,13 @@ The `form` code block enables you:
 
 **You need to enable `pochoir-form` code block in plugin settings.**
 
+{{ comp flex }}
+    {{ comp video { src: "/assets/demo-form.mp4" } /}}
+{{ /comp }}
+
 Let's take an example with the code below:
+
+{{ echo }}
 ````md
 ```pochoir-form exports="myForm"
 title:
@@ -27,12 +33,11 @@ desc:
 
 {{myForm.desc}}
 ````
+{{ /echo }}
 
 In this template, we have:
 - a `pochoir-form` code block with the `exports` attribute exposing form results to the variable `myForm`
 - a text field `title` and a textarea field `desc`
 - and two variables `myForm.title` and `myForm.description` used in our template
-
-<video src="/assets/demo-form.mp4" autoplay controls loop style="width: 100%"></video>
 
 Learn more about [form attributes](/form/attributes/) and [form fields](/form/fields/).

@@ -40,19 +40,26 @@ This context enables to interact with the plugin and other templates.
 
 Let's take an example. If you want to expose a variable to my template I can use `template.exports` object.
 
+{{echo}}
 Let's create a variable `{{message}}` and use it:
+{{/echo}}
 
+{{echo}}
 ````md
 ```pochoir-js
 template.exports.message = "Hello World";
 ```
 {{ message }}
 ````
+{{echo}}
 
+{{echo}}
 Now, if we want to use `{{message}}` into another template, we will use `template.import()` function.
+{{/echo}}
 
 Our previous template is called `[[Functions]]`, and now we will import it into our new template:
 
+{{echo}}
 ````md
 ```pochoir-js
 const { message } = await template.import("[[Functions]]");
@@ -60,4 +67,5 @@ template.exports.message = message;
 ```
 {{ message }}
 ````
+{{/echo}}
 

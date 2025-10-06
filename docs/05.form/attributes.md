@@ -27,6 +27,7 @@ Trigger a form modal and exports the results in the given variable name
 
 ### Describe a form and prompt the modal
 
+{{ echo }}
 ````md
 ```pochoir-form exports="myForm"
 title:
@@ -36,9 +37,11 @@ title:
 
 # {{myForm.title}}
 ````
+{{ /echo }}
 
 ### Describe a form and access it from Javascript
 
+{{ echo }}
 ````md
 ```pochoir-form name="my-form"
 title:
@@ -55,3 +58,4 @@ template.exports.myForm = await form.prompt(myForm);
 
 # {{myForm.title}}
 ````
+{{ /echo }}
