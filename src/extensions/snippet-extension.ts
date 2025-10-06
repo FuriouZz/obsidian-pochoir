@@ -6,13 +6,13 @@ export default function (): Extension {
     return {
         name: "snippet",
         settings: {
-            label: "Enable [pochoir-snippet](https://furiouzz.github.io/obsidian-pochoir/snippet/overview/) code block",
+            label: "Enable [pochoir-snippet](https://furiouzz.github.io/obsidian-pochoir/snippet/) code block",
             desc: "Instead of creating a template by file, use a code block",
         },
         setup(env) {
             env.processors.set("codeblock:snippet", {
                 type: "codeblock",
-                order: 130,
+                order: 30,
                 languages: {
                     "pochoir-snippet": "md",
                 },
@@ -23,12 +23,22 @@ export default function (): Extension {
                         (codeBlock.attributes.name as string) ||
                         identifier;
 
+                    const properties = new PropertiesBuilder();
+                    if (codeBlock.code.startsWith("---")) {
+                        const match = codeBlock.code.match(
+                            /-{3}\n+((?:.|\n)*)\n+-{3}/,
+                        );
+                        if (match) {
+                            properties.merge(match[1]);
+                        }
+                    }
+
                     const template = new Template({
                         codeBlocks: [],
                         contentRanges: [[0, codeBlock.code.length]],
                         file: parent.info.file,
-                        properties: new PropertiesBuilder(),
                         source: codeBlock.code,
+                        properties,
                         displayName,
                         identifier,
                     });
