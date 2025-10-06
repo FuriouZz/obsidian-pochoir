@@ -1,10 +1,9 @@
 import {
     parseYaml as _parseYaml,
     type App,
-    Component,
     MarkdownRenderer,
     normalizePath,
-    Plugin,
+    type Plugin,
     TFile,
     TFolder,
     Vault,
@@ -39,7 +38,7 @@ export function getFilesAtLocation(app: App, location: string) {
 export async function findOrCreateFolder(app: App, path: string) {
     let folder = app.vault.getAbstractFileByPath(path);
     if (folder instanceof TFolder) {
-        throw new Error(`There is already a file: ${folder.path}`);
+        return folder;
     }
     if (!folder) {
         folder = await app.vault.createFolder(path);
