@@ -170,4 +170,30 @@ export class Environment extends Events {
             await this.renderContent(context, template);
         });
     }
+
+    async createVirtualTemplate(
+        options:
+            | { type: "clipboard" }
+            | { type: "selection" }
+            | { type: "source"; source: string },
+    ) {
+        const { app } = this;
+        const file = this.app.workspace.getActiveFile();
+        if (!file) return;
+
+        let source: string | undefined;
+        if (options.type === "selection") {
+            source = app.workspace
+                .getActiveViewOfType(MarkdownView)
+                ?.editor.getSelection();
+        } else if (options.type === "clipboard") {
+            source = await navigator.clipboard.readText();
+        } else if (options.type === "source") {
+            source = options.source;
+        }
+
+        if (!source) return;
+
+        return this.cache.parser.fromSource(source, file);
+    }
 }

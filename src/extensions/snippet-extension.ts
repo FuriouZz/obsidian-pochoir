@@ -1,6 +1,4 @@
 import type { Extension } from "../environment";
-import { PropertiesBuilder } from "../properties-builder";
-import { Template } from "../template";
 
 export default function (): Extension {
     return {
@@ -23,25 +21,15 @@ export default function (): Extension {
                         (codeBlock.attributes.name as string) ||
                         identifier;
 
-                    const properties = new PropertiesBuilder();
-                    if (codeBlock.code.startsWith("---")) {
-                        const match = codeBlock.code.match(
-                            /-{3}\n+((?:.|\n)*)\n+-{3}/,
-                        );
-                        if (match) {
-                            properties.merge(match[1]);
-                        }
-                    }
-
-                    const template = new Template({
-                        codeBlocks: [],
-                        contentRanges: [[0, codeBlock.code.length]],
-                        file: parent.info.file,
+                    const template = await env.createVirtualTemplate({
+                        type: "source",
                         source: codeBlock.code,
-                        properties,
-                        displayName,
-                        identifier,
                     });
+
+                    if (!template) return;
+
+                    template.info.identifier = identifier;
+                    template.info.displayName = displayName;
 
                     env.cache.add(template);
                 },

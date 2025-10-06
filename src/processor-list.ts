@@ -14,7 +14,9 @@ interface CodeBlockProcessorWithParams<TParams> {
         | RegExp
         | ((params: WithOptionalContext<TParams>) => boolean);
     order?: number;
+    beforePreprocess?: (params: { template: Template }) => void;
     preprocess?: (params: TParams) => Promise<void>;
+    beforeProcess?: (params: { template: Template }) => void;
     process?: (params: WithContext<TParams>) => Promise<void>;
     disable?: (params: WithOptionalContext<TParams>) => void;
     dispose?: () => void;
@@ -38,7 +40,9 @@ interface PropertyProcessorWithParams<TParams> {
     type: "property";
     order?: number;
     test?: string | RegExp | ((params: TParams) => boolean);
+    beforePreprocess?: (params: { template: Template }) => void;
     preprocess?: (params: TParams) => Promise<void>;
+    beforeProcess?: (params: { template: Template }) => void;
     process?: (params: WithContext<TParams>) => Promise<void>;
     disable?: (params: TParams) => void;
     dispose?: () => void;

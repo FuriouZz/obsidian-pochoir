@@ -30,6 +30,10 @@ export class Cache {
         this.#watcher = new FileWatcher(app);
     }
 
+    get parser() {
+        return this.#parser;
+    }
+
     setFolder(path: string | undefined) {
         this.#watcher.setFolder(path);
     }

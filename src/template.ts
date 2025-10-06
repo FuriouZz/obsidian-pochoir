@@ -80,6 +80,7 @@ export class Template {
     async preprocess(env: Environment) {
         for (const processor of env.processors) {
             if (!processor.preprocess) continue;
+            processor.beforePreprocess?.({ template: this });
             if (processor.type === "codeblock") {
                 await this.preprocessCodeBlock(processor);
             } else if (processor.type === "property") {
@@ -128,6 +129,7 @@ export class Template {
 
         for (const processor of env.processors) {
             if (!processor.process) continue;
+            processor.beforeProcess?.({ template: this });
             if (processor.type === "codeblock") {
                 await this.processCodeBlock(context, processor);
             } else if (processor.type === "property") {

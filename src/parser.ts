@@ -106,6 +106,26 @@ export class Parser {
             section.position.end.offset,
         );
     }
+
+    fromSource(source: string, file: TFile) {
+        const properties = new PropertiesBuilder();
+        if (source.startsWith("---")) {
+            const match = source.match(/-{3}\n+((?:.|\n)*)\n+-{3}/);
+            if (match) {
+                properties.merge(match[1]);
+            }
+        }
+
+        return new Template({
+            codeBlocks: [],
+            contentRanges: [[0, source.length]],
+            file,
+            source,
+            properties,
+            displayName: "",
+            identifier: "",
+        });
+    }
 }
 
 export function parseCodeBlock(
