@@ -1,12 +1,15 @@
 import { type App, type CachedMetadata, TFile } from "obsidian";
-import { PochoirError } from "./errors";
 import { EventEmitter } from "./event-emitter";
 import { FileWatcher, type FileWatcherEvent } from "./file-watcher";
 import { verbose } from "./logger";
 import { Parser } from "./parser";
 import type { Template } from "./template";
 import { alertWrap } from "./utils/alert";
-import { findLinkPath, LinkPathRegex } from "./utils/obsidian";
+import {
+    findLinkPath,
+    SnippetRegex,
+    WikiLinkPathRegex,
+} from "./utils/obsidian";
 
 export type CacheEvent =
     | { name: "template-change"; template: Template }
@@ -124,9 +127,24 @@ export class Cache {
             template = this.templates.get(path);
 
             if (!template) {
-                file = LinkPathRegex.test(path)
-                    ? findLinkPath(this.app, path)
-                    : this.app.vault.getFileByPath(path);
+                if (path === "[[]]") {
+                    file = this.app.workspace.getActiveFile();
+                } else {
+                    file = WikiLinkPathRegex.test(path)
+                        ? findLinkPath(this.app, path)
+                        : this.app.vault.getFileByPath(path);
+                }
+            }
+
+            if (!template && path.startsWith("snippet")) {
+                const match = path.match(SnippetRegex);
+                if (match) {
+                    template = [...this.templates.values()].find(
+                        (t) =>
+                            t.isSnippet() &&
+                            t.getIdentifier().endsWith(`#${match[1]}`),
+                    );
+                }
             }
         }
 
@@ -134,10 +152,6 @@ export class Cache {
             template = this.templates.get(file.path);
         }
 
-        if (!template) {
-            throw new PochoirError(`Template does not exist: ${path}`);
-        }
-
-        return template;
+        return template ?? null;
     }
 }

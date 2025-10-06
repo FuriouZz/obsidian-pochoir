@@ -73,11 +73,7 @@ export default function (): Extension {
                     { suggestion: "trigger: command" },
                     { suggestion: "trigger: editor-menu" },
                     { suggestion: "action: insert" },
-                    { suggestion: "action: insert-from-selection" },
-                    { suggestion: "action: insert-from-clipboard" },
                     { suggestion: "action: create" },
-                    { suggestion: "action: create-from-selection" },
-                    { suggestion: "action: create-from-clipboard" },
                 ],
             });
         },
@@ -90,14 +86,10 @@ export interface Command {
     id: string;
     icon: string;
     title: string;
-    action:
-        | "create"
-        | "create-from-selection"
-        | "create-from-clipboard"
-        | "insert"
-        | "insert-from-selection"
-        | "insert-from-clipboard";
+    action: "create" | "insert";
     triggers: CommandTrigger[];
+    template?: string;
+    templates?: string[];
 }
 
 export class CommandManager {
@@ -129,32 +121,58 @@ export class CommandManager {
         }
     }
 
-    performAction = async (
-        currentTemplate: Template,
-        action: Command["action"],
-    ) => {
-        let template: Template | undefined = currentTemplate;
+    remove(id: string) {
+        this.removeRibon(id);
+        this.removeCommand(id);
+        this.removeEditorMenu(id);
+        this.map.delete(id);
+    }
 
-        if (action.includes("from-selection")) {
-            template = await this.env.createVirtualTemplate({
-                type: "selection",
-            });
-        } else if (action.includes("from-clipboard")) {
-            template = await this.env.createVirtualTemplate({
-                type: "clipboard",
-            });
+    performAction = async (template: Template, command: Command) => {
+        const templates: Template[] = [];
+
+        if (command.template) {
+            command.templates = [command.template];
         }
-        if (!template) return;
 
-        if (action.startsWith("insert")) {
-            await this.env.insertFromTemplate(template);
-        } else if (action.startsWith("create")) {
-            await this.env.createFromTemplate(template);
+        if (command.templates) {
+            const all = command.templates.map(async (t) => {
+                if (t === "selection()") {
+                    return this.env.createVirtualTemplate({
+                        type: "selection",
+                    });
+                } else if (t === "clipboard()") {
+                    return this.env.createVirtualTemplate({
+                        type: "clipboard",
+                    });
+                }
+
+                return this.env.cache.resolve(t);
+            });
+            templates.push(...(await Promise.all(all)).filter((t) => !!t));
+        } else {
+            templates.push(template);
+        }
+
+        if (templates.length > 1) {
+            if (command.action === "insert") {
+                this.env.plugin.templateSuggester.insertTemplate({ templates });
+            } else if (command.action === "create") {
+                this.env.plugin.templateSuggester.createFromTemplate({
+                    templates,
+                });
+            }
+        } else if (templates.length === 1) {
+            if (command.action === "insert") {
+                await this.env.insertFromTemplate(templates[0]);
+            } else if (command.action === "create") {
+                await this.env.createFromTemplate(templates[0]);
+            }
         }
     };
 
     addRibon(template: Template, command: Command) {
-        const callback = () => this.performAction(template, command.action);
+        const callback = () => this.performAction(template, command);
 
         this.env.plugin.addRibbonIcon(command.icon, command.title, callback);
         const { leftRibbon } = this.env.plugin.app.workspace;
@@ -179,25 +197,23 @@ export class CommandManager {
         }
     }
 
-    addCommand(template: Template, { id, title: name, action }: Command) {
-        const callback = () => this.performAction(template, action);
+    addCommand(template: Template, command: Command) {
+        const callback = () => this.performAction(template, command);
         this.env.plugin.addCommand({
-            id,
-            name,
+            id: command.id,
+            name: command.title,
             callback,
         });
-        this.map.set(id, template.info.file.path);
+        this.map.set(command.id, template.info.file.path);
     }
 
     removeCommand(id: string) {
         this.env.plugin.removeCommand(id);
     }
 
-    addEditorMenu(
-        template: Template,
-        { id, title: name, action, icon }: Command,
-    ) {
-        const callback = () => this.performAction(template, action);
+    addEditorMenu(template: Template, command: Command) {
+        const { id, title: name, icon } = command;
+        const callback = () => this.performAction(template, command);
         this.menus.set(id, (menu: Menu) => {
             menu.addItem((item) => {
                 item.setTitle(name).setIcon(icon).onClick(callback);
@@ -216,10 +232,7 @@ export class CommandManager {
         );
         if (entries.length === 0) return;
         for (const [id] of entries) {
-            this.removeRibon(id);
-            this.removeCommand(id);
-            this.removeEditorMenu(id);
-            this.map.delete(id);
+            this.remove(id);
         }
     }
 

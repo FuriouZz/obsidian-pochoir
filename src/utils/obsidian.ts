@@ -9,10 +9,11 @@ import {
     Vault,
 } from "obsidian";
 
-export const LinkPathRegex = /^\[\[(.*)\]\]$/;
+export const WikiLinkPathRegex = /^\[\[(.*)\]\]$/;
+export const SnippetRegex = /^snippet\((.*)\)$/;
 
 export function findLinkPath(app: App, path: string) {
-    const match = LinkPathRegex.exec(path);
+    const match = WikiLinkPathRegex.exec(path);
     if (!match) return null;
     return app.metadataCache.getFirstLinkpathDest(match[1], "");
 }

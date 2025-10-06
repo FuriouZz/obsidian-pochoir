@@ -69,7 +69,6 @@ export class CodeEditorSuggester extends EditorSuggest<CodeEditorSuggestion> {
         const language = this.selectedRange?.language;
 
         const suggestions = this.getSuggestionsFromLanguage(language, line);
-        console.log(suggestions);
         return suggestions;
     }
 

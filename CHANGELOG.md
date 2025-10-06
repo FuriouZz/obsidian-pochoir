@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Supports `editor-menu` trigger in `pochoir-command`. You can trigger an action from mouse right-click
 - Create/Insert a template from clipboard or selection
+- `pochoir-command` can display a filtered list of templates/snippets with new `template/templates` fields
 
 ### Changed
 - Snippet are evaluated like a normal template. You can use variables and custom properties inside a snippet

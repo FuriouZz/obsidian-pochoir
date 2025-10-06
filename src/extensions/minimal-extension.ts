@@ -1,7 +1,5 @@
 import type { Extension } from "../environment";
-import { PochoirError } from "../errors";
 import { PathBuilder } from "../path-builder";
-import { alertError } from "../utils/alert";
 
 export default function (): Extension {
     return {
@@ -9,22 +7,11 @@ export default function (): Extension {
         setup(env) {
             env.loaders.push({
                 test: (path) => {
-                    try {
-                        env.cache.resolve(path);
-                        return true;
-                    } catch (e) {
-                        if (
-                            !(e instanceof PochoirError) &&
-                            e instanceof Error
-                        ) {
-                            alertError(e);
-                        }
-                        return false;
-                    }
+                    return !!env.cache.resolve(path);
                 },
                 load: async (path, context) => {
                     const template = env.cache.resolve(path);
-                    await template.process(env, context);
+                    await template?.process(env, context);
                     return context.locals.exports;
                 },
             });

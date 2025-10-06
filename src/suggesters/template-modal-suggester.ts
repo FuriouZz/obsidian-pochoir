@@ -2,9 +2,8 @@ import {
     type App,
     type FuzzyMatch,
     FuzzySuggestModal,
-    SearchMatches,
-    SearchMatchPart,
-    type TFolder,
+    type SearchMatches,
+    type SearchMatchPart,
 } from "obsidian";
 import type { Environment } from "../environment";
 import type { Template } from "../template";
@@ -14,16 +13,20 @@ export enum OpenMode {
     CreateFromTemplate,
 }
 
-export type TemplateModalEntry = {
+export interface TemplateModalEntry {
     template: Template;
     title: string;
     subtitle?: string;
-};
+}
+
+export interface TemplateModalSuggesterOptions {
+    templates?: (string | Template)[];
+}
 
 export class TemplateModalSuggester extends FuzzySuggestModal<TemplateModalEntry> {
     environment: Environment;
     openMode: OpenMode;
-    folderLocation?: TFolder;
+    entries?: (string | Template)[];
 
     constructor(app: App, env: Environment) {
         super(app);
@@ -32,14 +35,32 @@ export class TemplateModalSuggester extends FuzzySuggestModal<TemplateModalEntry
     }
 
     getItems(): TemplateModalEntry[] {
-        let items = Array.from(
-            this.environment.cache.templates.values(),
-        ).map<TemplateModalEntry>((template) => ({
-            template,
-            title: template.getDisplayName(),
-        }));
+        const templates: Template[] = [];
 
-        for (const suggester of this.environment.templateSuggesters) {
+        if (this.entries) {
+            for (const entry of this.entries) {
+                let template: Template | undefined;
+                if (typeof entry === "string") {
+                    const res = this.environment.cache.resolve(entry);
+                    if (res) template = res;
+                } else {
+                    template = entry;
+                }
+                if (template) templates.push(template);
+            }
+        } else {
+            templates.push(...this.environment.cache.templates.values());
+        }
+
+        let items: TemplateModalEntry[] = templates.map<TemplateModalEntry>(
+            (template) => ({
+                template,
+                title: template.getDisplayName(),
+            }),
+        );
+
+        const suggesters = this.environment.templateSuggesters;
+        for (const suggester of suggesters) {
             items = suggester.getItems?.({ suggester: this, items }) ?? items;
         }
 
@@ -47,7 +68,8 @@ export class TemplateModalSuggester extends FuzzySuggestModal<TemplateModalEntry
     }
 
     override getSuggestions(query: string) {
-        for (const suggester of this.environment.templateSuggesters) {
+        const suggesters = this.environment.templateSuggesters;
+        for (const suggester of suggesters) {
             const suggestions = suggester.getSuggestions?.({
                 suggester: this,
                 query,
@@ -83,9 +105,9 @@ export class TemplateModalSuggester extends FuzzySuggestModal<TemplateModalEntry
         let score = 0;
 
         for (const match of results) {
-            if (match[0].length == 0) continue;
-            matches.push([match.index, match.index + match[0].length]);
+            if (match[0].length === 0) continue;
 
+            matches.push([match.index, match.index + match[0].length]);
             score = Math.max(match[0].length / text.length, score);
         }
 
@@ -129,25 +151,24 @@ export class TemplateModalSuggester extends FuzzySuggestModal<TemplateModalEntry
                 break;
             }
             case OpenMode.CreateFromTemplate: {
-                const folder = this.folderLocation;
-                this.folderLocation = undefined;
                 this.environment.createFromTemplate(item.template, {
                     openNote: true,
-                    folder,
                 });
                 break;
             }
         }
+        this.entries = undefined;
     }
 
-    insertTemplate() {
+    insertTemplate(options?: TemplateModalSuggesterOptions) {
         this.openMode = OpenMode.InsertTemplate;
+        this.entries = options?.templates;
         this.open();
     }
 
-    createFromTemplate(folderLocation?: TFolder) {
+    createFromTemplate(options?: TemplateModalSuggesterOptions) {
         this.openMode = OpenMode.CreateFromTemplate;
-        this.folderLocation = folderLocation;
+        this.entries = options?.templates;
         this.open();
     }
 }

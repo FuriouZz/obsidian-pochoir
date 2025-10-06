@@ -1,3 +1,4 @@
+import { toSlug } from "@furiouzz/lol/string/string";
 import type { Extension } from "../environment";
 
 export default function (): Extension {
@@ -15,11 +16,19 @@ export default function (): Extension {
                     "pochoir-snippet": "md",
                 },
                 async preprocess({ codeBlock, template: parent }) {
-                    const identifier = `${parent.info.file.path}#${codeBlock.id}`;
                     const displayName =
                         (codeBlock.attributes.title as string) ||
                         (codeBlock.attributes.name as string) ||
-                        identifier;
+                        `${parent.info.file.path}#${codeBlock.id}`;
+
+                    const id =
+                        (codeBlock.attributes.id ?? codeBlock.attributes.title)
+                            ? toSlug(codeBlock.attributes.title as string)
+                            : codeBlock.attributes.name
+                              ? toSlug(codeBlock.attributes.name as string)
+                              : codeBlock.id;
+
+                    const identifier = `${parent.info.file.path}#${id}`;
 
                     const template = await env.createVirtualTemplate({
                         type: "source",
