@@ -24,7 +24,7 @@ age:
 ````pochoir-snippet name="pochoir-props"
 ```pochoir-props
 ---
-[^]
+
 ---
 ```
 ````

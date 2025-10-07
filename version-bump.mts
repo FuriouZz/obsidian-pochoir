@@ -61,6 +61,13 @@ function bump({ readJSON, readText, writeJSON, writeText, spawn }: typeof api) {
     manifest.version = targetVersion;
     writeJSON("manifest.json", manifest);
 
+    if (targetVersion === previousVersion) {
+        console.log(
+            `targetVersion (${targetVersion}) == previousVersion (${previousVersion})`,
+        );
+        return false;
+    }
+
     // update versions.json with target version and minAppVersion from manifest.json
     const versions = readJSON("versions.json");
     versions[targetVersion] = minAppVersion;
@@ -96,11 +103,13 @@ function bump({ readJSON, readText, writeJSON, writeText, spawn }: typeof api) {
     spawn("git add .");
     spawn(`git commit -m "chore(release): ${targetVersion}"`);
     spawn(`git tag -a ${targetVersion} -m "${targetVersion}"`);
+
+    return true;
 }
 
 async function main() {
     const dir = mkdtempSync(join(tmpdir(), "pochoir-"));
-    bump({
+    const valid = bump({
         ...api,
         writeText(path, content) {
             api.writeText(join(dir, path), content);
@@ -115,6 +124,8 @@ async function main() {
             console.log("execute: ", command);
         },
     });
+
+    if (!valid) return;
 
     while (true) {
         const result = await prompt("Do you want to continue? (y/n)\n");
