@@ -11,7 +11,11 @@ import type { ISettings } from "./setting-tab";
 import { type Template, TemplateContext } from "./template";
 import { TemplateSuggesterSet } from "./template-suggester-set";
 import { alertWrap } from "./utils/alert";
-import { ensurePath, findOrCreateNote } from "./utils/obsidian";
+import {
+    ensurePath,
+    findOrCreateNote,
+    placeCursorInRange,
+} from "./utils/obsidian";
 
 export interface Extension {
     name: string;
@@ -124,11 +128,19 @@ export class Environment extends Events {
         const activeFile = this.app.workspace.getActiveFile();
         if (activeFile?.path === context.target.path) {
             const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+
+            const cursor = view?.editor.getCursor();
             view?.editor.replaceSelection(content);
+            if (cursor) view?.editor.setCursor(cursor);
+
+            // // Place cursor
+            // if (view && cursor) {
+            //     placeCursorInRange(this.app, cursor.line);
+            // }
         } else {
             await this.app.vault.process(
                 context.target,
-                (data) => data + content,
+                (data) => data + content, //.replaceAll("[^]", ""),
             );
         }
     }

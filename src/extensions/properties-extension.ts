@@ -17,10 +17,14 @@ export default function (): Extension {
                     "pochoir-properties": "yaml",
                 },
                 async preprocess({ codeBlock, template }) {
-                    if (!codeBlock.attributes.noclear) {
-                        template.info.properties.clear();
+                    try {
+                        if (!codeBlock.attributes.noclear) {
+                            template.info.properties.clear();
+                        }
+                        template.info.properties.merge(codeBlock.code);
+                    } catch (e) {
+                        console.warn(e);
                     }
-                    template.info.properties.merge(codeBlock.code);
                 },
                 async process({ context, codeBlock }) {
                     if (!codeBlock.attributes.noclear) {

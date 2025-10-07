@@ -1,5 +1,5 @@
 import type { App } from "obsidian";
-import type { Loader } from "ventojs/src/environment.js";
+import type { Environment, Loader } from "ventojs/src/environment.js";
 import { RendererError } from "./errors";
 import type { Template } from "./template";
 import { findLinkPath } from "./utils/obsidian";
@@ -31,14 +31,7 @@ class TemplateLoader implements Loader {
 }
 
 export class Renderer {
-    vento: {
-        cache: Map<string, unknown>;
-        runString(
-            context: string,
-            data: unknown,
-            path?: string,
-        ): Promise<{ content: string }>;
-    };
+    vento: Environment;
 
     constructor(app: App, options: TemplateLoaderOptions) {
         this.vento = vento({
@@ -48,7 +41,11 @@ export class Renderer {
         });
     }
 
-    async render(content: string, data: unknown, path?: string) {
+    async render(
+        content: string,
+        data: Record<string, unknown>,
+        path?: string,
+    ) {
         try {
             const result = await this.vento.runString(content, data, path);
             return result.content as string;

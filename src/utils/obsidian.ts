@@ -1,7 +1,9 @@
 import {
     parseYaml as _parseYaml,
     type App,
+    EditorPosition,
     MarkdownRenderer,
+    MarkdownView,
     normalizePath,
     type Plugin,
     TFile,
@@ -97,4 +99,33 @@ export function createMarkdownRenderer(plugin: Plugin) {
         await MarkdownRenderer.render(plugin.app, content, el, "", plugin);
         return el;
     };
+}
+
+const CursorReg = /\[\^\]/;
+export function placeCursorInRange(app: App, from: number) {
+    const view = app.workspace.getActiveViewOfType(MarkdownView);
+
+    // Place cursor
+    if (view) {
+        for (let i = from; i < view.editor.lineCount(); i++) {
+            const match = view.editor.getLine(i).match(CursorReg);
+            if (match) {
+                view.editor.setCursor({
+                    line: i,
+                    ch: match.index ?? 0,
+                });
+                view.editor.replaceRange(
+                    "",
+                    {
+                        line: i,
+                        ch: match.index ?? 0,
+                    },
+                    {
+                        line: i,
+                        ch: (match.index ?? 0) + 3,
+                    },
+                );
+            }
+        }
+    }
 }
