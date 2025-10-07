@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.0.14] - 2025-10-08
+
 ### Added
 - Supports `editor-menu` trigger in `pochoir-command`. You can trigger an action from mouse right-click
 - Create/Insert a template from clipboard or selection
@@ -134,7 +136,8 @@ action: create # or "insert"
 
 First version
 
-[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.13...main
+[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.14...main
+[0.0.14]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.13...0.0.14
 [0.0.13]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.12...0.0.13
 [0.0.12]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.11...0.0.12
 [0.0.11]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.10...0.0.11

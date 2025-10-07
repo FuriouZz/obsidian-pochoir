@@ -128,7 +128,7 @@ async function main() {
     if (!valid) return;
 
     while (true) {
-        const result = await prompt("Do you want to continue? (y/n)\n");
+        const result = await prompt("Do you want to continue? (y/n) ");
         if (result === "y") {
             bump(api);
             break;

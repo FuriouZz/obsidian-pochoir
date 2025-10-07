@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-pochoir",
-	"version": "0.0.13",
+	"version": "0.0.14",
 	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
 	"main": "main.js",
 	"scripts": {
