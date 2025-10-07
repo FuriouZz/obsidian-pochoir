@@ -8,9 +8,13 @@ The `pochoir-command` code block allows you to trigger a template from the [comm
 
 **You need to enable `pochoir-command` code block in plugin settings.**
 
+{{#
+
 {{ comp flex }}
     {{ comp video { src: "/assets/demo-editor-menu.mp4" } /}}
 {{ /comp }}
+
+#}}
 
 For example, let's add a ribbon action to create a new unique note from `[[Unique note template]]`:
 
@@ -79,11 +83,7 @@ Configure how to apply the template.
 
 Values accepted (by default, the value is **create**):
 - **create**
-- **create-from-selection**
-- **create-from-clipboard**
 - **insert**
-- **insert-from-selection**
-- **insert-from-clipboard**
 
 ````md
 ```pochoir-command
@@ -121,5 +121,40 @@ and another example, with a single one:
 ```pochoir-command
 title: Create task
 trigger: command
+```
+````
+
+### template/templates
+
+TODO
+
+````md
+```pochoir-command
+title: Replace selection
+action: insert
+trigger: editor-menu
+template: selection()
+```
+````
+
+````md
+```pochoir-command
+title: Insert from clipboard
+action: insert
+trigger: editor-menu
+template: clipboard()
+```
+````
+
+````md
+```pochoir-snippet name="My snippet" id="my-snippet"
+hello world
+```
+
+```pochoir-command
+title: Insert from clipboard
+action: insert
+trigger: editor-menu
+template: snippet(my-snippet)
 ```
 ````

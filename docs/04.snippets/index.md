@@ -7,4 +7,6 @@ title: Snippets
 
 Instead of creating multiple small templates, you can create a single template file and write multiple `pochoir-snippet` code blocks.
 
-<video src="/assets/demo-snippets.mp4" autoplay controls loop style="width: 100%"></video>
+{{ comp flex }}
+{{ comp video { src: "/assets/demo-snippet.mp4" } /}}
+{{ /comp }}
