@@ -39,7 +39,7 @@ export type FormBuilder = {
     toJSON(): FormJSON;
 };
 
-export function createForm() {
+export function createFormBuilder() {
     const form: Record<string, unknown> = {};
     const formData = {
         title: "Insert template",

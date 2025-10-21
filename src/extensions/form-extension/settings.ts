@@ -81,7 +81,10 @@ export function NumberFieldSetting({
         cmp.inputEl.type = "number";
         cmp.setPlaceholder(field.placeholder ?? "");
         cmp.setValue(String(field.initialValue ?? 0));
-        watchValue({ cmp, field, data });
+        cmp.onChange((value) => {
+            data[field.name] = Number(value);
+        });
+        data[field.name] = Number(cmp.getValue());
     });
 }
 

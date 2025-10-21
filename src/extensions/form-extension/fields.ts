@@ -10,6 +10,7 @@ export const BaseField = v.pipe(
         name: v.string(),
         label: v.optional(v.string()),
         description: v.optional(v.string()),
+        required: v.optional(v.boolean()),
     }),
     defaultLabel(),
 );

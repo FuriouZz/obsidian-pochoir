@@ -1,7 +1,8 @@
 import { type App, ItemView, Modal, Setting } from "obsidian";
-import type { InferOutput } from "valibot";
-import type { FormJSON } from "./createForm";
-import type { TextField } from "./fields";
+import * as v from "valibot";
+import type { FormJSON } from "./createFormBuilder";
+import type { TextField, UnionField } from "./fields";
+import { checkMomentDate } from "./schemas";
 import {
     DateFieldSetting,
     DropdownFieldSetting,
@@ -37,17 +38,105 @@ function createFormSettings(
     form: FormJSON,
     modal: {
         setTitle(value: string): void;
-        setDesc(value: string): void;
-
+        setDesc(value: string | DocumentFragment): void;
         close(): void;
     },
 ) {
     modal.setTitle(form.title);
     modal.setDesc(form.description);
 
+    let errorPlaceholder: HTMLElement = el.createEl("div");
+
     const result: Record<string, unknown> = {};
 
-    for (const field of form.fields as InferOutput<typeof TextField>[]) {
+    const entries: Record<string, any> = {};
+
+    for (const field of form.fields as UnionField[]) {
+        let s: any; //v.AnySchema
+
+        switch (field.type) {
+            case "dropdown":
+            case "textarea":
+            case "text": {
+                s = v.string();
+                if (field.required) {
+                    s = v.pipe(s, v.nonEmpty("Field is empty"));
+                }
+                break;
+            }
+            case "slider":
+            case "number": {
+                s = v.number();
+                break;
+            }
+            case "toggle": {
+                s = v.boolean();
+                break;
+            }
+            case "date": {
+                s = v.pipe(
+                    v.string(),
+                    checkMomentDate("YYYY-MM-DD", "Date is invalid"),
+                );
+                break;
+            }
+            case "time": {
+                s = v.pipe(
+                    v.string(),
+                    checkMomentDate("hh:mm", "Time is invalid"),
+                );
+                break;
+            }
+            default: {
+                s = v.unknown();
+                break;
+            }
+        }
+
+        entries[field.name] = s;
+    }
+
+    const schema = v.object(entries);
+
+    const done = () => {
+        const ret = v.safeParse(schema, result);
+        if (ret.success) {
+            cancelled = false;
+            modal.close();
+        } else {
+            const errors = new Setting(document.createElement("div"));
+
+            const attr = {
+                style: "color: var(--text-error);",
+            };
+
+            const name = document.createDocumentFragment();
+            name.createEl("span", {
+                text: "Errors",
+                attr,
+            });
+
+            const desc = document.createDocumentFragment();
+
+            const list = desc.createEl("ul");
+            for (const issue of ret.issues) {
+                const path = issue.path
+                    .map((item: { key: string }) => item.key)
+                    .join(".");
+                list.createEl("li", {
+                    text: `${path}: ${issue.message}`,
+                    attr,
+                });
+            }
+
+            errors.setName(name);
+            errors.setDesc(desc);
+            errorPlaceholder.replaceWith(errors.settingEl);
+            errorPlaceholder = errors.settingEl;
+        }
+    };
+
+    for (const field of form.fields as v.InferOutput<typeof TextField>[]) {
         const setting = new Setting(el);
         const createSetting = SETTINGS[field.type];
         createSetting({ setting, field, data: result });
@@ -57,28 +146,20 @@ function createFormSettings(
 
     new Setting(el)
         .addButton((btn) => {
-            btn.setButtonText("Validate")
-                .setCta()
-                .onClick(() => {
-                    cancelled = false;
-                    modal.close();
-                });
+            btn.setButtonText("Validate").setCta().onClick(done);
         })
         .addButton((btn) => {
-            btn.setButtonText("Cancel")
-                // .setCta()
-                .onClick(() => {
-                    cancelled = true;
-                    modal.close();
-                });
+            btn.setButtonText("Cancel").onClick(() => {
+                cancelled = true;
+                modal.close();
+            });
         });
 
     // Add event listener for Enter key to trigger the button
     el.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
             event.preventDefault(); // Prevent default form submission behavior
-            cancelled = false;
-            modal.close();
+            done();
         }
     });
 

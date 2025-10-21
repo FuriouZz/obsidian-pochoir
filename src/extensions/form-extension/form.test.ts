@@ -1,11 +1,11 @@
 import { assert, describe, test } from "vitest";
 import { createField } from "./createField";
-import { createForm } from "./createForm";
+import { createFormBuilder } from "./createFormBuilder";
 import { TextField } from "./fields";
 
 describe("createForm", () => {
     test("toJSON", () => {
-        const form = createForm();
+        const form = createFormBuilder();
         form.text("title").label("Title").initialValue("Untitled");
         assert.deepEqual(form.toJSON(), {
             title: "Insert template",
@@ -26,7 +26,7 @@ describe("createForm", () => {
             .label("Title")
             .initialValue("Untitled");
 
-        const form = createForm();
+        const form = createFormBuilder();
         form.fromJSON({
             title: "MyForm",
             description: "MyForm description",

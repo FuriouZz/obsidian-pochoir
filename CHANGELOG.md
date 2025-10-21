@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Expose `template.abort()` function to abort template creation
 - Add a `Cancel` button to form to abort template creation
+- Add form validation to text/date/time fields
 
 ### Fixed
 - File are no longer created before template processing

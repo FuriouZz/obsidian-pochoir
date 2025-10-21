@@ -3,7 +3,10 @@ import type { InferOutput } from "valibot";
 import type { Environment, Extension } from "../environment";
 import type { TemplateContext } from "../template";
 import { tryParseYaml } from "../utils/obsidian";
-import { createForm, type FormBuilder } from "./form-extension/createForm";
+import {
+    createFormBuilder,
+    type FormBuilder,
+} from "./form-extension/createFormBuilder";
 import type { TextField } from "./form-extension/fields";
 import { promptForm } from "./form-extension/obsidian";
 
@@ -81,7 +84,7 @@ class FormContext {
         const _name = name ?? `form${forms.size}`;
         let form = forms.get(_name);
         if (!form) {
-            form = createForm();
+            form = createFormBuilder();
             forms.set(_name, form);
         }
         return form;
