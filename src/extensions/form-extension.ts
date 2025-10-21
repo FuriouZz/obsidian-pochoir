@@ -1,6 +1,6 @@
-import { type App, Platform } from "obsidian";
+import { Platform } from "obsidian";
 import type { InferOutput } from "valibot";
-import type { Extension } from "../environment";
+import type { Environment, Extension } from "../environment";
 import type { TemplateContext } from "../template";
 import { tryParseYaml } from "../utils/obsidian";
 import { createForm, type FormBuilder } from "./form-extension/createForm";
@@ -15,7 +15,7 @@ export default function (): Extension {
             desc: "Fill your template from a modal form",
         },
         setup(env) {
-            const formContext = new FormContext(env.app);
+            const formContext = new FormContext(env);
 
             env.loaders.push({
                 contextMode: "shared",
@@ -56,11 +56,15 @@ export default function (): Extension {
 }
 
 class FormContext {
-    app: App;
+    env: Environment;
     forms = new WeakMap<TemplateContext, Map<string, FormBuilder>>();
 
-    constructor(app: App) {
-        this.app = app;
+    constructor(env: Environment) {
+        this.env = env;
+    }
+
+    get app() {
+        return this.env.app;
     }
 
     getFormMap(ctx: TemplateContext) {
@@ -108,12 +112,15 @@ class FormContext {
     }
 
     prompt(form: FormBuilder) {
-        return new Promise<Record<string, unknown>>((resolve) => {
+        return new Promise<Record<string, unknown>>((resolve, reject) => {
             promptForm(
                 this.app,
                 {
                     form: form.toJSON(),
                     done: resolve,
+                    cancel: () => {
+                        this.env.abortTemplate(reject);
+                    },
                 },
                 Platform.isDesktop ? "modal" : "view",
             );

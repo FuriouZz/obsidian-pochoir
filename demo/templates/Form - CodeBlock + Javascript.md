@@ -26,6 +26,7 @@ level:
 ```pochoir-js
 const { prompt } = await template.import("pochoir:form");
 template.exports.form = await prompt("form");
+template.abort()
 ```
 
 ```yaml

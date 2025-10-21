@@ -1,6 +1,7 @@
 import { Events, MarkdownView, type TFile, type TFolder } from "obsidian";
 import { Cache } from "./cache";
 import { Editor } from "./editor";
+import { PochoirError } from "./errors";
 import { EventEmitter } from "./event-emitter";
 import { ExtensionList } from "./extension-list";
 import { Importer, type Loader } from "./importer";
@@ -194,5 +195,14 @@ export class Environment extends Events {
         if (!source) return;
 
         return this.cache.parser.fromSource(source, file);
+    }
+
+    abortTemplate(reject?: (e: unknown) => void) {
+        const error = new PochoirError("Template creation has been aborted");
+        if (reject) {
+            reject(error);
+        } else {
+            throw error;
+        }
     }
 }

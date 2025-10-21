@@ -1,4 +1,5 @@
 import type { Extension } from "../environment";
+import { PochoirError } from "../errors";
 import { createAsyncFunction } from "../utils/function";
 
 export default function (): Extension {
@@ -26,6 +27,9 @@ export default function (): Extension {
                                 context,
                             );
                             return result;
+                        },
+                        abort() {
+                            env.abortTemplate();
                         },
                     });
                 },

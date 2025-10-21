@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Expose `template.abort()` function to abort template creation
+- Add a `Cancel` button to form to abort template creation
+
+### Fixed
+- File are no longer created before template processing
+
 ## [0.0.14] - 2025-10-08
 
 ### Added

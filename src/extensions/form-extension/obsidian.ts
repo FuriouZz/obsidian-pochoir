@@ -28,6 +28,7 @@ interface FormState {
     form: FormJSON;
     close?: () => void;
     done: (result: Record<string, unknown>) => void;
+    cancel: () => void;
     [key: string]: unknown;
 }
 
@@ -54,14 +55,23 @@ function createFormSettings(
 
     let cancelled = true;
 
-    new Setting(el).addButton((btn) => {
-        btn.setButtonText("Validate")
-            .setCta()
-            .onClick(() => {
-                cancelled = false;
-                modal.close();
-            });
-    });
+    new Setting(el)
+        .addButton((btn) => {
+            btn.setButtonText("Validate")
+                .setCta()
+                .onClick(() => {
+                    cancelled = false;
+                    modal.close();
+                });
+        })
+        .addButton((btn) => {
+            btn.setButtonText("Cancel")
+                // .setCta()
+                .onClick(() => {
+                    cancelled = true;
+                    modal.close();
+                });
+        });
 
     // Add event listener for Enter key to trigger the button
     el.addEventListener("keydown", (event) => {
@@ -72,11 +82,13 @@ function createFormSettings(
         }
     });
 
-    return new Promise<Record<string, unknown>>((resolve) => {
-        el.addEventListener("form:close", () => {
-            resolve(cancelled ? {} : result);
-        });
-    });
+    return new Promise<{ cancelled: boolean; result: Record<string, unknown> }>(
+        (resolve) => {
+            el.addEventListener("form:close", () => {
+                resolve({ cancelled, result });
+            });
+        },
+    );
 }
 
 function createModal(app: App, state: FormState) {
@@ -103,8 +115,12 @@ function createModal(app: App, state: FormState) {
 
     modal.open();
 
-    promise.then((result) => {
-        state.done(result);
+    promise.then(({ cancelled, result }) => {
+        if (cancelled) {
+            state.cancel();
+        } else {
+            state.done(result);
+        }
     });
 }
 
@@ -119,6 +135,9 @@ async function createView(app: App, state: FormState) {
             ...state,
             close() {
                 leaf.setViewState(prevState);
+            },
+            cancel() {
+                state.cancel();
             },
             done(result) {
                 state.done(result);
@@ -141,27 +160,28 @@ export class FormView extends ItemView {
 
     async openForm() {
         if (!this.formState) return;
-        const promise = createFormSettings(
-            this.contentEl,
-            this.formState.form,
-            {
-                setTitle: (value) => {
-                    this.contentEl.createDiv({
-                        text: value,
-                        cls: "modal-title",
-                    });
-                },
-                setDesc: (value) => {
-                    this.contentEl.createEl("p", { text: value });
-                },
-                close: () => {
-                    this.formState?.close?.();
-                    // this.leaf.detach();
-                },
+        const state = this.formState;
+        const promise = createFormSettings(this.contentEl, state.form, {
+            setTitle: (value) => {
+                this.contentEl.createDiv({
+                    text: value,
+                    cls: "modal-title",
+                });
             },
-        );
-        promise.then((result) => {
-            this.formState?.done(result);
+            setDesc: (value) => {
+                this.contentEl.createEl("p", { text: value });
+            },
+            close: () => {
+                state.close?.();
+                // this.leaf.detach();
+            },
+        });
+        promise.then(({ cancelled, result }) => {
+            if (cancelled) {
+                state.cancel();
+            } else {
+                state.done(result);
+            }
         });
     }
 
