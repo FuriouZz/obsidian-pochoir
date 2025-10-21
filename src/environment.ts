@@ -1,4 +1,4 @@
-import { Events, MarkdownView, type TFolder } from "obsidian";
+import { Events, MarkdownView, type TFile, type TFolder } from "obsidian";
 import { Cache } from "./cache";
 import { Editor } from "./editor";
 import { EventEmitter } from "./event-emitter";
@@ -94,25 +94,13 @@ export class Environment extends Events {
         this.templateSuggesters.clear();
     }
 
-    async renderContent(context: TemplateContext, template: Template) {
-        // Rename file
-        if (context.path.hasChanged) {
-            const file = this.app.vault.getFileByPath(context.path.path);
-            if (!file) {
-                const path = await ensurePath(
-                    this.app,
-                    context.path.name,
-                    context.path.parent,
-                );
-                await this.app.fileManager.renameFile(context.target, path);
-            } else {
-                await this.app.vault.trash(context.target, false);
-                context.target = file;
-            }
-        }
-
+    async renderToFile(
+        context: TemplateContext,
+        template: Template,
+        target: TFile,
+    ) {
         // Transfer properties
-        const properties = await context.transferProps(this.app);
+        const properties = await context.transferProps(this.app, target);
 
         // Generate content
         const content = await this.renderer.render(template.getContent(), {
@@ -122,17 +110,14 @@ export class Environment extends Events {
 
         // Place content
         const activeFile = this.app.workspace.getActiveFile();
-        if (activeFile?.path === context.target.path) {
+        if (activeFile?.path === target.path) {
             const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 
             const cursor = view?.editor.getCursor();
             view?.editor.replaceSelection(content);
             if (cursor) view?.editor.setCursor(cursor);
         } else {
-            await this.app.vault.process(
-                context.target,
-                (data) => data + content,
-            );
+            await this.app.vault.process(target, (data) => data + content);
         }
     }
 
@@ -144,20 +129,19 @@ export class Environment extends Events {
             openNote = true,
         }: { folder?: TFolder; filename?: string; openNote?: boolean } = {},
     ) {
-        return alertWrap(async () => {
-            const target = await findOrCreateNote(
-                this.app,
-                folder ? `${folder.path}/${filename}` : filename,
-            );
+        const path = folder ? `${folder.path}/${filename}` : filename;
 
-            const context = new TemplateContext(target);
+        return alertWrap(async () => {
+            const context = new TemplateContext();
+            context.path.path = path;
+            context.path.hasChanged = false;
             await template.process(this, context);
-            await this.renderContent(context, template);
+
+            const target = await findOrCreateNote(this.app, context.path.path);
+            await this.renderToFile(context, template, target);
 
             if (openNote) {
-                await this.app.workspace
-                    .getLeaf(false)
-                    .openFile(context.target);
+                await this.app.workspace.getLeaf(false).openFile(target);
             }
         });
     }
@@ -168,9 +152,21 @@ export class Environment extends Events {
             const target = app.workspace.getActiveFile();
             if (!target) throw new Error("There is no active file");
 
-            const context = new TemplateContext(target);
+            const context = new TemplateContext();
+            context.path.fromTFile(target);
+            context.path.hasChanged = false;
             await template.process(this, context);
-            await this.renderContent(context, template);
+
+            if (context.path.hasChanged) {
+                const path = await ensurePath(
+                    app,
+                    context.path.name,
+                    context.path.parent,
+                );
+                await app.vault.rename(target, path);
+            }
+
+            await this.renderToFile(context, template, target);
         });
     }
 

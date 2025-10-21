@@ -15,32 +15,29 @@ export interface TemplateContextLocals {
 
 let ID = 0;
 export class TemplateContext {
-    target: TFile;
     properties: PropertiesBuilder;
     path: PathBuilder;
     locals: TemplateContextLocals;
     id = ++ID;
 
-    constructor(target: TFile) {
-        this.target = target;
+    constructor() {
         this.properties = new PropertiesBuilder();
         this.path = new PathBuilder();
-        this.path.fromTFile(target);
+        // this.path.name = "Untitled.md";
 
         this.locals = Object.freeze({
             properties: this.properties.createProxy(),
             $properties: this.properties,
             path: this.path,
-            target: this.target,
             exports: {},
         });
 
         verbose("create context", this.id);
     }
 
-    async transferProps(app: App) {
+    async transferProps(app: App, target: TFile) {
         const builder = new PropertiesBuilder();
-        await app.fileManager.processFrontMatter(this.target, (fm) => {
+        await app.fileManager.processFrontMatter(target, (fm) => {
             builder.merge(fm);
             builder.merge(this.properties);
             builder.toObject(fm);

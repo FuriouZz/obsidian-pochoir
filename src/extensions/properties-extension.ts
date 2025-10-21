@@ -30,7 +30,9 @@ export default function (): Extension {
                     if (!codeBlock.attributes.noclear) {
                         context.properties.clear();
                     }
-                    const originalPath = new PathBuilder(context.target);
+                    const originalPath = new PathBuilder().fromBuilder(
+                        context.path,
+                    );
                     const yaml = await env.renderer.render(codeBlock.code, {
                         originalPath: originalPath.createProxy(),
                         path: context.path.createProxy(),

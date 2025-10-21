@@ -1,6 +1,7 @@
 ---
 $.properties:
-  - "[[Author Properties]]"
+  - "[[Properties - Author Template]]"
 tags:
   - book
 ---
+ 

@@ -38,25 +38,45 @@ export function getFilesAtLocation(app: App, location: string) {
     return files;
 }
 
-export async function findOrCreateFolder(app: App, path: string) {
-    let folder = app.vault.getAbstractFileByPath(path);
+export async function findOrCreateFolder(
+    app: App,
+    path: string,
+): Promise<TFolder> {
+    const folder = app.vault.getAbstractFileByPath(path);
     if (folder instanceof TFolder) {
         return folder;
     }
-    if (!folder) {
-        folder = await app.vault.createFolder(path);
-    }
-    return folder;
+    return await app.vault.createFolder(path);
+}
+
+export function findNote(app: App, path: string) {
+    const file = app.vault.getAbstractFileByPath(path);
+    if (file instanceof TFile) return file;
+    return null;
+}
+
+export function deleteNote(app: App, path: string) {
+    const file = findNote(app, path);
+    if (!file) return;
+    return app.vault.delete(file);
 }
 
 export async function findOrCreateNote(app: App, path: string) {
     const file = app.vault.getAbstractFileByPath(path);
-    if (file instanceof TFile) return file;
-    if (file instanceof TFolder) {
+
+    if (file instanceof TFile) {
+        return file;
+    } else if (file instanceof TFolder) {
         throw new Error(`There is already a folder: ${file.path}`);
     }
-    const folder = parentFolderPath(path);
-    if (folder) await findOrCreateFolder(app, folder);
+
+    const basename = path.split("/").pop() ?? "Untitled.md";
+    const [, ext] = basename.split(".");
+    path = app.vault.getAvailablePath(
+        path.replace(new RegExp(`\.${ext}$`), ""),
+        ext,
+    );
+
     return app.vault.create(path, "");
 }
 
@@ -66,7 +86,7 @@ export async function createNote(app: App, filename: string, folder?: TFolder) {
         normalizePath(`${location.path}/${filename}`),
         "md",
     );
-    return findOrCreateNote(app, path);
+    return app.vault.create(path, "");
 }
 
 export async function ensurePath(app: App, filename: string, folder = "") {

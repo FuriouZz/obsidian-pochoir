@@ -91,6 +91,14 @@ export class PathBuilder {
         this.hasChanged = false;
     }
 
+    fromBuilder(b: PathBuilder) {
+        this.#basename = b.basename;
+        this.#extension = b.extension;
+        this.#parent = b.parent;
+        this.#updatePath();
+        return this;
+    }
+
     createProxy() {
         const accessors = ["name", "basename", "extension", "parent", "path"];
         return new Proxy(this, {

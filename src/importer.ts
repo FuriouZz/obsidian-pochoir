@@ -30,10 +30,13 @@ export class Importer {
                     return {
                         load: async (ctx: TemplateContext) => {
                             const mode = resolver.contextMode ?? "isolated";
-                            const context =
-                                mode === "shared"
-                                    ? ctx
-                                    : new TemplateContext(ctx.target);
+                            let context: TemplateContext;
+                            if (mode === "shared") {
+                                context = ctx;
+                            } else {
+                                context = new TemplateContext();
+                                context.path.fromBuilder(ctx.path);
+                            }
                             const result = await resolver.load(path, context);
                             return { context, result };
                         },

@@ -20,7 +20,9 @@ export default function (): Extension {
                 type: "property",
                 order: 100,
                 process: async ({ context, key, value }) => {
-                    const originalPath = new PathBuilder(context.target);
+                    const originalPath = new PathBuilder().fromBuilder(
+                        context.path,
+                    );
                     const valueStr: string = JSON.stringify(value);
                     const resStr = await env.renderer.render(valueStr, {
                         originalPath: originalPath.createProxy(),
