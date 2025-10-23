@@ -27,8 +27,8 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0(typescript@5.8.3)
       ventojs:
-        specifier: ^1.15.2
-        version: 1.15.2
+        specifier: ^2.2.0
+        version: 2.2.0
     devDependencies:
       '@types/node':
         specifier: ^16.18.126
@@ -1173,10 +1173,6 @@ packages:
     resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
     engines: {node: '>= 8'}
 
-  meriyah@6.0.5:
-    resolution: {integrity: sha512-SrMqQCox7TTwtftWKHy/ZaVe+ZRpRl20pAgDo+PS9hzcAJrMjYsBJQPPiLXTnjztrqdfGS+Zz99r6Bwvydta1w==}
-    engines: {node: '>=18.0.0'}
-
   micromatch@4.0.8:
     resolution: {integrity: sha512-PXwfBhYu0hBCPw8Dn0E+WDYb7af3dSLVWKi3HGv84IdF4TyFoC0ysxFd0Goxw7nSv4T/PzEJQxsYsEiFCKo2BA==}
     engines: {node: '>=8.6'}
@@ -1544,8 +1540,8 @@ packages:
       typescript:
         optional: true
 
-  ventojs@1.15.2:
-    resolution: {integrity: sha512-/vparUOEKeL4fNzkOhZe3brXCJn/uiJBj3Q/rzrreap3Ef+rjJTT60jvI+Vnc0IhHiU8b5wwmDNLJtTQWJJ14g==}
+  ventojs@2.2.0:
+    resolution: {integrity: sha512-i3nGAgn+dc+mTfsEplGHCbgA9QNdGchSI3GRF55TWdHHjz2WcHIHH8pQtjpiVP74ZjmqdccO3bC71xpxuwBWgg==}
 
   verror@1.10.0:
     resolution: {integrity: sha512-ZZKSmDAEFOijERBLkmYfJ+vmk3w+7hOLYDNkRCuRuMJGEmqYNCNLyBBFwWKVMhfwaEF3WOd0Zlw86U/WC/+nYw==}
@@ -2681,8 +2677,6 @@ snapshots:
 
   merge2@1.4.1: {}
 
-  meriyah@6.0.5: {}
-
   micromatch@4.0.8:
     dependencies:
       braces: 3.0.3
@@ -3027,10 +3021,7 @@ snapshots:
     optionalDependencies:
       typescript: 5.8.3
 
-  ventojs@1.15.2:
-    dependencies:
-      estree-walker: 3.0.3
-      meriyah: 6.0.5
+  ventojs@2.2.0: {}
 
   verror@1.10.0:
     dependencies:

@@ -1,4 +1,5 @@
 import type { Options } from "ventojs";
+import { Environment, type Loader } from "ventojs/core/environment.js";
 import autoTrim from "ventojs/plugins/auto_trim.js";
 import echoTag from "ventojs/plugins/echo.js";
 import _escape from "ventojs/plugins/escape.js";
@@ -13,7 +14,6 @@ import layoutTag from "ventojs/plugins/layout.js";
 import setTag from "ventojs/plugins/set.js";
 import trim from "ventojs/plugins/trim.js";
 import _unescape from "ventojs/plugins/unescape.js";
-import { Environment, type Loader } from "ventojs/src/environment.js";
 
 export function vento(options: Omit<Options, "includes"> & { loader: Loader }) {
     const env = new Environment({
@@ -21,6 +21,7 @@ export function vento(options: Omit<Options, "includes"> & { loader: Loader }) {
         dataVarname: options.dataVarname || "it",
         autoescape: options.autoescape ?? false,
         autoDataVarname: options.autoDataVarname ?? true,
+        strict: false,
     });
 
     // Register basic plugins

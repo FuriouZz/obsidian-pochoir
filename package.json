@@ -35,7 +35,7 @@
 		"@codemirror/view": "^6.38.1",
 		"@furiouzz/lol": "^0.0.36",
 		"valibot": "^1.1.0",
-		"ventojs": "^1.15.2"
+		"ventojs": "^2.2.0"
 	},
 	"packageManager": "pnpm@10.7.1"
 }
