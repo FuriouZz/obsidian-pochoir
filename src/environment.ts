@@ -198,7 +198,7 @@ export class Environment extends Events {
     }
 
     abortTemplate(reject?: (e: unknown) => void) {
-        const error = new PochoirError("Template creation has been aborted");
+        const error = new PochoirError("Template processing has been aborted");
         if (reject) {
             reject(error);
         } else {

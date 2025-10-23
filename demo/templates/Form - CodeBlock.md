@@ -1,4 +1,4 @@
-```pochoir-form exports=form target=view
+```pochoir-form exports=form
 title:
 	type: text
 	description: Some desc
@@ -7,7 +7,6 @@ title:
 age:
 	type: number
 	defaultValue: 34
-	required: true
 remember: 
 	type: toggle
 pronom:
@@ -16,7 +15,6 @@ pronom:
 		she: She
 		he: He
 		they: They
-	required: true
 birthday:
 	type: date
 	label: Birthday
