@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Abort template processing with a `Cancel` button in the form
 - Support form validation to text/date/time fields
 - Change `pochoir-form` target between `modal` or `view`. By default, `modal` is selected on desktop and `view` on `mobile`
+- Process code blocks from `selection()` or `clipboard()`
 
 ### Fixed
 - Note is no longer created before template processing and file renaming

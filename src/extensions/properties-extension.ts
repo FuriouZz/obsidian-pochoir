@@ -1,5 +1,6 @@
 import type { Extension } from "../environment";
 import { PathBuilder } from "../path-builder";
+import { parseYaml } from "../utils/obsidian";
 
 export default function (): Extension {
     return {
@@ -21,7 +22,8 @@ export default function (): Extension {
                         if (!codeBlock.attributes.noclear) {
                             template.info.properties.clear();
                         }
-                        template.info.properties.merge(codeBlock.code);
+                        const json = parseYaml<object>(codeBlock.code) ?? {};
+                        template.info.properties.merge(json);
                     } catch (e) {
                         console.warn(e);
                     }
@@ -38,7 +40,7 @@ export default function (): Extension {
                         path: context.path.createProxy(),
                         ...context.locals.exports,
                     });
-                    context.properties.mergeYaml(yaml);
+                    context.properties.merge(parseYaml<object>(yaml) ?? {});
                 },
             });
         },

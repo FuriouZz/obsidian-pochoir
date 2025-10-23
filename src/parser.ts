@@ -1,6 +1,7 @@
-import type { App, CachedMetadata, SectionCache, TFile } from "obsidian";
+import type { App, CachedMetadata, Loc, SectionCache, TFile } from "obsidian";
 import { PropertiesBuilder } from "./properties-builder";
 import { Template } from "./template";
+import { parseYaml } from "./utils/obsidian";
 
 export interface ParsedCodeBlock {
     id: number;
@@ -107,24 +108,169 @@ export class Parser {
     }
 
     fromSource(source: string, file: TFile) {
-        const properties = new PropertiesBuilder();
-        if (source.startsWith("---")) {
-            const match = source.match(/-{3}\n+((?:.|\n)*)\n+-{3}/);
-            if (match) {
-                properties.merge(match[1]);
-            }
-        }
-
+        const metadata = getMetaData(source);
         return new Template({
-            codeBlocks: [],
-            contentRanges: [[0, source.length]],
             file,
             source,
-            properties,
             displayName: "",
             identifier: "",
+            ...this.parseSections(source, metadata),
         });
     }
+}
+
+// Naive approach to reproduce metadata cache
+export function getMetaData(source: string) {
+    const lines = source.split("\n");
+    const sections: SectionCache[] = [];
+    let frontmatter: Record<string, unknown> | undefined;
+    let frontmatterPosition: { start: Loc; end: Loc } | undefined;
+
+    if (source.startsWith("---")) {
+        const match = source.match(/-{3}\n+((?:.|\n)*)\n+-{3}/);
+        if (match) {
+            const lines = match[0].split("\n");
+            frontmatterPosition = {
+                start: {
+                    col: 0,
+                    line: 0,
+                    offset: 0,
+                },
+                end: {
+                    col: lines[lines.length - 1].length,
+                    line: lines.length,
+                    offset: match[0].length,
+                },
+            };
+            sections.push({ type: "yaml", position: frontmatterPosition });
+            frontmatter = parseYaml(match[1]) ?? {};
+        }
+    }
+
+    const codeBlocks = getCodeBlocks(source);
+    sections.push(...codeBlocks.map((c) => c.section));
+
+    sections.sort((a, b) => {
+        return a.position.start.offset - b.position.start.offset;
+    });
+
+    const tmp = [...sections];
+
+    for (const [index, current] of tmp.entries()) {
+        const next = tmp[index + 1];
+        const start: Loc = { col: 0, line: 0, offset: 0 };
+        const end: Loc = { col: 0, line: 0, offset: 0 };
+
+        if (next) {
+            const sublines = lines.slice(
+                current.position.end.line,
+                next.position.start.line,
+            );
+            const lastLine = sublines.pop();
+
+            start.col = 0;
+            start.line = current.position.end.line + 1;
+            start.offset = current.position.end.offset;
+
+            end.col = lastLine?.length ?? 0;
+            end.line = next.position.start.line - 1;
+            end.offset = next.position.start.offset;
+        } else {
+            const sublines = lines.slice(current.position.end.line);
+            const linecount = sublines.length;
+            const lastLine = sublines.pop();
+
+            start.col = 0;
+            start.line = current.position.end.line + 1;
+            start.offset = current.position.end.offset;
+
+            end.col = lastLine?.length ?? 0;
+            end.line = start.line + linecount;
+            end.offset = source.length;
+        }
+
+        const len = source.slice(start.offset, end.offset).trim().length;
+        if (len > 0) {
+            sections.push({ type: "text", position: { start, end } });
+        }
+    }
+
+    sections.sort((a, b) => {
+        return a.position.start.offset - b.position.start.offset;
+    });
+
+    return { frontmatter, frontmatterPosition, sections, codeBlocks };
+}
+
+// Naive approach to parse code blocks
+export function getCodeBlocks(source: string) {
+    const lines = source.split(/\n/);
+    const codeBlockStart = { line: -1, offset: -1 };
+    // let codeBlockFence = "";
+
+    const fenceReg = /^`{3,}/;
+    const codeFenceReg = /^`{3,}\S+/;
+
+    const sections: SectionCache[] = [];
+    let offset = 0;
+
+    for (const [index, line] of lines.entries()) {
+        const fenceMatch = line.match(fenceReg);
+
+        if (fenceMatch) {
+            if (codeFenceReg.test(line) && codeBlockStart.line === -1) {
+                // codeBlockFence = fenceMatch[0];
+                codeBlockStart.line = index;
+                codeBlockStart.offset = offset;
+            } else if (
+                !codeFenceReg.test(line)
+                //     &&
+                // fenceMatch[0] === codeBlockFence
+            ) {
+                const section: SectionCache = {
+                    type: "code",
+                    position: {
+                        start: {
+                            offset: codeBlockStart.offset,
+                            col: 0,
+                            line: codeBlockStart.line,
+                        },
+                        end: {
+                            offset: offset + line.length,
+                            col: line.length,
+                            line: index + 1,
+                        },
+                    },
+                };
+
+                sections.push(section);
+
+                // codeBlockFence = "";
+                codeBlockStart.line = -1;
+                codeBlockStart.offset = -1;
+            }
+        }
+        offset += line.length + 1; // add newline length
+    }
+
+    const codeBlocks: ParsedCodeBlock[] = [];
+
+    for (const section of sections) {
+        const content = source.slice(
+            section.position.start.offset,
+            section.position.end.offset,
+        );
+
+        const result = parseCodeBlock(content);
+        if (!result) continue;
+
+        codeBlocks.push({
+            ...result,
+            section,
+        });
+    }
+
+    return codeBlocks;
 }
 
 export function parseCodeBlock(
