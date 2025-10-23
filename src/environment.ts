@@ -159,11 +159,7 @@ export class Environment extends Events {
             await template.process(this, context);
 
             if (context.path.hasChanged) {
-                const path = await ensurePath(
-                    app,
-                    context.path.name,
-                    context.path.parent,
-                );
+                const path = await ensurePath(app, context.path.path);
                 await app.vault.rename(target, path);
             }
 

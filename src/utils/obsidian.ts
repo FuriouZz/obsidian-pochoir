@@ -1,7 +1,6 @@
 import {
     parseYaml as _parseYaml,
     type App,
-    EditorPosition,
     MarkdownRenderer,
     MarkdownView,
     normalizePath,
@@ -70,13 +69,9 @@ export async function findOrCreateNote(app: App, path: string) {
         throw new Error(`There is already a folder: ${file.path}`);
     }
 
-    const basename = path.split("/").pop() ?? "Untitled.md";
-    const [, ext] = basename.split(".");
-    path = app.vault.getAvailablePath(
-        path.replace(new RegExp(`\.${ext}$`), ""),
-        ext,
-    );
-
+    const [base, ...chunks] = path.split("/").reverse();
+    const folder = chunks.reverse().join("/");
+    path = await ensurePath(app, base, folder);
     return app.vault.create(path, "");
 }
 
@@ -89,13 +84,12 @@ export async function createNote(app: App, filename: string, folder?: TFolder) {
     return app.vault.create(path, "");
 }
 
-export async function ensurePath(app: App, filename: string, folder = "") {
-    if (folder) await findOrCreateFolder(app, folder);
-    const [basename, extension] = filename.split(".");
-    return app.vault.getAvailablePath(
-        folder ? `${folder}/${basename}` : basename,
-        extension,
-    );
+export async function ensurePath(app: App, path: string, baseDir?: string) {
+    const [base, ...chunks] = path.split("/").reverse();
+    baseDir = baseDir ?? chunks.reverse().join("/");
+    const folder = await findOrCreateFolder(app, baseDir);
+    const [name, ext] = base.split(".");
+    return app.vault.getAvailablePath(`${folder.path}/${name}`, ext);
 }
 
 export function parseYaml<T = unknown>(str: string) {
