@@ -31,7 +31,7 @@ export default function (): Extension {
                 languages: { "pochoir-form": "yaml" },
                 order: 40,
                 async process({ codeBlock, context }) {
-                    const { name, exports } = codeBlock.attributes;
+                    const { name, exports, target } = codeBlock.attributes;
 
                     const form = formContext.createForm(
                         context,
@@ -50,7 +50,13 @@ export default function (): Extension {
 
                     if (typeof exports === "string") {
                         context.locals.exports[exports] =
-                            await formContext.prompt(form);
+                            await formContext.prompt(
+                                form,
+                                typeof target === "string" &&
+                                    /modal|view/.test(target)
+                                    ? (target as "view")
+                                    : undefined,
+                            );
                     }
                 },
             });
@@ -101,20 +107,23 @@ class FormContext {
             create: (name?: string) => {
                 return this.createForm(ctx, name);
             },
-            prompt: (name: string | FormBuilder) => {
+            prompt: (name: string | FormBuilder, target?: "modal" | "view") => {
                 let form: FormBuilder | undefined;
                 if (typeof name === "string") {
                     form = this.getFormMap(ctx).get(name);
                 } else {
                     form = name;
                 }
-                if (form) return this.prompt(form);
+                if (form) return this.prompt(form, target);
                 return {};
             },
         };
     }
 
-    prompt(form: FormBuilder) {
+    prompt(
+        form: FormBuilder,
+        target: "modal" | "view" = Platform.isDesktop ? "modal" : "view",
+    ) {
         return new Promise<Record<string, unknown>>((resolve, reject) => {
             promptForm(
                 this.app,
@@ -125,7 +134,7 @@ class FormContext {
                         this.env.abortTemplate(reject);
                     },
                 },
-                Platform.isDesktop ? "modal" : "view",
+                target,
             );
         });
     }

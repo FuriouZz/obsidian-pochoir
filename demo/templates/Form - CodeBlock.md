@@ -1,4 +1,4 @@
-```pochoir-form exports="form"
+```pochoir-form exports=form target=view
 title:
 	type: text
 	description: Some desc

@@ -8,11 +8,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Expose `template.abort()` function to abort template creation
-- Add a `Cancel` button to form to abort template creation
-- Add form validation to text/date/time fields
+- Abort template processing with a `Cancel` button in the form
+- Support form validation to text/date/time fields
+- Change `pochoir-form` target between `modal` or `view`. By default, `modal` is selected on desktop and `view` on `mobile`
 
 ### Fixed
-- File are no longer created before template processing
+- Note is no longer created before template processing and file renaming
 
 ## [0.0.14] - 2025-10-08
 
