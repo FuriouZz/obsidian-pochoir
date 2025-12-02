@@ -1,6 +1,7 @@
 import {
     parseYaml as _parseYaml,
     type App,
+    Component,
     MarkdownRenderer,
     MarkdownView,
     normalizePath,
@@ -54,12 +55,6 @@ export function findNote(app: App, path: string) {
     return null;
 }
 
-export function deleteNote(app: App, path: string) {
-    const file = findNote(app, path);
-    if (!file) return;
-    return app.vault.delete(file);
-}
-
 export async function findOrCreateNote(app: App, path: string) {
     const file = app.vault.getAbstractFileByPath(path);
 
@@ -101,16 +96,19 @@ export function tryParseYaml<T = unknown>(str: string) {
     if (!str) return null;
     try {
         return parseYaml<T>(str);
-    } catch (_) {}
+    } catch (e) {
+        globalThis.console.error(e);
+    }
     return null;
 }
 
 export function createMarkdownRenderer(plugin: Plugin) {
     return async (
         content: string,
-        el: HTMLElement = document.createElement("div"),
+        el: HTMLElement = globalThis.document.createElement("div"),
     ) => {
-        await MarkdownRenderer.render(plugin.app, content, el, "", plugin);
+        const c = new Component();
+        await MarkdownRenderer.render(plugin.app, content, el, "", c);
         return el;
     };
 }

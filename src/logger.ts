@@ -17,31 +17,34 @@ export function setLogLevel(value: Level) {
 }
 
 export function verbose(...msg: unknown[]) {
-    if (L[level] >= L.VERBOSE) log(...msg);
+    if (L[level] >= L.VERBOSE) log("info", ...msg);
 }
 
 export function debug(...msg: unknown[]) {
-    if (L[level] >= L.DEBUG) log(...msg);
+    if (L[level] >= L.DEBUG) log("info", ...msg);
 }
 
 export function info(...msg: unknown[]) {
-    if (L[level] >= L.INFO) log(...msg);
+    if (L[level] >= L.INFO) log("info", ...msg);
 }
 
-function log(...msg: unknown[]) {
-    console.log(`${level}:`, ...msg);
+export function error(...msg: unknown[]) {
+    if (L[level] >= L.INFO) log("error", ...msg);
 }
 
-export function getLogger() {
-    return {
-        get level() {
-            return getLogLevel();
-        },
-        set level(value: Level) {
-            setLogLevel(value);
-        },
-        verbose,
-        debug,
-        info,
-    };
+function log(type: "info" | "error", ...msg: unknown[]) {
+    globalThis.console[type](`${level}:`, ...msg);
 }
+
+export const LOGGER = {
+    get level() {
+        return getLogLevel();
+    },
+    set level(value: Level) {
+        setLogLevel(value);
+    },
+    verbose,
+    debug,
+    info,
+    error,
+};

@@ -6,6 +6,7 @@ import {
     type SearchMatchPart,
 } from "obsidian";
 import type { Environment } from "../environment";
+import { LOGGER } from "../logger";
 import type { Template } from "../template";
 
 export enum OpenMode {
@@ -147,13 +148,17 @@ export class TemplateModalSuggester extends FuzzySuggestModal<TemplateModalEntry
     ): void {
         switch (this.openMode) {
             case OpenMode.InsertTemplate: {
-                this.environment.insertFromTemplate(item.template);
+                this.environment
+                    .insertFromTemplate(item.template)
+                    .catch(LOGGER.error);
                 break;
             }
             case OpenMode.CreateFromTemplate: {
-                this.environment.createFromTemplate(item.template, {
-                    openNote: true,
-                });
+                this.environment
+                    .createFromTemplate(item.template, {
+                        openNote: true,
+                    })
+                    .catch(LOGGER.error);
                 break;
             }
         }

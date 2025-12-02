@@ -29,7 +29,7 @@ export default function (): Extension {
                         path: context.path.createProxy(),
                         ...context.locals.exports,
                     });
-                    const res = JSON.parse(resStr);
+                    const res = JSON.parse(resStr) as string | string[];
                     context.properties.set(key, res);
                 },
             });

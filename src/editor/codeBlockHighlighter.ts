@@ -9,6 +9,7 @@ import {
 } from "@codemirror/view";
 import type { Environment } from "../environment";
 import { createMarkdownRenderer } from "../utils/obsidian";
+import { LOGGER } from "../logger";
 
 async function highlight({
     builder,
@@ -23,7 +24,7 @@ async function highlight({
     render: (content: string, el?: HTMLElement) => Promise<HTMLElement>;
     language: string;
 }) {
-    const div = document.createElement("div");
+    const div = globalThis.document.createElement("div");
     await render(`\`\`\`${language}\n${source}\n\`\`\``, div);
     const code = div.querySelector("pre > code");
     if (!code) return;
@@ -119,7 +120,7 @@ async function buildDecoration({
         if (language in languages) {
             await highlight({
                 source: state.sliceDoc(from, to),
-                language: languages[language as keyof typeof languages],
+                language: languages[language],
                 builder,
                 start: from,
                 render,
@@ -180,10 +181,12 @@ export function codeBlocksHighlighter(env: Environment) {
                         state: view.state,
                         languages: env.processors.getSupportedCodeBlock(),
                         render,
-                    }).then((decorations) => {
-                        this.decorations = decorations;
-                        view.update([]);
-                    });
+                    })
+                        .then((decorations) => {
+                            this.decorations = decorations;
+                            view.update([]);
+                        })
+                        .catch(LOGGER.error);
                 }
             },
             {

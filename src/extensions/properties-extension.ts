@@ -25,7 +25,7 @@ export default function (): Extension {
                         const json = parseYaml<object>(codeBlock.code) ?? {};
                         template.info.properties.merge(json);
                     } catch (e) {
-                        console.warn(e);
+                        globalThis.console.warn(e);
                     }
                 },
                 async process({ context, codeBlock }) {

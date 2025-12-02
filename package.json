@@ -1,41 +1,42 @@
 {
-	"name": "obsidian-pochoir",
-	"version": "0.0.14",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
-	"main": "main.js",
-	"scripts": {
-		"dev": "node esbuild.config.mjs",
-		"fmt": "biome check --write src/",
-		"lint": "biome check src/ && tsc -noEmit -skipLibCheck",
-		"test": "vitest src/",
-		"build": "npm run lint && node esbuild.config.mjs production",
-		"bump": "NODE_NO_WARNINGS=1 node --experimental-strip-types version-bump.mts",
-		"docs:serve": "cd docs && deno task serve",
-		"docs:build": "cd docs && deno task build"
-	},
-	"keywords": [],
-	"author": "",
-	"license": "Apache Licence 2.0",
-	"devDependencies": {
-		"@types/node": "^16.18.126",
-		"@typescript-eslint/eslint-plugin": "5.29.0",
-		"@typescript-eslint/parser": "5.29.0",
-		"biome": "^0.3.3",
-		"builtin-modules": "3.3.0",
-		"esbuild": "0.17.3",
-		"obsidian": "^1.8.7",
-		"tslib": "2.4.0",
-		"typescript": "5.8.3",
-		"vitest": "^3.2.4"
-	},
-	"dependencies": {
-		"@codemirror/language": "^6.11.2",
-		"@codemirror/legacy-modes": "^6.5.1",
-		"@codemirror/state": "^6.5.2",
-		"@codemirror/view": "^6.38.1",
-		"@furiouzz/lol": "^0.0.36",
-		"valibot": "^1.1.0",
-		"ventojs": "^2.2.0"
-	},
-	"packageManager": "pnpm@10.7.1"
+    "name": "obsidian-pochoir",
+    "version": "0.0.14",
+    "description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+    "main": "main.js",
+    "scripts": {
+        "dev": "node esbuild.config.mts",
+        "fmt": "biome check --write src/",
+        "lint": "eslint src/ && biome check src/ && tsc -noEmit -skipLibCheck",
+        "test": "vitest src/",
+        "build": "npm run lint && node esbuild.config.mjs production",
+        "bump": "NODE_NO_WARNINGS=1 node --experimental-strip-types version-bump.mts",
+        "docs:serve": "cd docs && deno task serve",
+        "docs:build": "cd docs && deno task build"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "Apache Licence 2.0",
+    "devDependencies": {
+        "@types/node": "^16.18.126",
+        "@typescript-eslint/parser": "8.33.1",
+        "biome": "^0.3.3",
+        "builtin-modules": "3.3.0",
+        "esbuild": "0.17.3",
+        "eslint": "^9.39.1",
+        "eslint-plugin-obsidianmd": "^0.1.9",
+        "obsidian": "^1.8.7",
+        "tslib": "2.4.0",
+        "typescript": "5.8.3",
+        "vitest": "^3.2.4"
+    },
+    "dependencies": {
+        "@codemirror/language": "^6.11.2",
+        "@codemirror/legacy-modes": "^6.5.1",
+        "@codemirror/state": "^6.5.2",
+        "@codemirror/view": "^6.38.1",
+        "@furiouzz/lol": "^0.0.36",
+        "valibot": "^1.1.0",
+        "ventojs": "^2.2.0"
+    },
+    "packageManager": "pnpm@10.7.1"
 }

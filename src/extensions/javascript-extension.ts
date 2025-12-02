@@ -1,5 +1,4 @@
 import type { Extension } from "../environment";
-import { PochoirError } from "../errors";
 import { createAsyncFunction } from "../utils/function";
 
 export default function (): Extension {

@@ -10,10 +10,7 @@ if you want to view the source, please visit the github repository of this plugi
 
 const prod = process.argv[2] === "production";
 
-/**
- * @type {import("esbuild").BuildOptions}
- */
-const config = {
+const config: esbuild.BuildOptions = {
     banner: {
         js: banner,
     },

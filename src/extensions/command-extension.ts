@@ -4,6 +4,7 @@ import type { Environment, Extension } from "../environment";
 import type { Template } from "../template";
 import { alertWrap } from "../utils/alert";
 import { tryParseYaml } from "../utils/obsidian";
+import { LOGGER } from "../logger";
 
 export default function (): Extension {
     return {
@@ -58,7 +59,9 @@ export default function (): Extension {
                         ].join("-");
                     }
 
-                    alertWrap(() => cmd.add(template, command));
+                    alertWrap(() => cmd.add(template, command)).catch(
+                        LOGGER.error,
+                    );
                 },
                 disable({ template }) {
                     cmd.deleteAllFromPath(template.info.file.path);
@@ -237,7 +240,7 @@ export class CommandManager {
     }
 
     clear() {
-        for (const [_, path] of this.map.entries()) {
+        for (const path of this.map.values()) {
             this.deleteAllFromPath(path);
         }
     }

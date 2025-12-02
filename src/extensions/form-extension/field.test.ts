@@ -1,5 +1,4 @@
-import { describe } from "node:test";
-import { assert, test } from "vitest";
+import { assert, describe, test } from "vitest";
 import { createField } from "./createField";
 import { DropdownField, TextField } from "./fields";
 

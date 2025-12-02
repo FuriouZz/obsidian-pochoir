@@ -27,7 +27,7 @@ export function alertError(error: Error, options?: { duration?: number }) {
         notice = error.notice;
     }
 
-    if (verbose) console.error(error);
+    if (verbose) globalThis.console.error(error);
     if (notice) {
         alert(error.message, { prefix, ...options });
     }

@@ -14,7 +14,7 @@ import minimalExtension from "./extensions/minimal-extension";
 import propertiesExtension from "./extensions/properties-extension";
 import snippetExtension from "./extensions/snippet-extension";
 import specialPropertiesExtension from "./extensions/special-properties-extension";
-import { getLogger } from "./logger";
+import { LOGGER } from "./logger";
 import { type ISettings, SettingTab } from "./setting-tab";
 import { TemplateModalSuggester } from "./suggesters/template-modal-suggester";
 
@@ -22,10 +22,9 @@ export default class PochoirPlugin extends Plugin {
     settings: ISettings = { ...DEFAULT_SETTINGS };
     environment = new Environment(this);
     templateSuggester = new TemplateModalSuggester(this.app, this.environment);
-    logger = getLogger();
 
     async onload() {
-        this.logger.level = import.meta.env.DEV ? "VERBOSE" : "DEBUG";
+        LOGGER.level = import.meta.env.DEV ? "VERBOSE" : "DEBUG";
         this.addSettingTab(new SettingTab(this));
 
         insertFromTemplateCommand(this, this.templateSuggester);
@@ -54,7 +53,8 @@ export default class PochoirPlugin extends Plugin {
     }
 
     async loadSettings() {
-        this.settings = { ...this.settings, ...(await this.loadData()) };
+        const data = (await this.loadData()) as ISettings;
+        this.settings = { ...this.settings, ...data };
         this.environment.extensions.enabled.join(this.settings.extensions);
         await this.#updateEnvironment();
     }
@@ -66,7 +66,7 @@ export default class PochoirPlugin extends Plugin {
     }
 
     async #updateEnvironment() {
-        this.logger.verbose("updateEnvironment");
+        LOGGER.verbose("updateEnvironment");
         this.environment.cleanup();
         this.environment.updateSettings(this.settings);
         this.environment.extensions.run(this.environment);

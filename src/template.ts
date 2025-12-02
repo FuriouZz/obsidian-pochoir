@@ -37,11 +37,14 @@ export class TemplateContext {
 
     async transferProps(app: App, target: TFile) {
         const builder = new PropertiesBuilder();
-        await app.fileManager.processFrontMatter(target, (fm) => {
-            builder.merge(fm);
-            builder.merge(this.properties);
-            builder.toObject(fm);
-        });
+        await app.fileManager.processFrontMatter(
+            target,
+            (fm: Record<string, unknown>) => {
+                builder.merge(fm);
+                builder.merge(this.properties);
+                builder.toObject(fm);
+            },
+        );
         return builder.toObject();
     }
 }

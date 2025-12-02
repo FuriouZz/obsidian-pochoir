@@ -1,5 +1,6 @@
 import { type App, ItemView, Modal, Setting } from "obsidian";
 import * as v from "valibot";
+import { LOGGER } from "../../logger";
 import type { FormJSON } from "./createFormBuilder";
 import type { TextField, UnionField } from "./fields";
 import { checkMomentDate } from "./schemas";
@@ -49,51 +50,50 @@ function createFormSettings(
 
     const result: Record<string, unknown> = {};
 
-    const entries: Record<string, any> = {};
+    const entries: v.ObjectEntries = {};
 
     for (const field of form.fields as UnionField[]) {
-        let s: any; //v.AnySchema
-
         switch (field.type) {
             case "dropdown":
             case "textarea":
             case "text": {
-                s = v.string();
+                const s = v.string();
                 if (field.required) {
-                    s = v.pipe(s, v.nonEmpty("Field is empty"));
+                    const ss = v.pipe(s, v.nonEmpty("Field is empty"));
+                    entries[field.name] = ss;
+                } else {
+                    entries[field.name] = s;
                 }
                 break;
             }
             case "slider":
             case "number": {
-                s = v.number();
+                const s = v.number();
+                entries[field.name] = s;
                 break;
             }
             case "toggle": {
-                s = v.boolean();
+                const s = v.boolean();
+                entries[field.name] = s;
                 break;
             }
             case "date": {
-                s = v.pipe(
+                const s = v.pipe(
                     v.string(),
                     checkMomentDate("YYYY-MM-DD", "Date is invalid"),
                 );
+                entries[field.name] = s;
                 break;
             }
             case "time": {
-                s = v.pipe(
+                const s = v.pipe(
                     v.string(),
                     checkMomentDate("hh:mm", "Time is invalid"),
                 );
-                break;
-            }
-            default: {
-                s = v.unknown();
+                entries[field.name] = s;
                 break;
             }
         }
-
-        entries[field.name] = s;
     }
 
     const schema = v.object(entries);
@@ -104,27 +104,29 @@ function createFormSettings(
             cancelled = false;
             modal.close();
         } else {
-            const errors = new Setting(document.createElement("div"));
+            const errors = new Setting(
+                globalThis.document.createElement("div"),
+            );
 
             const attr = {
                 style: "color: var(--text-error);",
             };
 
-            const name = document.createDocumentFragment();
+            const name = globalThis.document.createDocumentFragment();
             name.createEl("span", {
                 text: "Errors",
                 attr,
             });
 
-            const desc = document.createDocumentFragment();
+            const desc = globalThis.document.createDocumentFragment();
 
             const list = desc.createEl("ul");
             for (const issue of ret.issues) {
-                const path = issue.path
-                    .map((item: { key: string }) => item.key)
-                    .join(".");
+                const path: string | undefined = issue.path
+                    ?.map((item) => item.key)
+                    ?.join(".");
                 list.createEl("li", {
-                    text: `${path}: ${issue.message}`,
+                    text: path ? `${path}: ${issue.message}` : issue.message,
                     attr,
                 });
             }
@@ -196,13 +198,15 @@ function createModal(app: App, state: FormState) {
 
     modal.open();
 
-    promise.then(({ cancelled, result }) => {
-        if (cancelled) {
-            state.cancel();
-        } else {
-            state.done(result);
-        }
-    });
+    promise
+        .then(({ cancelled, result }) => {
+            if (cancelled) {
+                state.cancel();
+            } else {
+                state.done(result);
+            }
+        })
+        .catch(LOGGER.error);
 }
 
 async function createView(app: App, state: FormState) {
@@ -215,7 +219,7 @@ async function createView(app: App, state: FormState) {
         leaf.view.formState = {
             ...state,
             close() {
-                leaf.setViewState(prevState);
+                leaf.setViewState(prevState).catch(LOGGER.error);
             },
             cancel() {
                 state.cancel();
@@ -257,17 +261,19 @@ export class FormView extends ItemView {
                 // this.leaf.detach();
             },
         });
-        promise.then(({ cancelled, result }) => {
-            if (cancelled) {
-                state.cancel();
-            } else {
-                state.done(result);
-            }
-        });
+        promise
+            .then(({ cancelled, result }) => {
+                if (cancelled) {
+                    state.cancel();
+                } else {
+                    state.done(result);
+                }
+            })
+            .catch(LOGGER.error);
     }
 
     async onOpen() {
-        this.openForm();
+        return this.openForm();
     }
 
     async onClose() {
@@ -282,6 +288,6 @@ export function promptForm(
     state: FormState,
     target: "view" | "modal" = "modal",
 ) {
-    if (target === "view") createView(app, state);
+    if (target === "view") createView(app, state).catch(LOGGER.error);
     else createModal(app, state);
 }

@@ -1,7 +1,7 @@
 import { type App, type CachedMetadata, TFile } from "obsidian";
 import { EventEmitter } from "./event-emitter";
 import { FileWatcher, type FileWatcherEvent } from "./file-watcher";
-import { verbose } from "./logger";
+import { LOGGER, verbose } from "./logger";
 import { Parser } from "./parser";
 import type { Template } from "./template";
 import { alertWrap } from "./utils/alert";
@@ -59,7 +59,7 @@ export class Cache {
 
     #addQueue(event: FileWatcherEvent) {
         if (!this.#queue.processing) {
-            this.#process(event);
+            this.#process(event).catch(LOGGER.error);
         } else {
             this.#queue.items.push(event);
         }
@@ -93,7 +93,7 @@ export class Cache {
             verbose("queue-cleared");
         } else {
             const item = this.#queue.items.pop();
-            if (item) this.#process(item);
+            if (item) this.#process(item).catch(LOGGER.error);
         }
     }
 

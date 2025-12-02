@@ -1,6 +1,8 @@
 import { parseYaml } from "./utils/obsidian";
 
-export class PropertiesBuilder extends Map<string, unknown> {
+type AcceptedValue = string | string[];
+
+export class PropertiesBuilder extends Map<string, AcceptedValue> {
     clone() {
         return new PropertiesBuilder(this);
     }
@@ -11,7 +13,7 @@ export class PropertiesBuilder extends Map<string, unknown> {
             set = [];
             super.set(key, set);
         }
-        return set as string[];
+        return set;
     }
 
     list(key: string) {
@@ -38,14 +40,14 @@ export class PropertiesBuilder extends Map<string, unknown> {
         return this;
     }
 
-    set(key: string, value: unknown) {
+    set(key: string, value: AcceptedValue | Set<string>) {
         if (Array.isArray(value) || value instanceof Set) {
             return this.insertTo(key, ...value);
         }
         return super.set(key, value);
     }
 
-    filter(predicate: (key: string, value: unknown) => boolean) {
+    filter(predicate: (key: string, value: AcceptedValue) => boolean) {
         const builder = new PropertiesBuilder();
         for (const [key, value] of this.entries()) {
             if (!predicate(key, value)) builder.set(key, value);
@@ -64,7 +66,7 @@ export class PropertiesBuilder extends Map<string, unknown> {
                 : Object.entries(obj);
 
         for (const [key, value] of entries) {
-            this.set(key, value);
+            this.set(key, value as AcceptedValue);
         }
 
         return this;
@@ -124,16 +126,18 @@ export class PropertiesBuilder extends Map<string, unknown> {
             get(target, p: string) {
                 if (p.startsWith("$")) {
                     const value = Reflect.get(target, p.slice(1));
-                    if (typeof value === "function") return value.bind(target);
-                    return value;
+                    if (typeof value === "function") {
+                        return value.bind(target) as () => unknown;
+                    }
+                    return value as unknown;
                 }
                 const value = target.get(p);
                 if (value instanceof Set) {
-                    return [...value];
+                    return [...value] as string[];
                 }
                 return value;
             },
-            set(target, p: string, newValue) {
+            set(target, p: string, newValue: AcceptedValue) {
                 target.set(p, newValue);
                 return true;
             },

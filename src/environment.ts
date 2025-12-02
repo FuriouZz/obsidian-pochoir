@@ -13,6 +13,7 @@ import { type Template, TemplateContext } from "./template";
 import { TemplateSuggesterSet } from "./template-suggester-set";
 import { alertWrap } from "./utils/alert";
 import { ensurePath, findOrCreateNote } from "./utils/obsidian";
+import { LOGGER } from "./logger";
 
 export interface Extension {
     name: string;
@@ -72,7 +73,7 @@ export class Environment extends Events {
             this.cache.events.on((event) => {
                 if (event.name === "queue-cleared") {
                     for (const template of this.cache.templates.values()) {
-                        template.preprocess(this);
+                        template.preprocess(this).catch(LOGGER.error);
                     }
                 } else if (event.name === "template-change") {
                     this.renderer.vento.cache.delete(
@@ -100,6 +101,7 @@ export class Environment extends Events {
         template: Template,
         target: TFile,
     ) {
+        console.trace();
         // Transfer properties
         const properties = await context.transferProps(this.app, target);
 
@@ -183,7 +185,7 @@ export class Environment extends Events {
                 .getActiveViewOfType(MarkdownView)
                 ?.editor.getSelection();
         } else if (options.type === "clipboard") {
-            source = await navigator.clipboard.readText();
+            source = await globalThis.navigator.clipboard.readText();
         } else if (options.type === "source") {
             source = options.source;
         }
