@@ -102,7 +102,12 @@ export class Template {
                     codeBlock,
                 });
             if (isValid) {
-                await processor.preprocess?.({ codeBlock, template: this });
+                await Promise.resolve(
+                    processor.preprocess?.({
+                        codeBlock,
+                        template: this,
+                    }),
+                );
             }
         }
     }
@@ -115,7 +120,9 @@ export class Template {
                 value,
             });
             if (isValid) {
-                await processor.preprocess?.({ key, value, template: this });
+                await Promise.resolve(
+                    processor.preprocess?.({ key, value, template: this }),
+                );
             }
         }
     }
@@ -155,11 +162,13 @@ export class Template {
                     codeBlock,
                 });
             if (isValid) {
-                await processor.process?.({
-                    context,
-                    codeBlock,
-                    template: this,
-                });
+                await Promise.resolve(
+                    processor.process?.({
+                        context,
+                        codeBlock,
+                        template: this,
+                    }),
+                );
             }
         }
     }
@@ -176,12 +185,14 @@ export class Template {
                 value,
             });
             if (isValid) {
-                await processor.process?.({
-                    context,
-                    key,
-                    value,
-                    template: this,
-                });
+                await Promise.resolve(
+                    processor.process?.({
+                        context,
+                        key,
+                        value,
+                        template: this,
+                    }),
+                );
             }
         }
     }

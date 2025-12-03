@@ -32,7 +32,11 @@ export function error(...msg: unknown[]) {
     if (L[level] >= L.INFO) log("error", ...msg);
 }
 
-function log(type: "info" | "error", ...msg: unknown[]) {
+export function warn(...msg: unknown[]) {
+    if (L[level] >= L.INFO) log("warn", ...msg);
+}
+
+function log(type: "info" | "error" | "warn", ...msg: unknown[]) {
     globalThis.console[type](`${level}:`, ...msg);
 }
 
@@ -47,4 +51,5 @@ export const LOGGER = {
     debug,
     info,
     error,
+    warn,
 };

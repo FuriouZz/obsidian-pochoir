@@ -1,10 +1,10 @@
 import { toSlug } from "@furiouzz/lol/string/string";
 import type { Menu } from "obsidian";
 import type { Environment, Extension } from "../environment";
+import { LOGGER } from "../logger";
 import type { Template } from "../template";
 import { alertWrap } from "../utils/alert";
 import { tryParseYaml } from "../utils/obsidian";
-import { LOGGER } from "../logger";
 
 export default function (): Extension {
     return {
@@ -26,7 +26,7 @@ export default function (): Extension {
                 beforePreprocess({ template }) {
                     cmd.deleteAllFromPath(template.info.file.path);
                 },
-                async preprocess({ codeBlock, template }) {
+                preprocess({ codeBlock, template }) {
                     const json = tryParseYaml<
                         Partial<
                             Omit<Command, "triggers"> & {

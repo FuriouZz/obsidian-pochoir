@@ -261,7 +261,7 @@ export class FormView extends ItemView {
                 // this.leaf.detach();
             },
         });
-        promise
+        await promise
             .then(({ cancelled, result }) => {
                 if (cancelled) {
                     state.cancel();
@@ -278,6 +278,7 @@ export class FormView extends ItemView {
 
     async onClose() {
         this.contentEl.dispatchEvent(new CustomEvent("form:close"));
+        return Promise.resolve();
     }
 
     static type = "POCHOIR_FORM_VIEW";

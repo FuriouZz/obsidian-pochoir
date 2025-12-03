@@ -10,6 +10,7 @@ import {
     TFolder,
     Vault,
 } from "obsidian";
+import { LOGGER } from "../logger";
 
 export const WikiLinkPathRegex = /^\[\[(.*)\]\]$/;
 export const SnippetRegex = /^snippet\((.*)\)$/;
@@ -97,7 +98,7 @@ export function tryParseYaml<T = unknown>(str: string) {
     try {
         return parseYaml<T>(str);
     } catch (e) {
-        globalThis.console.error(e);
+        LOGGER.error(e);
     }
     return null;
 }

@@ -5,6 +5,7 @@ import { PochoirError } from "./errors";
 import { EventEmitter } from "./event-emitter";
 import { ExtensionList } from "./extension-list";
 import { Importer, type Loader } from "./importer";
+import { LOGGER } from "./logger";
 import type PochoirPlugin from "./main";
 import { type Processor, ProcessorList } from "./processor-list";
 import { Renderer } from "./renderer";
@@ -13,7 +14,6 @@ import { type Template, TemplateContext } from "./template";
 import { TemplateSuggesterSet } from "./template-suggester-set";
 import { alertWrap } from "./utils/alert";
 import { ensurePath, findOrCreateNote } from "./utils/obsidian";
-import { LOGGER } from "./logger";
 
 export interface Extension {
     name: string;
@@ -101,7 +101,6 @@ export class Environment extends Events {
         template: Template,
         target: TFile,
     ) {
-        console.trace();
         // Transfer properties
         const properties = await context.transferProps(this.app, target);
 

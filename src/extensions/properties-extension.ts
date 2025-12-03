@@ -1,4 +1,5 @@
 import type { Extension } from "../environment";
+import { LOGGER } from "../logger";
 import { PathBuilder } from "../path-builder";
 import { parseYaml } from "../utils/obsidian";
 
@@ -17,7 +18,7 @@ export default function (): Extension {
                     "pochoir-props": "yaml",
                     "pochoir-properties": "yaml",
                 },
-                async preprocess({ codeBlock, template }) {
+                preprocess({ codeBlock, template }) {
                     try {
                         if (!codeBlock.attributes.noclear) {
                             template.info.properties.clear();
@@ -25,7 +26,7 @@ export default function (): Extension {
                         const json = parseYaml<object>(codeBlock.code) ?? {};
                         template.info.properties.merge(json);
                     } catch (e) {
-                        globalThis.console.warn(e);
+                        LOGGER.warn(e);
                     }
                 },
                 async process({ context, codeBlock }) {

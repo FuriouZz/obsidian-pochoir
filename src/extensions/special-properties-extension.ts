@@ -1,5 +1,5 @@
 import type { Extension } from "../environment";
-import { Template } from "../template";
+import type { Template } from "../template";
 
 export default function (): Extension {
     return {
@@ -47,7 +47,7 @@ export default function (): Extension {
                     type: "property",
                     test: "$.path",
                     order: 110,
-                    async process({ context, value }) {
+                    process({ context, value }) {
                         if (typeof value !== "string") return;
                         const chunks = value.split("/");
                         const name = chunks.pop() as string;
@@ -62,7 +62,7 @@ export default function (): Extension {
                     type: "property",
                     test: /^\$\./,
                     order: 120,
-                    async process({ context, key }) {
+                    process({ context, key }) {
                         context.properties.delete(key);
                     },
                 });

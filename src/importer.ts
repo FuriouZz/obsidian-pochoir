@@ -4,7 +4,7 @@ import { alertError } from "./utils/alert";
 export type Loader<TResult = unknown> = {
     contextMode?: "shared" | "isolated";
     test: string | RegExp | ((path: string) => boolean);
-    load(path: string, context: TemplateContext): Promise<TResult>;
+    load(path: string, context: TemplateContext): Promise<TResult> | TResult;
 };
 
 export class Importer {
@@ -37,7 +37,9 @@ export class Importer {
                                 context = new TemplateContext();
                                 context.path.fromBuilder(ctx.path);
                             }
-                            const result = await resolver.load(path, context);
+                            const result = await Promise.resolve(
+                                resolver.load(path, context),
+                            );
                             return { context, result };
                         },
                     };

@@ -27,7 +27,7 @@ export default function (): Extension {
 
             env.loaders.unshift({
                 test: "pochoir:date",
-                load: async () => api,
+                load: () => api,
             });
 
             env.contextProviders.push((context) => {

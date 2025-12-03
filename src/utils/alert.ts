@@ -1,5 +1,6 @@
 import { Notice } from "obsidian";
 import { PochoirError, RendererError } from "../errors";
+import { LOGGER } from "../logger";
 
 export function alert(
     message: string,
@@ -27,7 +28,7 @@ export function alertError(error: Error, options?: { duration?: number }) {
         notice = error.notice;
     }
 
-    if (verbose) globalThis.console.error(error);
+    if (verbose) LOGGER.error(error);
     if (notice) {
         alert(error.message, { prefix, ...options });
     }

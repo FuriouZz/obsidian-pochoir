@@ -56,16 +56,16 @@ export default class PochoirPlugin extends Plugin {
         const data = (await this.loadData()) as ISettings;
         this.settings = { ...this.settings, ...data };
         this.environment.extensions.enabled.join(this.settings.extensions);
-        await this.#updateEnvironment();
+        this.#updateEnvironment();
     }
 
     async saveSettings() {
         this.settings.extensions = [...this.environment.extensions.enabled];
         await this.saveData(this.settings);
-        await this.#updateEnvironment();
+        this.#updateEnvironment();
     }
 
-    async #updateEnvironment() {
+    #updateEnvironment() {
         LOGGER.verbose("updateEnvironment");
         this.environment.cleanup();
         this.environment.updateSettings(this.settings);
