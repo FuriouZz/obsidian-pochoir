@@ -110,6 +110,7 @@ export function createMarkdownRenderer(plugin: Plugin) {
     ) => {
         const c = new Component();
         await MarkdownRenderer.render(plugin.app, content, el, "", c);
+        c.unload();
         return el;
     };
 }
