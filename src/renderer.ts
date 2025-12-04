@@ -18,9 +18,9 @@ class TemplateLoader implements Loader {
         this.options = options;
     }
 
-    async load(path: string) {
+    load(path: string) {
         const template = this.options.findTemplate(path);
-        return { source: template?.getContent() ?? "" };
+        return Promise.resolve({ source: template?.getContent() ?? "" });
     }
 
     resolve(_from: string, path: string) {
