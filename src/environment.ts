@@ -172,7 +172,11 @@ export class Environment extends Events {
         options:
             | { type: "clipboard" }
             | { type: "selection" }
-            | { type: "source"; source: string },
+            | {
+                  type: "source";
+                  source: string;
+                  options?: Partial<Template["options"]>;
+              },
     ) {
         const { app } = this;
         const file = this.app.workspace.getActiveFile();
@@ -191,7 +195,13 @@ export class Environment extends Events {
 
         if (!source) return;
 
-        return this.cache.parser.fromSource(source, file);
+        const template = this.cache.parser.fromSource(source, file);
+
+        if (options.type === "source" && options.options) {
+            Object.assign(template.options, options.options);
+        }
+
+        return template;
     }
 
     abortTemplate(reject?: (e: unknown) => void) {

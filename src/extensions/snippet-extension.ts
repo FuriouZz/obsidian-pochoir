@@ -32,6 +32,7 @@ export default function (): Extension {
                     const template = await env.createVirtualTemplate({
                         type: "source",
                         source: codeBlock.code,
+                        options: { canProcess: false },
                     });
 
                     if (!template) return;

@@ -55,6 +55,11 @@ export class TemplateContext {
 
 export class Template {
     info: ParsedTemplateInfo;
+    options: {
+        canProcess: boolean;
+    } = {
+        canProcess: true,
+    };
 
     constructor(info: ParsedTemplateInfo) {
         this.info = info;
@@ -75,8 +80,28 @@ export class Template {
     getContent() {
         const { source } = this.info;
 
+        let codeBlockCounter: { index: number; length: number } | undefined;
+        if (!this.options.canProcess) {
+            codeBlockCounter = {
+                index: 0,
+                length: this.info.codeBlocks.length,
+            };
+        }
+
         return this.info.contentRanges
-            .map((range) => source.slice(...range))
+            .map((range) => {
+                let str = source.slice(...range);
+
+                if (
+                    codeBlockCounter &&
+                    codeBlockCounter.index < codeBlockCounter.length
+                ) {
+                    str += `${this.info.codeBlocks[codeBlockCounter.index].content}\n\n`;
+                    codeBlockCounter.index++;
+                }
+
+                return str;
+            })
             .join("")
             .trim();
     }
@@ -131,6 +156,8 @@ export class Template {
     }
 
     async process(env: Environment, context: TemplateContext) {
+        if (!this.options.canProcess) return;
+
         for (const p of env.contextProviders) {
             await Promise.resolve(p(context, this));
         }
