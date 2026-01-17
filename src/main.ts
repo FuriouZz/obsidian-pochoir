@@ -18,6 +18,17 @@ import { LOGGER } from "./logger";
 import { type ISettings, SettingTab } from "./setting-tab";
 import { TemplateModalSuggester } from "./suggesters/template-modal-suggester";
 
+const ProcessorOrder = [
+    "property:imports-template",
+    "property:merge-properties",
+    "codeblock:properties",
+    "codeblock:form",
+    "codeblock:javascript",
+    "property:render",
+    "property:create-path",
+    "property:delete-internals",
+];
+
 export default class PochoirPlugin extends Plugin {
     settings: ISettings = { ...DEFAULT_SETTINGS };
     environment = new Environment(this);
@@ -70,5 +81,6 @@ export default class PochoirPlugin extends Plugin {
         this.environment.cleanup();
         this.environment.updateSettings(this.settings);
         this.environment.extensions.run(this.environment);
+        this.environment.processors.sort(ProcessorOrder);
     }
 }

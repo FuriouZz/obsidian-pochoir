@@ -4,7 +4,7 @@ tags:
 $.aliases:
   - js
 $.properties:
-  - "[[Inherit Properties]]"
+  - "[[Import]]"
 $.path: outputs/Javascript Output
 ---
 Content to copy

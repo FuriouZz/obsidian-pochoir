@@ -23,10 +23,8 @@ export default function (): Extension {
             env.processors.set("codeblock:command", {
                 type: "codeblock",
                 languages: { "pochoir-command": "yaml" },
-                beforePreprocess({ template }) {
-                    cmd.deleteAllFromPath(template.info.file.path);
-                },
                 preprocess({ codeBlock, template }) {
+                    cmd.deleteAllFromPath(template.info.file.path);
                     const json = tryParseYaml<
                         Partial<
                             Omit<Command, "triggers"> & {

@@ -3,7 +3,11 @@ import type { Environment } from "./environment";
 import { verbose } from "./logger";
 import type { ParsedTemplateInfo } from "./parser";
 import { PathBuilder } from "./path-builder";
-import type { CodeBlockProcessor, PropertyProcessor } from "./processor-list";
+import type {
+    CodeBlockProcessor,
+    GenericProcessor,
+    PropertyProcessor,
+} from "./processor-list";
 import { PropertiesBuilder } from "./properties-builder";
 
 export interface TemplateContextLocals {
@@ -80,7 +84,6 @@ export class Template {
     async preprocess(env: Environment) {
         for (const processor of env.processors) {
             if (!processor.preprocess) continue;
-            processor.beforePreprocess?.({ template: this });
             if (processor.type === "codeblock") {
                 await this.preprocessCodeBlock(processor);
             } else if (processor.type === "property") {
@@ -136,7 +139,6 @@ export class Template {
 
         for (const processor of env.processors) {
             if (!processor.process) continue;
-            processor.beforeProcess?.({ template: this });
             if (processor.type === "codeblock") {
                 await this.processCodeBlock(context, processor);
             } else if (processor.type === "property") {
@@ -198,12 +200,10 @@ export class Template {
     }
 }
 
-function testProcessor<Params>(
-    processor: {
-        test?: string | RegExp | ((params: Params) => boolean);
-    },
+function testProcessor<TParams, TProcessor extends GenericProcessor<TParams>>(
+    processor: TProcessor,
     key: string,
-    params: Params,
+    params: TParams,
 ) {
     let isValid = !processor.test;
     if (typeof processor.test === "string") {

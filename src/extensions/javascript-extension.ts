@@ -15,7 +15,6 @@ export default function (): Extension {
                     "pochoir-js": "javascript",
                     "pochoir-javascript": "javascript",
                 },
-                order: 50,
                 async process({ codeBlock, context }) {
                     const fn = createAsyncFunction(codeBlock.code, "template");
                     await fn({

@@ -18,7 +18,6 @@ export default function (): Extension {
 
             env.processors.set("property:render", {
                 type: "property",
-                order: 100,
                 process: async ({ context, key, value }) => {
                     const originalPath = new PathBuilder().fromBuilder(
                         context.path,

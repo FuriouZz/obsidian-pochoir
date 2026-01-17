@@ -29,7 +29,6 @@ export default function (): Extension {
             env.processors.set("codeblock:form", {
                 type: "codeblock",
                 languages: { "pochoir-form": "yaml" },
-                order: 40,
                 async process({ codeBlock, context }) {
                     const { name, exports, target } = codeBlock.attributes;
 

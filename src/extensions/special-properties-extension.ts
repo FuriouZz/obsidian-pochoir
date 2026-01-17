@@ -13,7 +13,6 @@ export default function (): Extension {
                 .set("property:imports-template", {
                     type: "property",
                     test: "$.imports",
-                    order: 40,
                     async process({ context, value: properties }) {
                         if (!isStringList(properties)) return;
                         for (const t of properties) {
@@ -31,7 +30,6 @@ export default function (): Extension {
                 .set("property:merge-properties", {
                     type: "property",
                     test: "$.properties",
-                    order: 80,
                     async process({ context, value: properties }) {
                         if (!isStringList(properties)) return;
                         for (const t of properties) {
@@ -46,7 +44,6 @@ export default function (): Extension {
                 .set("property:create-path", {
                     type: "property",
                     test: "$.path",
-                    order: 110,
                     process({ context, value }) {
                         if (typeof value !== "string") return;
                         const chunks = value.split("/");
@@ -61,7 +58,6 @@ export default function (): Extension {
                 .set("property:delete-internals", {
                     type: "property",
                     test: /^\$\./,
-                    order: 120,
                     process({ context, key }) {
                         context.properties.delete(key);
                     },

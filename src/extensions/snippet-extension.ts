@@ -11,7 +11,6 @@ export default function (): Extension {
         setup(env) {
             env.processors.set("codeblock:snippet", {
                 type: "codeblock",
-                order: 30,
                 languages: {
                     "pochoir-snippet": "md",
                 },

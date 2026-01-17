@@ -1,63 +1,49 @@
 import type { ParsedCodeBlock } from "./parser";
 import type { Template, TemplateContext } from "./template";
+import { Queue } from "./utils/Queue";
 
-interface CodeBlockParams {
+export interface CodeBlockParams {
     template: Template;
     codeBlock: ParsedCodeBlock;
 }
 
-interface CodeBlockProcessorWithParams<TParams> {
-    type: "codeblock";
-    languages: Record<string, "javascript" | "yaml" | "md">;
-    test?:
-        | string
-        | RegExp
-        | ((params: WithOptionalContext<TParams>) => boolean);
-    order?: number;
-    beforePreprocess?: (params: { template: Template }) => void;
+export interface PropertyParams {
+    template: Template;
+    key: string;
+    value: unknown;
+}
+
+export type WithContext<T> = T & { context: TemplateContext };
+export type WithOptionalContext<T> = T & { context?: TemplateContext };
+
+export type GenericProcessor<TParams> = {
+    test?: string | RegExp | ((params: TParams) => boolean);
     preprocess?: (params: TParams) => Promise<void> | void;
-    beforeProcess?: (params: { template: Template }) => void;
     process?: (params: WithContext<TParams>) => Promise<void> | void;
     disable?: (params: WithOptionalContext<TParams>) => void;
     dispose?: () => void;
+};
+
+export type CodeBlockProcessor = GenericProcessor<CodeBlockParams> & {
+    type: "codeblock";
+    languages: Record<string, "javascript" | "yaml" | "md">;
     suggestions?: {
         suggestion: string;
         novar?: boolean;
         trigger?: string;
         display?: string;
     }[];
-}
+};
 
-export type CodeBlockProcessor = CodeBlockProcessorWithParams<CodeBlockParams>;
-
-interface PropertyParams {
-    template: Template;
-    key: string;
-    value: unknown;
-}
-
-interface PropertyProcessorWithParams<TParams> {
+export type PropertyProcessor = GenericProcessor<PropertyParams> & {
     type: "property";
-    order?: number;
-    test?: string | RegExp | ((params: TParams) => boolean);
-    beforePreprocess?: (params: { template: Template }) => void;
-    preprocess?: (params: TParams) => Promise<void> | void;
-    beforeProcess?: (params: { template: Template }) => void;
-    process?: (params: WithContext<TParams>) => Promise<void> | void;
-    disable?: (params: TParams) => void;
-    dispose?: () => void;
-}
-
-export type WithContext<T> = T & { context: TemplateContext };
-export type WithOptionalContext<T> = T & { context?: TemplateContext };
-
-export type PropertyProcessor = PropertyProcessorWithParams<PropertyParams>;
+};
 
 export type Processor = PropertyProcessor | CodeBlockProcessor;
 
 export class ProcessorList<T extends Processor> {
-    #entries = new Map<string, T & { id: string; order: number }>();
-    order: string[] = [];
+    #entries = new Map<string, T & { id: string }>();
+    order = new Queue<string>();
 
     getSupportedCodeBlock(languages: CodeBlockProcessor["languages"] = {}) {
         for (const processor of this.values()) {
@@ -86,48 +72,41 @@ export class ProcessorList<T extends Processor> {
     }
 
     set(id: string, processor: T) {
-        this.#entries.set(id, {
-            id,
-            order: 0,
-            ...processor,
-        });
-        if (!this.order.includes(id)) {
-            this.order.push(id);
-        }
-        this.sort();
+        this.#entries.set(id, { id, ...processor });
+        this.order.add(id);
         return this;
     }
 
     delete(id: string) {
         this.#entries.delete(id);
-        const index = this.order.indexOf(id);
-        if (index > -1) this.order.splice(index, 1);
+        this.order.delete(id);
         return this;
     }
 
     clear() {
         for (const p of this.#entries) p[1].dispose?.();
         this.#entries.clear();
-        this.order.length = 0;
+        this.order.clear();
         return this;
     }
 
-    sort() {
-        this.order.sort((na, nb) => {
-            const a = this.#entries.get(na)?.order ?? 0;
-            const b = this.#entries.get(nb)?.order ?? 0;
-            return a - b;
-        });
+    sort(order: Record<string, number> | string[]) {
+        const _order: [string, number][] = Array.isArray(order)
+            ? order.map((order, index) => [order, index] as const)
+            : Object.entries(order);
+
+        this.order.reorder(_order);
         return this;
     }
 
-    reorder(order: Record<string, number>) {
-        for (const [key, value] of Object.entries(order)) {
-            const entry = this.#entries.get(key);
-            if (entry) entry.order = value;
+    fromLanguage(language: string): CodeBlockProcessor | null {
+        for (const processor of this) {
+            if (processor.type === "property") continue;
+            if (language in processor.languages) {
+                return processor;
+            }
         }
-        this.sort();
-        return this;
+        return null;
     }
 
     [Symbol.iterator]() {

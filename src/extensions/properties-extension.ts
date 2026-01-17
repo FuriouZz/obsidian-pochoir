@@ -13,7 +13,6 @@ export default function (): Extension {
         setup(env) {
             env.processors.set("codeblock:properties", {
                 type: "codeblock",
-                order: 99,
                 languages: {
                     "pochoir-props": "yaml",
                     "pochoir-properties": "yaml",
