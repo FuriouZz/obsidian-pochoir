@@ -8,8 +8,8 @@ import {
     type ViewUpdate,
 } from "@codemirror/view";
 import type { Environment } from "../environment";
-import { createMarkdownRenderer } from "../utils/obsidian";
 import { LOGGER } from "../logger";
+import type { createMarkdownRenderer } from "../utils/obsidian";
 
 async function highlight({
     builder,
@@ -131,27 +131,31 @@ async function buildDecoration({
     return builder.finish();
 }
 
-export function codeBlocksHighlighter(env: Environment) {
-    const render = createMarkdownRenderer(env.plugin);
+export function hightlightInReadingMode(
+    env: Environment,
+    render: ReturnType<typeof createMarkdownRenderer>,
+) {
+    const langs = env.processors.getSupportedCodeBlock();
+    for (const [from, to] of Object.entries(langs)) {
+        env.plugin.registerMarkdownCodeBlockProcessor(
+            from,
+            async (source, el, _) => {
+                const res = await render(
+                    `\`\`\`${to}\n${source.trim()}\n\`\`\``,
+                );
+                el.append(res);
+            },
+        );
+    }
+}
 
-    env.plugin.registerMarkdownPostProcessor(async (el) => {
-        const langs = env.processors.getSupportedCodeBlock();
-        for (const [from, to] of Object.entries(langs)) {
-            const block = el.querySelector<HTMLElement>(
-                `pre:has(code.language-${from})`,
-            );
-            if (!block) continue;
-
-            const source = block.querySelector("code")?.getHTML();
-            if (!source) continue;
-
-            const res = await render(`\`\`\`${to}\n${source.trim()}\n\`\`\``);
-            const pre = res.querySelector("pre:has(code)");
-            if (!pre) continue;
-
-            block.replaceWith(pre);
-        }
-    });
+export function highlightInEditingMode(
+    env: Environment,
+    render: ReturnType<typeof createMarkdownRenderer>,
+) {
+    env.plugin.registerEditorExtension([
+        ViewPlugin.fromClass(class implements PluginValue {}),
+    ]);
 
     env.plugin.registerEditorExtension([
         ViewPlugin.fromClass(

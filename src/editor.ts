@@ -1,12 +1,17 @@
-import { codeBlocksHighlighter } from "./editor/codeBlockHighlighter";
+import {
+    highlightInEditingMode,
+    hightlightInReadingMode,
+} from "./editor/codeBlockHighlighter";
 import type { Environment } from "./environment";
 import { CodeEditorSuggester } from "./suggesters/code-editor-suggester";
+import { createMarkdownRenderer } from "./utils/obsidian";
 
 export class Editor {
     suggester?: CodeEditorSuggester;
+    render?: ReturnType<typeof createMarkdownRenderer>;
 
     constructor(env: Environment) {
-        this.enableHighlighter(env);
+        this.enableHighlighterInEditMode(env);
         this.enableEditorSuggest(env);
     }
 
@@ -23,8 +28,14 @@ export class Editor {
         );
     }
 
-    enableHighlighter(env: Environment) {
-        codeBlocksHighlighter(env);
+    enableHighlighterInEditMode(env: Environment) {
+        if (!this.render) this.render = createMarkdownRenderer(env.plugin);
+        highlightInEditingMode(env, this.render);
+    }
+
+    updateHightlighterInReadingMode(env: Environment) {
+        if (!this.render) this.render = createMarkdownRenderer(env.plugin);
+        hightlightInReadingMode(env, this.render);
     }
 
     updateEditorSuggestions(env: Environment) {

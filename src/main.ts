@@ -1,4 +1,4 @@
-import { Plugin } from "obsidian";
+import { MarkdownEditView, MarkdownView, Plugin } from "obsidian";
 import {
     createFromTemplateCommand,
     insertFromTemplateCommand,
@@ -78,9 +78,7 @@ export default class PochoirPlugin extends Plugin {
 
     #updateEnvironment() {
         LOGGER.verbose("updateEnvironment");
-        this.environment.cleanup();
-        this.environment.updateSettings(this.settings);
-        this.environment.extensions.run(this.environment);
+        this.environment.refresh(this.settings);
         this.environment.processors.sort(ProcessorOrder);
     }
 }

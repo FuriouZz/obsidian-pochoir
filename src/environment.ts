@@ -64,8 +64,11 @@ export class Environment extends Events {
         return this.plugin.app;
     }
 
-    updateSettings(settings: ISettings) {
+    refresh(settings: ISettings) {
+        this.cleanup();
         this.cache.setFolder(settings.templates_folder);
+        this.extensions.run(this);
+        this.editor.updateHightlighterInReadingMode(this);
     }
 
     enable() {
