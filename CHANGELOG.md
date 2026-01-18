@@ -11,10 +11,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Abort template processing with a `Cancel` button in the form
 - Support form validation to text/date/time fields
 - Change `pochoir-form` target between `modal` or `view`. By default, `modal` is selected on desktop and `view` on `mobile`
-- Process code blocks from `selection()` or `clipboard()`
+- `pochoir-command` accepts the new attribute `template` or `templates`. You can now provide which templates to trigger through a command. This new attributes accepts followings values:
+- - `[[TEMPLATE_NAME]]` to render from a template file
+- - `snippet(SNIPPET_NAME)` to render from a snippet
+- - `selection()` to render from selected text
+- - `clipboard()` to render from clipboard
+- Place your cursor after template rendering with this `{^}`
 
 ### Fixed
 - Note is no longer created before template processing and file renaming
+- Processors are not run on snippets
 
 ## [0.0.14] - 2025-10-08
 
