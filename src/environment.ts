@@ -17,7 +17,11 @@ import type { ParserParseOptions } from "./parser";
 import { type Processor, ProcessorList } from "./processor-list";
 import { Renderer } from "./renderer";
 import type { ISettings } from "./setting-tab";
-import { type Template, TemplateContext } from "./template";
+import type { Template } from "./template";
+import {
+    TemplateContext,
+    type TemplateContextProvider,
+} from "./template-context";
 import { TemplateSuggesterSet } from "./template-suggester-set";
 import { alertWrap } from "./utils/alert";
 import { ensurePath, findOrCreateNote } from "./utils/obsidian";
@@ -31,11 +35,6 @@ export interface Extension {
     setup(env: Environment): void;
 }
 
-export type ContextProvider = (
-    context: TemplateContext,
-    template: Template,
-) => void | Promise<void>;
-
 export class Environment extends Events {
     plugin: PochoirPlugin;
     cache: Cache;
@@ -46,7 +45,7 @@ export class Environment extends Events {
     templateSuggesters: TemplateSuggesterSet;
 
     processors = new ProcessorList<Processor>();
-    contextProviders: ContextProvider[] = [];
+    contextProviders: TemplateContextProvider[] = [];
     loaders: Loader[] = [];
 
     constructor(plugin: PochoirPlugin) {
@@ -111,6 +110,10 @@ export class Environment extends Events {
         template: Template,
         target: TFile,
     ) {
+        await this.app.vault.process(target, (content) =>
+            context.content.processTarget(content),
+        );
+
         // Transfer properties
         const properties = await context.transferProps(this.app, target);
 
@@ -120,32 +123,57 @@ export class Environment extends Events {
             properties,
         });
 
+        const write = async () => {
+            const cursorReg = new RegExp(/\{\^\}/g);
+            return this.app.vault.process(
+                target,
+                (data) => data + content.replaceAll(cursorReg, ""),
+            );
+        };
+
         // Place content
         const activeFile = this.app.workspace.getActiveFile();
-        if (activeFile?.path === target.path) {
-            const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-            view?.editor.replaceSelection(content);
+        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (
+            activeFile?.path === target.path &&
+            view &&
+            view.getMode() !== "preview"
+        ) {
+            if (view.editor.listSelections().length > 0) {
+                view.editor.replaceSelection(content);
+            } else {
+                await write();
+            }
 
             // Select cursor positions
-            if (view) {
-                const cursorPattern = "{^}";
-                const cursorReg = new RegExp(/\{\^\}/);
+            const cursorPattern = "{^}";
+            const cursorReg = new RegExp(/\{\^\}/);
 
-                const selections: EditorSelectionOrCaret[] = [];
-                for (let i = 0; i < view.editor.lineCount(); i++) {
-                    const line = view.editor.getLine(i);
-                    const match = line.match(cursorReg);
-                    if (!match) continue;
-                    const ch = match.index ?? 0;
-                    selections.push({
-                        anchor: { ch, line: i },
-                        head: { ch: ch + cursorPattern.length, line: i },
-                    });
-                }
-                view.editor.setSelections(selections);
+            const selections: EditorSelectionOrCaret[] = [];
+            for (let i = 0; i < view.editor.lineCount(); i++) {
+                const line = view.editor.getLine(i);
+                const match = line.match(cursorReg);
+                if (!match) continue;
+                const ch = match.index ?? 0;
+                selections.push({
+                    anchor: { ch, line: i },
+                    head: { ch: ch + cursorPattern.length, line: i },
+                });
             }
+
+            view.editor.transaction({
+                selections: selections.map((s) => ({
+                    from: s.anchor,
+                    // to: s.head,
+                })),
+                changes: selections.map((s) => ({
+                    from: s.anchor,
+                    to: s.head,
+                    text: "",
+                })),
+            });
         } else {
-            await this.app.vault.process(target, (data) => data + content);
+            await write();
         }
     }
 

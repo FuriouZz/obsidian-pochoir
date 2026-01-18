@@ -1,5 +1,6 @@
 import type { ParsedCodeBlock } from "./parser";
-import type { Template, TemplateContext } from "./template";
+import type { Template } from "./template";
+import type { TemplateContext } from "./template-context";
 import { Queue } from "./utils/queue";
 
 export interface CodeBlockParams {

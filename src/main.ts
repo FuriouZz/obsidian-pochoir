@@ -1,4 +1,4 @@
-import { Plugin } from "obsidian";
+import { ItemView, MarkdownEditView, MarkdownView, Plugin } from "obsidian";
 import {
     createFromTemplateCommand,
     insertFromTemplateCommand,
@@ -7,6 +7,7 @@ import { DEFAULT_SETTINGS } from "./constants";
 import { Environment } from "./environment";
 import commandExtension from "./extensions/command-extension";
 import dateExtension from "./extensions/date-extension";
+import experimentalExtension from "./extensions/experimental-extension";
 import formExtension from "./extensions/form-extension";
 import { FormView } from "./extensions/form-extension/obsidian";
 import javascriptExtension from "./extensions/javascript-extension";
@@ -49,6 +50,7 @@ export default class PochoirPlugin extends Plugin {
         this.environment.extensions.use(commandExtension());
         this.environment.extensions.use(javascriptExtension());
         this.environment.extensions.use(snippetExtension());
+        this.environment.extensions.use(experimentalExtension());
 
         this.app.workspace.onLayoutReady(() => {
             this.register(this.environment.enable());

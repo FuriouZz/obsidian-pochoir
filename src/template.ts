@@ -1,63 +1,20 @@
-import type { App, TFile } from "obsidian";
+import { Content } from "./content";
 import type { Environment } from "./environment";
-import { verbose } from "./logger";
 import type { ParsedTemplateInfo } from "./parser";
-import { PathBuilder } from "./path-builder";
 import type {
     CodeBlockProcessor,
     GenericProcessor,
     PropertyProcessor,
 } from "./processor-list";
-import { PropertiesBuilder } from "./properties-builder";
-
-export interface TemplateContextLocals {
-    $properties: PropertiesBuilder;
-    properties: ReturnType<PropertiesBuilder["createProxy"]>;
-    path: PathBuilder;
-    exports: Record<string, unknown>;
-}
-
-let ID = 0;
-export class TemplateContext {
-    properties: PropertiesBuilder;
-    path: PathBuilder;
-    locals: TemplateContextLocals;
-    id = ++ID;
-
-    constructor() {
-        this.properties = new PropertiesBuilder();
-        this.path = new PathBuilder();
-        // this.path.name = "Untitled.md";
-
-        this.locals = Object.freeze({
-            properties: this.properties.createProxy(),
-            $properties: this.properties,
-            path: this.path,
-            exports: {},
-        });
-
-        verbose("create context", this.id);
-    }
-
-    async transferProps(app: App, target: TFile) {
-        const builder = new PropertiesBuilder();
-        await app.fileManager.processFrontMatter(
-            target,
-            (fm: Record<string, unknown>) => {
-                builder.merge(fm);
-                builder.merge(this.properties);
-                builder.toObject(fm);
-            },
-        );
-        return builder.toObject();
-    }
-}
+import type { TemplateContext } from "./template-context";
 
 export class Template {
     info: ParsedTemplateInfo;
+    content: Content;
 
     constructor(info: ParsedTemplateInfo) {
         this.info = info;
+        this.content = new Content();
     }
 
     getDisplayName() {
@@ -73,11 +30,7 @@ export class Template {
     }
 
     getContent() {
-        const { source } = this.info;
-        return this.info.contentRanges
-            .map((range) => source.slice(...range))
-            .join("")
-            .trim();
+        return this.content.render(this);
     }
 
     async preprocess(env: Environment) {

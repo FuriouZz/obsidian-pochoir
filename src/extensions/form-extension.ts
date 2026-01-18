@@ -1,7 +1,6 @@
 import { Platform } from "obsidian";
 import type { InferOutput } from "valibot";
 import type { Environment, Extension } from "../environment";
-import type { TemplateContext } from "../template";
 import { tryParseYaml } from "../utils/obsidian";
 import {
     createFormBuilder,
@@ -9,6 +8,7 @@ import {
 } from "./form-extension/createFormBuilder";
 import type { TextField } from "./form-extension/fields";
 import { promptForm } from "./form-extension/obsidian";
+import { TemplateContext } from "../template-context";
 
 export default function (): Extension {
     return {

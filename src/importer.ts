@@ -1,4 +1,5 @@
-import { type Template, TemplateContext } from "./template";
+import type { Template } from "./template";
+import { TemplateContext } from "./template-context";
 import { alertError } from "./utils/alert";
 
 export type Loader<TResult = unknown> = {
