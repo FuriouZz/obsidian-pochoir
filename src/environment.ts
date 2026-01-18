@@ -114,13 +114,44 @@ export class Environment extends Events {
             properties,
         });
 
+        // Search cursor position
+        const cursorPattern = "{^}";
+        const cursorReg = new RegExp(/\{\^\}/);
+        const cursorLines = content
+            .split("\n")
+            .map((line, index) => {
+                const match = line.match(cursorReg);
+                if (!match) return null;
+                return { line: index, ch: match.index ?? 0 };
+            })
+            .filter((item) => item !== null);
+
         // Place content
         const activeFile = this.app.workspace.getActiveFile();
         if (activeFile?.path === target.path) {
             const view = this.app.workspace.getActiveViewOfType(MarkdownView);
             const cursor = view?.editor.getCursor();
             view?.editor.replaceSelection(content);
-            if (cursor) view?.editor.setCursor(cursor);
+
+            if (cursor) {
+                if (cursorLines.length > 0) {
+                    const selections = cursorLines.map((line) => {
+                        return {
+                            anchor: {
+                                ch: line.ch,
+                                line: cursor.line + line.line,
+                            },
+                            head: {
+                                ch: line.ch + cursorPattern.length,
+                                line: cursor.line + line.line,
+                            },
+                        };
+                    });
+                    view?.editor.setSelections(selections);
+                } else {
+                    view?.editor.setCursor(cursor);
+                }
+            }
         } else {
             await this.app.vault.process(target, (data) => data + content);
         }
