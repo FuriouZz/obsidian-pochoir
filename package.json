@@ -3,12 +3,13 @@
     "version": "0.0.14",
     "description": "This is a sample plugin for Obsidian (https://obsidian.md)",
     "main": "main.js",
+    "type": "module",
     "scripts": {
         "dev": "node esbuild.config.mts",
         "fmt": "biome check --write src/",
         "lint": "eslint src/ && biome check src/ && tsc -noEmit -skipLibCheck",
         "test": "vitest src/",
-        "build": "npm run lint && node esbuild.config.mjs production",
+        "build": "npm run lint && node esbuild.config.mts production",
         "bump": "NODE_NO_WARNINGS=1 node --experimental-strip-types version-bump.mts",
         "docs:serve": "cd docs && deno task serve",
         "docs:build": "cd docs && deno task build"
