@@ -41,11 +41,15 @@ export function getFilesAtLocation(app: App, location: string) {
 
 export async function findOrCreateFolder(
     app: App,
-    path: string,
+    user_path: string,
 ): Promise<TFolder> {
+    const path = user_path.startsWith("/") ? user_path : `/${user_path}`;
     const folder = app.vault.getAbstractFileByPath(path);
     if (folder instanceof TFolder) {
         return folder;
+    }
+    if (folder === null && path === "/") {
+        return app.vault.getRoot();
     }
     return await app.vault.createFolder(path);
 }
@@ -67,6 +71,7 @@ export async function findOrCreateNote(app: App, path: string) {
 
     const [base, ...chunks] = path.split("/").reverse();
     const folder = chunks.reverse().join("/");
+
     path = await ensurePath(app, base, folder);
     return app.vault.create(path, "");
 }

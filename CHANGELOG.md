@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- Fixed a regression of file creation at root folder
+
 ## [0.0.15] - 2026-01-19
 
 ### Added
