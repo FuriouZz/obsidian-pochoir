@@ -74,29 +74,8 @@ export class Template {
 
     getContent() {
         const { source } = this.info;
-
-        let codeBlockCounter: { index: number; length: number } | undefined;
-        if (!this.options.canProcess) {
-            codeBlockCounter = {
-                index: 0,
-                length: this.info.codeBlocks.length,
-            };
-        }
-
         return this.info.contentRanges
-            .map((range) => {
-                let str = source.slice(...range);
-
-                if (
-                    codeBlockCounter &&
-                    codeBlockCounter.index < codeBlockCounter.length
-                ) {
-                    str += `${this.info.codeBlocks[codeBlockCounter.index].content}\n\n`;
-                    codeBlockCounter.index++;
-                }
-
-                return str;
-            })
+            .map((range) => source.slice(...range))
             .join("")
             .trim();
     }
