@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.0.15] - 2026-01-19
+
 ### Added
 - Expose `template.abort()` function to abort template creation
 - Abort template processing with a `Cancel` button in the form
@@ -152,7 +154,8 @@ action: create # or "insert"
 
 First version
 
-[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.14...main
+[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.15...main
+[0.0.15]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.14...0.0.15
 [0.0.14]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.13...0.0.14
 [0.0.13]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.12...0.0.13
 [0.0.12]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.11...0.0.12
