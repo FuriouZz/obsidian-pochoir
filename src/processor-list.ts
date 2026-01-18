@@ -1,6 +1,6 @@
 import type { ParsedCodeBlock } from "./parser";
 import type { Template, TemplateContext } from "./template";
-import { Queue } from "./utils/Queue";
+import { Queue } from "./utils/queue";
 
 export interface CodeBlockParams {
     template: Template;
@@ -19,8 +19,9 @@ export type WithOptionalContext<T> = T & { context?: TemplateContext };
 export type GenericProcessor<TParams> = {
     test?: string | RegExp | ((params: TParams) => boolean);
     preprocess?: (params: TParams) => Promise<void> | void;
+    cleanupPreprocess?: (params: { template: Template }) => void;
     process?: (params: WithContext<TParams>) => Promise<void> | void;
-    disable?: (params: WithOptionalContext<TParams>) => void;
+    cleanupProcess?: (params: { template: Template }) => void;
     dispose?: () => void;
 };
 

@@ -50,8 +50,17 @@ export class Renderer {
             const result = await this.vento.runString(content, data, path);
             return result.content;
         } catch (e) {
-            const error = (e as Error).cause as Error;
-            throw new RendererError(error.message);
+            let message = "";
+            if (e instanceof Error) {
+                if (e.cause instanceof Error) {
+                    message = e.cause.message;
+                } else {
+                    message = e.message;
+                }
+            } else {
+                message = String(e);
+            }
+            throw new RendererError(message);
         }
     }
 }

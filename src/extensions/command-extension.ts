@@ -24,7 +24,6 @@ export default function (): Extension {
                 type: "codeblock",
                 languages: { "pochoir-command": "yaml" },
                 preprocess({ codeBlock, template }) {
-                    cmd.deleteAllFromPath(template.info.file.path);
                     const json = tryParseYaml<
                         Partial<
                             Omit<Command, "triggers"> & {
@@ -61,7 +60,7 @@ export default function (): Extension {
                         LOGGER.error,
                     );
                 },
-                disable({ template }) {
+                cleanupProcess({ template }) {
                     cmd.deleteAllFromPath(template.info.file.path);
                 },
                 dispose() {

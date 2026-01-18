@@ -32,13 +32,12 @@ export default function (): Extension {
                     const template = await env.createVirtualTemplate({
                         type: "source",
                         source: codeBlock.code,
-                        options: { canProcess: false },
+                        identifier,
+                        displayName,
+                        renderCodeBlocks: true,
                     });
 
                     if (!template) return;
-
-                    template.info.identifier = identifier;
-                    template.info.displayName = displayName;
 
                     env.cache.add(template);
                 },

@@ -55,11 +55,6 @@ export class TemplateContext {
 
 export class Template {
     info: ParsedTemplateInfo;
-    options: {
-        canProcess: boolean;
-    } = {
-        canProcess: true,
-    };
 
     constructor(info: ParsedTemplateInfo) {
         this.info = info;
@@ -109,6 +104,7 @@ export class Template {
     async preprocess(env: Environment) {
         for (const processor of env.processors) {
             if (!processor.preprocess) continue;
+            processor.cleanupPreprocess?.({ template: this });
             if (processor.type === "codeblock") {
                 await this.preprocessCodeBlock(processor);
             } else if (processor.type === "property") {
@@ -120,7 +116,6 @@ export class Template {
     async preprocessCodeBlock(processor: CodeBlockProcessor) {
         for (const codeBlock of this.info.codeBlocks) {
             if (codeBlock.attributes.disabled) {
-                processor.disable?.({ codeBlock, template: this });
                 continue;
             }
             const isValid =
@@ -156,16 +151,17 @@ export class Template {
     }
 
     async process(env: Environment, context: TemplateContext) {
-        if (!this.options.canProcess) return;
-
         for (const p of env.contextProviders) {
             await Promise.resolve(p(context, this));
         }
+
+        if (this.isSnippet()) return;
 
         context.properties.merge(this.info.properties);
 
         for (const processor of env.processors) {
             if (!processor.process) continue;
+            processor.cleanupProcess?.({ template: this });
             if (processor.type === "codeblock") {
                 await this.processCodeBlock(context, processor);
             } else if (processor.type === "property") {
@@ -180,7 +176,6 @@ export class Template {
     ) {
         for (const codeBlock of this.info.codeBlocks) {
             if (codeBlock.attributes.disabled) {
-                processor.disable?.({ context, codeBlock, template: this });
                 continue;
             }
             const isValid =

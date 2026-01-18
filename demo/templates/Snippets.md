@@ -3,6 +3,7 @@
 ```pochoir-snippet name="Date"
 {{date.today('YYYY-MM-DD')}}
 ```
+
 ## Snippet without name
 
 ```pochoir-snippet

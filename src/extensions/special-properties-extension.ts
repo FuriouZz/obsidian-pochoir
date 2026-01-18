@@ -13,12 +13,13 @@ export default function (): Extension {
                 .set("property:imports-template", {
                     type: "property",
                     test: "$.imports",
-                    async process({ context, value: properties }) {
+                    async process({ context, value: properties, template }) {
                         if (!isStringList(properties)) return;
                         for (const t of properties) {
                             const { context: ctx } = await env.importer.load(
                                 t,
                                 context,
+                                template,
                             );
                             Object.assign(
                                 context.locals.exports,
@@ -30,12 +31,13 @@ export default function (): Extension {
                 .set("property:merge-properties", {
                     type: "property",
                     test: "$.properties",
-                    async process({ context, value: properties }) {
+                    async process({ context, value: properties, template }) {
                         if (!isStringList(properties)) return;
                         for (const t of properties) {
                             const { context: ctx } = await env.importer.load(
                                 t,
                                 context,
+                                template,
                             );
                             context.properties.merge(ctx.properties);
                         }

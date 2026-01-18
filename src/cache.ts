@@ -83,7 +83,7 @@ export class Cache {
         this.#queue.processing = true;
         this.remove(file.path);
 
-        const template = await this.#parser.parse(file, metadata);
+        const template = await this.#parser.parseFromFile(file, metadata);
         this.add(template);
 
         this.#queue.processing = false;

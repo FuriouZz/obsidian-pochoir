@@ -15,7 +15,7 @@ export default function (): Extension {
                     "pochoir-js": "javascript",
                     "pochoir-javascript": "javascript",
                 },
-                async process({ codeBlock, context }) {
+                async process({ codeBlock, context, template }) {
                     const fn = createAsyncFunction(codeBlock.code, "template");
                     await fn({
                         ...context.locals,
@@ -23,6 +23,7 @@ export default function (): Extension {
                             const { result } = await env.importer.load(
                                 path,
                                 context,
+                                template,
                             );
                             return result;
                         },

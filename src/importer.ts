@@ -1,10 +1,14 @@
-import { TemplateContext } from "./template";
+import { type Template, TemplateContext } from "./template";
 import { alertError } from "./utils/alert";
 
 export type Loader<TResult = unknown> = {
     contextMode?: "shared" | "isolated";
     test: string | RegExp | ((path: string) => boolean);
-    load(path: string, context: TemplateContext): Promise<TResult> | TResult;
+    load(params: {
+        path: string;
+        context: TemplateContext;
+        template: Template;
+    }): Promise<TResult> | TResult;
 };
 
 export class Importer {
@@ -28,7 +32,10 @@ export class Importer {
 
                 if (isValid) {
                     return {
-                        load: async (ctx: TemplateContext) => {
+                        load: async (
+                            ctx: TemplateContext,
+                            template: Template,
+                        ) => {
                             const mode = resolver.contextMode ?? "isolated";
                             let context: TemplateContext;
                             if (mode === "shared") {
@@ -38,7 +45,7 @@ export class Importer {
                                 context.path.fromBuilder(ctx.path);
                             }
                             const result = await Promise.resolve(
-                                resolver.load(path, context),
+                                resolver.load({ path, context, template }),
                             );
                             return { context, result };
                         },
@@ -51,7 +58,7 @@ export class Importer {
         throw new Error(`Cannot resolve path: ${path}`);
     }
 
-    load(path: string, context: TemplateContext) {
-        return this.resolve(path).load(context);
+    load(path: string, context: TemplateContext, template: Template) {
+        return this.resolve(path).load(context, template);
     }
 }

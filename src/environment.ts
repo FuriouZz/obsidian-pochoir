@@ -7,6 +7,7 @@ import { ExtensionList } from "./extension-list";
 import { Importer, type Loader } from "./importer";
 import { LOGGER } from "./logger";
 import type PochoirPlugin from "./main";
+import type { ParserParseOptions } from "./parser";
 import { type Processor, ProcessorList } from "./processor-list";
 import { Renderer } from "./renderer";
 import type { ISettings } from "./setting-tab";
@@ -117,7 +118,6 @@ export class Environment extends Events {
         const activeFile = this.app.workspace.getActiveFile();
         if (activeFile?.path === target.path) {
             const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-
             const cursor = view?.editor.getCursor();
             view?.editor.replaceSelection(content);
             if (cursor) view?.editor.setCursor(cursor);
@@ -172,14 +172,15 @@ export class Environment extends Events {
     }
 
     async createVirtualTemplate(
-        options:
+        options: (
             | { type: "clipboard" }
             | { type: "selection" }
             | {
                   type: "source";
                   source: string;
-                  options?: Partial<Template["options"]>;
-              },
+              }
+        ) &
+            ParserParseOptions,
     ) {
         const { app } = this;
         const file = this.app.workspace.getActiveFile();
@@ -198,11 +199,11 @@ export class Environment extends Events {
 
         if (!source) return;
 
-        const template = this.cache.parser.fromSource(source, file);
-
-        if (options.type === "source" && options.options) {
-            Object.assign(template.options, options.options);
-        }
+        const template = this.cache.parser.parseFromSource(
+            source,
+            file,
+            options,
+        );
 
         return template;
     }

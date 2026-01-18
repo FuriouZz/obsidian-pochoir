@@ -25,6 +25,12 @@ export interface ParsedTemplateInfo extends ParsedSections {
     displayName: string;
 }
 
+export interface ParserParseOptions {
+    identifier?: string;
+    displayName?: string;
+    renderCodeBlocks?: boolean;
+}
+
 export class Parser {
     app: App;
 
@@ -32,19 +38,37 @@ export class Parser {
         this.app = app;
     }
 
-    async parse(file: TFile, metadata: CachedMetadata) {
+    async parseFromFile(
+        file: TFile,
+        metadata: CachedMetadata,
+        options?: ParserParseOptions,
+    ) {
         const source = await this.app.vault.cachedRead(file);
-        const info: ParsedTemplateInfo = {
+        return new Template({
             file,
             source,
-            identifier: file.path,
-            displayName: file.basename,
-            ...this.parseSections(source, metadata),
-        };
-        return new Template(info);
+            identifier: options?.identifier ?? file.path,
+            displayName: options?.displayName ?? file.basename,
+            ...this.parseSections(source, metadata, options?.renderCodeBlocks),
+        });
     }
 
-    parseSections(source: string, metadata: CachedMetadata): ParsedSections {
+    parseFromSource(source: string, file: TFile, options?: ParserParseOptions) {
+        const metadata = getMetaData(source);
+        return new Template({
+            file,
+            source,
+            displayName: options?.displayName ?? "",
+            identifier: options?.displayName ?? "",
+            ...this.parseSections(source, metadata, options?.renderCodeBlocks),
+        });
+    }
+
+    parseSections(
+        source: string,
+        metadata: CachedMetadata,
+        renderCodeBlocks = false,
+    ): ParsedSections {
         const ret: ParsedSections = {
             properties: new PropertiesBuilder(),
             contentRanges: [],
@@ -64,16 +88,20 @@ export class Parser {
             for (const [index, section] of metadata.sections.entries()) {
                 if (section.type === "code") {
                     const codeBlock = this.parseCodeBlock(source, section);
+
                     if (codeBlock) {
-                        ret.contentRanges.push([
-                            contentStart,
-                            section.position.start.offset,
-                        ]);
-                        contentStart =
-                            metadata.sections[index + 1]?.position.start
-                                .offset ?? section.position.end.offset;
                         ret.codeBlocks.push(codeBlock);
                         codeBlock.id = ret.codeBlocks.length;
+
+                        if (!renderCodeBlocks) {
+                            ret.contentRanges.push([
+                                contentStart,
+                                section.position.start.offset,
+                            ]);
+                            contentStart =
+                                metadata.sections[index + 1]?.position.start
+                                    .offset ?? section.position.end.offset;
+                        }
                     }
                 }
             }
@@ -105,17 +133,6 @@ export class Parser {
             section.position.start.offset,
             section.position.end.offset,
         );
-    }
-
-    fromSource(source: string, file: TFile) {
-        const metadata = getMetaData(source);
-        return new Template({
-            file,
-            source,
-            displayName: "",
-            identifier: "",
-            ...this.parseSections(source, metadata),
-        });
     }
 }
 

@@ -9,7 +9,7 @@ export default function (): Extension {
                 test: (path) => {
                     return !!env.cache.resolve(path);
                 },
-                load: async (path, context) => {
+                load: async ({ path, context }) => {
                     const template = env.cache.resolve(path);
                     await template?.process(env, context);
                     return context.locals.exports;

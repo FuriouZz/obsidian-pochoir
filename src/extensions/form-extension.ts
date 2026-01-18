@@ -23,7 +23,7 @@ export default function (): Extension {
             env.loaders.push({
                 contextMode: "shared",
                 test: "pochoir:form",
-                load: (_, ctx) => formContext.createAPI(ctx),
+                load: ({ context }) => formContext.createAPI(context),
             });
 
             env.processors.set("codeblock:form", {
