@@ -1,4 +1,10 @@
-import { Events, MarkdownView, type TFile, type TFolder } from "obsidian";
+import {
+    type EditorSelectionOrCaret,
+    Events,
+    MarkdownView,
+    type TFile,
+    type TFolder,
+} from "obsidian";
 import { Cache } from "./cache";
 import { Editor } from "./editor";
 import { PochoirError } from "./errors";
@@ -114,43 +120,29 @@ export class Environment extends Events {
             properties,
         });
 
-        // Search cursor position
-        const cursorPattern = "{^}";
-        const cursorReg = new RegExp(/\{\^\}/);
-        const cursorLines = content
-            .split("\n")
-            .map((line, index) => {
-                const match = line.match(cursorReg);
-                if (!match) return null;
-                return { line: index, ch: match.index ?? 0 };
-            })
-            .filter((item) => item !== null);
-
         // Place content
         const activeFile = this.app.workspace.getActiveFile();
         if (activeFile?.path === target.path) {
             const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-            const cursor = view?.editor.getCursor();
             view?.editor.replaceSelection(content);
 
-            if (cursor) {
-                if (cursorLines.length > 0) {
-                    const selections = cursorLines.map((line) => {
-                        return {
-                            anchor: {
-                                ch: line.ch,
-                                line: cursor.line + line.line,
-                            },
-                            head: {
-                                ch: line.ch + cursorPattern.length,
-                                line: cursor.line + line.line,
-                            },
-                        };
+            // Select cursor positions
+            if (view) {
+                const cursorPattern = "{^}";
+                const cursorReg = new RegExp(/\{\^\}/);
+
+                const selections: EditorSelectionOrCaret[] = [];
+                for (let i = 0; i < view.editor.lineCount(); i++) {
+                    const line = view.editor.getLine(i);
+                    const match = line.match(cursorReg);
+                    if (!match) continue;
+                    const ch = match.index ?? 0;
+                    selections.push({
+                        anchor: { ch, line: i },
+                        head: { ch: ch + cursorPattern.length, line: i },
                     });
-                    view?.editor.setSelections(selections);
-                } else {
-                    view?.editor.setCursor(cursor);
                 }
+                view.editor.setSelections(selections);
             }
         } else {
             await this.app.vault.process(target, (data) => data + content);

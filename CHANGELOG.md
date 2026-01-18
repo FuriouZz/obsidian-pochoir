@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Supports multi cursor selections
+
 ### Fixed
 - Fixed a regression of file creation at root folder
 
