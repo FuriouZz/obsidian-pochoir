@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.0.17] - 2026-01-28
 
+### Fixed
+- Content was rendered at cursor or selection position on mobile
+
 ## [0.0.16] - 2026-01-28
 
 ### Added
