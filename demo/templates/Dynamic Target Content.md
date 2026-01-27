@@ -1,6 +1,5 @@
 {{ if title }}{{title}}
 {{ /if }}
-- {{form.content}}{^}
 
 ```pochoir-command
 title: Add new entry
@@ -18,12 +17,17 @@ const title = `## ${today("YYYY-MM-DD")}`
 template.exports.title = title;
 
 content.getTargetContent(({content}) => {
-	const result = content.transformByLine((line, index) => {
+	let result = content.transformByLine((line, index) => {
 		if (line.startsWith("## ") && line === title) {
 			template.exports.title = "";
 		}
 		return line;
 	});
+	if (template.exports.form.content) {
+		result += `- ${template.exports.form.content}{^}\n`;
+	} else {
+		result += `- {^}\n`;
+	}
 	content.update(result);
 });
 ```
