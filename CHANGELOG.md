@@ -8,9 +8,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Supports multi cursor selections
+- Add `experimental-extension`
+- Added experimental `pochoir:content`
+- - Edit template content dynamically with content.getTemplateContent() in `pochoir-js`
+- - Edit file content dynamically with content.getTargetContent() in `pochoir-js`
 
 ### Fixed
 - Fixed a regression of file creation at root folder
+- Do not send transactions when no cursor found
 
 ## [0.0.15] - 2026-01-19
 
