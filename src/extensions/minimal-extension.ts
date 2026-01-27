@@ -12,7 +12,7 @@ export default function (): Extension {
                 load: async ({ path, context }) => {
                     const template = env.cache.resolve(path);
                     await template?.process(env, context);
-                    return context.locals.exports;
+                    return context.exports;
                 },
             });
 
@@ -26,7 +26,7 @@ export default function (): Extension {
                     const resStr = await env.renderer.render(valueStr, {
                         originalPath: originalPath.createProxy(),
                         path: context.path.createProxy(),
-                        ...context.locals.exports,
+                        ...context.exports,
                     });
                     const res = JSON.parse(resStr) as string | string[];
                     context.properties.set(key, res);

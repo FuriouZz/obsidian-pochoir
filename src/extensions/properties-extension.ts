@@ -38,7 +38,7 @@ export default function (): Extension {
                     const yaml = await env.renderer.render(codeBlock.code, {
                         originalPath: originalPath.createProxy(),
                         path: context.path.createProxy(),
-                        ...context.locals.exports,
+                        ...context.exports,
                     });
                     context.properties.merge(parseYaml<object>(yaml) ?? {});
                 },

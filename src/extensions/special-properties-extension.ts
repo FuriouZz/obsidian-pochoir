@@ -21,10 +21,7 @@ export default function (): Extension {
                                 context,
                                 template,
                             );
-                            Object.assign(
-                                context.locals.exports,
-                                ctx.locals.exports,
-                            );
+                            Object.assign(context.exports, ctx.exports);
                         }
                     },
                 })

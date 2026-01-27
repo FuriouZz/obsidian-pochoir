@@ -110,16 +110,19 @@ export class Environment extends Events {
         template: Template,
         target: TFile,
     ) {
-        await this.app.vault.process(target, (content) =>
-            context.content.processTarget(content),
-        );
+        const contentP = context.get("content");
+        if (contentP) {
+            await this.app.vault.process(target, (content) =>
+                contentP.processTarget(content),
+            );
+        }
 
         // Transfer properties
         const properties = await context.transferProps(this.app, target);
 
         // Generate content
         const content = await this.renderer.render(template.getContent(), {
-            ...context.locals.exports,
+            ...context.exports,
             properties,
         });
 

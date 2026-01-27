@@ -31,7 +31,7 @@ export default function (): Extension {
             });
 
             env.contextProviders.push((context) => {
-                context.locals.exports.date = api;
+                context.exports.date = api;
             });
         },
     };

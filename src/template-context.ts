@@ -1,5 +1,5 @@
+/** biome-ignore-all lint/style/noNonNullAssertion: idk */
 import type { App, TFile } from "obsidian";
-import { ContentProcessor } from "./content-processor";
 import { verbose } from "./logger";
 import { PathBuilder } from "./path-builder";
 import { PropertiesBuilder } from "./properties-builder";
@@ -10,7 +10,6 @@ export interface TemplateContextLocals {
     properties: ReturnType<PropertiesBuilder["createProxy"]>;
     path: PathBuilder;
     exports: Record<string, unknown>;
-    content: ContentProcessor;
 }
 
 export type TemplateContextProvider = (
@@ -20,35 +19,49 @@ export type TemplateContextProvider = (
 
 let ID = 0;
 export class TemplateContext {
-    locals: TemplateContextLocals;
+    #locals: Partial<TemplateContextLocals> = {};
     id = ++ID;
 
     constructor() {
         const properties = new PropertiesBuilder();
         const path = new PathBuilder();
-        const content = new ContentProcessor();
 
-        this.locals = Object.freeze({
-            properties: properties.createProxy(),
-            $properties: properties,
-            path: path,
-            content: content,
-            exports: {},
-        });
+        this.set("path", path);
+        this.set("$properties", properties);
+        this.set("properties", properties.createProxy());
+        this.set("exports", {});
 
         verbose("create context", this.id);
     }
 
     get properties() {
-        return this.locals.$properties;
+        return this.#locals.$properties!;
     }
 
     get path() {
-        return this.locals.path;
+        return this.#locals.path!;
     }
 
-    get content() {
-        return this.locals.content;
+    get exports() {
+        return this.#locals.exports!;
+    }
+
+    get locals() {
+        return this.#locals;
+    }
+
+    get<K extends keyof TemplateContextLocals>(
+        key: K,
+    ): TemplateContextLocals[K] | undefined {
+        return this.#locals[key];
+    }
+
+    set<K extends keyof TemplateContextLocals>(
+        key: K,
+        value: TemplateContextLocals[K],
+    ) {
+        this.#locals[key] = value;
+        return this;
     }
 
     async transferProps(app: App, target: TFile) {

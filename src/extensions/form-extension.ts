@@ -1,6 +1,7 @@
 import { Platform } from "obsidian";
 import type { InferOutput } from "valibot";
 import type { Environment, Extension } from "../environment";
+import type { TemplateContext } from "../template-context";
 import { tryParseYaml } from "../utils/obsidian";
 import {
     createFormBuilder,
@@ -8,7 +9,6 @@ import {
 } from "./form-extension/createFormBuilder";
 import type { TextField } from "./form-extension/fields";
 import { promptForm } from "./form-extension/obsidian";
-import { TemplateContext } from "../template-context";
 
 export default function (): Extension {
     return {
@@ -48,14 +48,13 @@ export default function (): Extension {
                     }
 
                     if (typeof exports === "string") {
-                        context.locals.exports[exports] =
-                            await formContext.prompt(
-                                form,
-                                typeof target === "string" &&
-                                    /modal|view/.test(target)
-                                    ? (target as "view")
-                                    : undefined,
-                            );
+                        context.exports[exports] = await formContext.prompt(
+                            form,
+                            typeof target === "string" &&
+                                /modal|view/.test(target)
+                                ? (target as "view")
+                                : undefined,
+                        );
                     }
                 },
             });
