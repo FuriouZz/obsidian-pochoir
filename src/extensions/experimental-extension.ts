@@ -13,9 +13,9 @@ export default function (): Extension {
                 contextMode: "shared",
                 test: "pochoir:content",
                 load: ({ context }) => ({
-                    // getTemplateContent(cb: (file: Content) => void) {
-                    //     content.getTemplateContent.push(cb);
-                    // },
+                    getTemplateContent(cb: (params: unknown) => void) {
+                        context.get("content")?.templateProcessor.push(cb);
+                    },
                     getTargetContent(cb: (params: unknown) => void) {
                         context.get("content")?.targetProcessor.push(cb);
                     },

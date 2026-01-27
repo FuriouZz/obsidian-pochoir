@@ -38,9 +38,7 @@ export class ContentProcessor {
     processTarget(content: string) {
         const c = new Content(content);
         for (const processor of this.targetProcessor) {
-            console.log(c.get());
             processor({ content: c });
-            console.log(c.get());
             content = c.get();
         }
         return content;

@@ -110,10 +110,10 @@ export class Environment extends Events {
         template: Template,
         target: TFile,
     ) {
-        const contentP = context.get("content");
-        if (contentP) {
+        const contentProcessor = context.get("content");
+        if (contentProcessor) {
             await this.app.vault.process(target, (content) =>
-                contentP.processTarget(content),
+                contentProcessor.processTarget(content),
             );
         }
 
@@ -121,10 +121,16 @@ export class Environment extends Events {
         const properties = await context.transferProps(this.app, target);
 
         // Generate content
-        const content = await this.renderer.render(template.getContent(), {
+        let templateContent = template.getContent();
+        if (contentProcessor) {
+            templateContent = contentProcessor.processTemplate(templateContent);
+        }
+        const content = await this.renderer.render(templateContent, {
             ...context.exports,
             properties,
         });
+
+        console.log(content);
 
         const write = async () => {
             const cursorReg = new RegExp(/\{\^\}/g);
