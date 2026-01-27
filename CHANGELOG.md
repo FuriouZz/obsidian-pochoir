@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.0.16] - 2026-01-28
+
 ### Added
 - Supports multi cursor selections
 - Add `experimental-extension`
@@ -165,7 +167,8 @@ action: create # or "insert"
 
 First version
 
-[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.15...main
+[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.16...main
+[0.0.16]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.15...0.0.16
 [0.0.15]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.14...0.0.15
 [0.0.14]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.13...0.0.14
 [0.0.13]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.12...0.0.13
