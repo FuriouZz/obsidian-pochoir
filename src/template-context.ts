@@ -58,7 +58,7 @@ export class TemplateContext {
 
     set<K extends keyof TemplateContextLocals>(
         key: K,
-        value: TemplateContextLocals[K],
+        value: TemplateContextLocals[K] | undefined,
     ) {
         this.#locals[key] = value;
         return this;

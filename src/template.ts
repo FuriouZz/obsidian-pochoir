@@ -1,3 +1,4 @@
+import { TFile } from "obsidian";
 import { Content } from "./content";
 import type { Environment } from "./environment";
 import type { ParsedTemplateInfo } from "./parser";
@@ -151,6 +152,31 @@ export class Template {
                 );
             }
         }
+    }
+
+    async render(env: Environment, context: TemplateContext, target: TFile) {
+        const contentProcessor = context.get("content");
+
+        // Update file content
+        if (contentProcessor) {
+            await env.app.vault.process(target, (content) => {
+                return contentProcessor.processTarget(content) ?? content;
+            });
+        }
+
+        // Transfer properties
+        const properties = await context.transferProps(env.app, target);
+
+        // Update template content
+        const templateContent = contentProcessor
+            ? contentProcessor.processTemplate(this.getContent())
+            : this.getContent();
+
+        // Render content
+        return env.renderer.render(templateContent, {
+            ...context.exports,
+            properties,
+        });
     }
 }
 

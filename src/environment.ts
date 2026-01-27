@@ -110,49 +110,23 @@ export class Environment extends Events {
         template: Template,
         target: TFile,
     ) {
-        const contentProcessor = context.get("content");
-        if (contentProcessor) {
-            await this.app.vault.process(target, (content) =>
-                contentProcessor.processTarget(content),
-            );
-        }
+        const content = await template.render(this, context, target);
 
-        // Transfer properties
-        const properties = await context.transferProps(this.app, target);
-
-        // Generate content
-        let templateContent = template.getContent();
-        if (contentProcessor) {
-            templateContent = contentProcessor.processTemplate(templateContent);
-        }
-        const content = await this.renderer.render(templateContent, {
-            ...context.exports,
-            properties,
-        });
-
-        const write = async () => {
-            const cursorReg = new RegExp(/\{\^\}/g);
-            return this.app.vault.process(
-                target,
-                (data) => data + content.replaceAll(cursorReg, ""),
-            );
+        const writeFile = (content: string, target: TFile) => {
+            return this.app.vault.process(target, (data) => {
+                return data + content;
+            });
         };
 
-        // Place content
-        const activeFile = this.app.workspace.getActiveFile();
-        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-        if (
-            activeFile?.path === target.path &&
-            view &&
-            view.getMode() !== "preview"
-        ) {
+        const writeView = async (content: string, view: MarkdownView) => {
             if (view.editor.listSelections().length > 0) {
                 view.editor.replaceSelection(content);
             } else {
-                await write();
+                await writeFile(content, target);
             }
+        };
 
-            // Select cursor positions
+        const selectCursors = (view: MarkdownView) => {
             const cursorPattern = "{^}";
             const cursorReg = new RegExp(/\{\^\}/);
 
@@ -181,8 +155,20 @@ export class Environment extends Events {
                     })),
                 });
             }
+        };
+
+        // Place content
+        const activeFile = this.app.workspace.getActiveFile();
+        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (
+            activeFile?.path === target.path &&
+            view &&
+            view.getMode() !== "preview"
+        ) {
+            await writeView(content, view);
+            selectCursors(view);
         } else {
-            await write();
+            await writeFile(content, target);
         }
     }
 
@@ -217,7 +203,13 @@ export class Environment extends Events {
             const target = app.workspace.getActiveFile();
             if (!target) throw new Error("There is no active file");
 
+            const view = app.workspace.getActiveViewOfType(MarkdownView);
+
             const context = new TemplateContext();
+
+            context.set("cursor", view?.editor.getCursor());
+            context.set("selections", view?.editor.listSelections());
+
             context.path.fromTFile(target);
             context.path.hasChanged = false;
             await template.process(this, context);
