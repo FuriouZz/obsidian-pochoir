@@ -130,8 +130,6 @@ export class Environment extends Events {
             properties,
         });
 
-        console.log(content);
-
         const write = async () => {
             const cursorReg = new RegExp(/\{\^\}/g);
             return this.app.vault.process(
@@ -170,17 +168,19 @@ export class Environment extends Events {
                 });
             }
 
-            view.editor.transaction({
-                selections: selections.map((s) => ({
-                    from: s.anchor,
-                    // to: s.head,
-                })),
-                changes: selections.map((s) => ({
-                    from: s.anchor,
-                    to: s.head,
-                    text: "",
-                })),
-            });
+            if (selections.length > 0) {
+                view.editor.transaction({
+                    selections: selections.map((s) => ({
+                        from: s.anchor,
+                        // to: s.head,
+                    })),
+                    changes: selections.map((s) => ({
+                        from: s.anchor,
+                        to: s.head,
+                        text: "",
+                    })),
+                });
+            }
         } else {
             await write();
         }
