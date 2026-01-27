@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.0.17] - 2026-01-28
+
 ## [0.0.16] - 2026-01-28
 
 ### Added
@@ -167,7 +169,8 @@ action: create # or "insert"
 
 First version
 
-[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.16...main
+[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.17...main
+[0.0.17]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.16...0.0.17
 [0.0.16]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.15...0.0.16
 [0.0.15]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.14...0.0.15
 [0.0.14]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.13...0.0.14
