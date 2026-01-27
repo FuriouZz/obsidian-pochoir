@@ -23,7 +23,7 @@ content.getTargetContent(({content}) => {
 			template.exports.title = "";
 		}
 		return line;
-	}).trimEnd();
+	});
 	content.update(result);
 });
 ```

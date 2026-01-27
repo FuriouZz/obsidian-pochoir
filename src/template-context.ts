@@ -1,5 +1,5 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: idk */
-import type { App, TFile } from "obsidian";
+import type { App, EditorPosition, EditorSelection, TFile } from "obsidian";
 import { verbose } from "./logger";
 import { PathBuilder } from "./path-builder";
 import { PropertiesBuilder } from "./properties-builder";
@@ -10,6 +10,8 @@ export interface TemplateContextLocals {
     properties: ReturnType<PropertiesBuilder["createProxy"]>;
     path: PathBuilder;
     exports: Record<string, unknown>;
+    cursor: EditorPosition;
+    selections: EditorSelection[];
 }
 
 export type TemplateContextProvider = (

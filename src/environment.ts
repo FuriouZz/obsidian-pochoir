@@ -119,8 +119,25 @@ export class Environment extends Events {
         };
 
         const writeView = async (content: string, view: MarkdownView) => {
-            if (view.editor.listSelections().length > 0) {
-                view.editor.replaceSelection(content);
+            const cursor = context.get("cursor") ?? view.editor.getCursor();
+            const selections = context.get("selections");
+            if (selections && selections.length > 0) {
+                view.editor.transaction({
+                    changes: selections.map((s) => ({
+                        from: s.anchor,
+                        to: s.head,
+                        text: content,
+                    })),
+                });
+            } else if (cursor) {
+                view.editor.transaction({
+                    changes: [
+                        {
+                            from: cursor,
+                            text: content,
+                        },
+                    ],
+                });
             } else {
                 await writeFile(content, target);
             }
