@@ -1,4 +1,4 @@
-import { ItemView, MarkdownEditView, MarkdownView, Plugin } from "obsidian";
+import { Plugin } from "obsidian";
 import {
     createFromTemplateCommand,
     insertFromTemplateCommand,
