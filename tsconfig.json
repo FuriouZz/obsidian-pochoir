@@ -1,24 +1,29 @@
 {
-  "compilerOptions": {
-    "inlineSourceMap": true,
-    "inlineSources": true,
-    "module": "ESNext",
-    "target": "ES6",
-    "allowJs": true,
-    "noImplicitAny": true,
-    "moduleResolution": "bundler",
-    "importHelpers": true,
-    "isolatedModules": true,
-    "strictNullChecks": true,
-    "strict": true,
-    "lib": [
-      "DOM",
-      "ES5",
-      "ES6",
-      "ES7",
-      "ES2022"
+    "compilerOptions": {
+        "inlineSourceMap": true,
+        "inlineSources": true,
+        "module": "ESNext",
+        "target": "ES6",
+        "allowJs": true,
+        "noImplicitAny": true,
+        "moduleResolution": "bundler",
+        "importHelpers": true,
+        "isolatedModules": true,
+        "strictNullChecks": true,
+        "strict": true,
+        "lib": [
+            "DOM",
+            "ES5",
+            "ES6",
+            "ES7",
+            "ES2022"
+        ]
+    },
+    "include": [
+        "src/**/*.ts"
+    ],
+    "exclude": [
+        "vendors",
+        "node_modules"
     ]
-  },
-  "include": ["src/**/*"],
-  "exclude": ["vendors", "node_modules"]
 }

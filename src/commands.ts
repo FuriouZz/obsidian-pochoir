@@ -8,7 +8,7 @@ export function insertFromTemplateCommand(
     plugin.addCommand({
         id: "insert-from-template",
         name: "Insert template",
-        icon: "templater-icon",
+        icon: "pochoir-icon",
         callback() {
             suggester.insertTemplate();
         },
@@ -22,7 +22,7 @@ export function createFromTemplateCommand(
     plugin.addCommand({
         id: "create-from-template",
         name: "Create from template",
-        icon: "templater-icon",
+        icon: "pochoir-icon",
         callback() {
             suggester.createFromTemplate();
         },

@@ -1,4 +1,6 @@
-import { Plugin } from "obsidian";
+import { addIcon, Plugin } from "obsidian";
+import iconFull from "../assets/icon-full.svg";
+import iconStroke from "../assets/icon-stroke-full.svg";
 import {
     createFromTemplateCommand,
     insertFromTemplateCommand,
@@ -37,8 +39,12 @@ export default class PochoirPlugin extends Plugin {
 
     async onload() {
         LOGGER.level = import.meta.env.DEV ? "VERBOSE" : "DEBUG";
-        this.addSettingTab(new SettingTab(this));
 
+        addIcon("pochoir-full-icon", iconFull);
+        addIcon("pochoir-stroke-icon", iconStroke);
+        addIcon("pochoir-icon", iconStroke);
+
+        this.addSettingTab(new SettingTab(this));
         insertFromTemplateCommand(this, this.templateSuggester);
         createFromTemplateCommand(this, this.templateSuggester);
 
