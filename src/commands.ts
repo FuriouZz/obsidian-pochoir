@@ -9,8 +9,15 @@ export function insertFromTemplateCommand(
         id: "insert-from-template",
         name: "Insert template",
         icon: "pochoir-icon",
-        callback() {
-            suggester.insertTemplate();
+        checkCallback(checking) {
+            const file = plugin.app.workspace.getActiveFile();
+            if (file) {
+                if (!checking) {
+                    suggester.insertTemplate();
+                }
+                return true;
+            }
+            return false;
         },
     });
 }
