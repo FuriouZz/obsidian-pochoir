@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Add `pochoir-icon`, `pochoir-full-icon` and `pochoir-stroke-icon`
+
+### Fixed
+- Prevent template insertion without active file
+- Use `app.fileManager.renameFile()` instead of `app.vault.rename()`
+
 ## [0.0.17] - 2026-01-28
 
 ### Fixed
