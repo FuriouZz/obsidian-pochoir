@@ -233,7 +233,7 @@ export class Environment extends Events {
 
             if (context.path.hasChanged) {
                 const path = await ensurePath(app, context.path.path);
-                await app.vault.rename(target, path);
+                await app.fileManager.renameFile(target, path);
             }
 
             await this.renderToFile(context, template, target);
