@@ -24,8 +24,8 @@ import { TemplateModalSuggester } from "./suggesters/template-modal-suggester";
 const ProcessorOrder = [
     "property:imports-template",
     "property:merge-properties",
-    "codeblock:properties",
     "codeblock:form",
+    "codeblock:properties",
     "codeblock:javascript",
     "property:render",
     "property:create-path",
