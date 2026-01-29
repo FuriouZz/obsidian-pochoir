@@ -1,7 +1,7 @@
 {
   "id": "pochoir",
   "name": "Pochoir",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "minAppVersion": "1.11.6",
   "description": "Note templating made easy with few configuration and no coding experience.",
   "author": "furiouzz",
