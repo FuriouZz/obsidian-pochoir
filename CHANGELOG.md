@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.0.20] - 2026-01-30
+
 ### Fixed
 - A regression has been introduced with processors re-ordering. Form codeblock should be executed before props codeblock.
 
@@ -189,7 +191,8 @@ action: create # or "insert"
 
 First version
 
-[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.19...main
+[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.20...main
+[0.0.20]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.19...0.0.20
 [0.0.19]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.18...0.0.19
 [0.0.18]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.17...0.0.18
 [0.0.17]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.16...0.0.17
