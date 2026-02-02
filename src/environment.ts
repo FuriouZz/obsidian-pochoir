@@ -13,7 +13,7 @@ import { ExtensionList } from "./extension-list";
 import { Importer, type Loader } from "./importer";
 import { LOGGER } from "./logger";
 import type PochoirPlugin from "./main";
-import type { ParserParseOptions } from "./parser";
+import type { ParserParseFromSourceOptions } from "./parser";
 import { type Processor, ProcessorList } from "./processor-list";
 import { Renderer } from "./renderer";
 import type { ISettings } from "./setting-tab";
@@ -249,7 +249,7 @@ export class Environment extends Events {
                   source: string;
               }
         ) &
-            ParserParseOptions,
+            ParserParseFromSourceOptions,
     ) {
         const { app } = this;
         const file = this.app.workspace.getActiveFile();

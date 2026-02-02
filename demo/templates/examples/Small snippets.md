@@ -1,12 +1,12 @@
-```pochoir-snippet name="bookmark"
+```pochoir-snippet name="bookmark" hidden
 #bookmark {^}
 ```
 
-```pochoir-snippet name="today"
+```pochoir-snippet name="today" hidden
 {{date.today("YYYY-MM-DD")}}{^}
 ```
 
-```pochoir-snippet name="now"
+```pochoir-snippet name="now" hidden
 {{date.today("HH:mm")}}{^}
 ```
 

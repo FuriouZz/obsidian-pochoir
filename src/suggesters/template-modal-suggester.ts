@@ -50,7 +50,10 @@ export class TemplateModalSuggester extends FuzzySuggestModal<TemplateModalEntry
                 if (template) templates.push(template);
             }
         } else {
-            templates.push(...this.environment.cache.templates.values());
+            const entries = [
+                ...this.environment.cache.templates.values(),
+            ].filter((t) => !t.info.hidden);
+            templates.push(...entries);
         }
 
         let items: TemplateModalEntry[] = templates.map<TemplateModalEntry>(

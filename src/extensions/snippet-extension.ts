@@ -35,6 +35,7 @@ export default function (): Extension {
                         identifier,
                         displayName,
                         renderCodeBlocks: true,
+                        hidden: "hidden" in codeBlock.attributes,
                     });
 
                     if (!template) return;

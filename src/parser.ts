@@ -16,6 +16,7 @@ export interface ParsedSections {
     properties: PropertiesBuilder;
     codeBlocks: ParsedCodeBlock[];
     contentRanges: [number, number][];
+    hidden?: boolean;
 }
 
 export interface ParsedTemplateInfo extends ParsedSections {
@@ -23,12 +24,18 @@ export interface ParsedTemplateInfo extends ParsedSections {
     source: string;
     identifier: string;
     displayName: string;
+    hidden: boolean;
 }
 
-export interface ParserParseOptions {
+export interface ParserParseFromFileOptions {
     identifier?: string;
     displayName?: string;
     renderCodeBlocks?: boolean;
+}
+
+export interface ParserParseFromSourceOptions
+    extends ParserParseFromFileOptions {
+    hidden?: boolean;
 }
 
 export class Parser {
@@ -41,7 +48,7 @@ export class Parser {
     async parseFromFile(
         file: TFile,
         metadata: CachedMetadata,
-        options?: ParserParseOptions,
+        options?: ParserParseFromFileOptions,
     ) {
         const source = await this.app.vault.cachedRead(file);
         return new Template({
@@ -49,17 +56,23 @@ export class Parser {
             source,
             identifier: options?.identifier ?? file.path,
             displayName: options?.displayName ?? file.basename,
+            hidden: false,
             ...this.parseSections(source, metadata, options?.renderCodeBlocks),
         });
     }
 
-    parseFromSource(source: string, file: TFile, options?: ParserParseOptions) {
+    parseFromSource(
+        source: string,
+        file: TFile,
+        options?: ParserParseFromSourceOptions,
+    ) {
         const metadata = getMetaData(source);
         return new Template({
             file,
             source,
             displayName: options?.displayName ?? "",
             identifier: options?.identifier ?? "",
+            hidden: options?.hidden ?? false,
             ...this.parseSections(source, metadata, options?.renderCodeBlocks),
         });
     }
@@ -73,11 +86,13 @@ export class Parser {
             properties: new PropertiesBuilder(),
             contentRanges: [],
             codeBlocks: [],
+            hidden: false,
         };
 
         let contentStart = 0;
         if (metadata.frontmatter) {
             ret.properties.merge(metadata.frontmatter);
+            ret.hidden = String(metadata.frontmatter["$.hidden"]) === "true";
         }
 
         if (metadata.frontmatterPosition) {
