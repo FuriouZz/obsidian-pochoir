@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Resolve snippet(id) properly
+- Add command icon
 
 ## [0.0.20] - 2026-01-30
 

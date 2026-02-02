@@ -202,6 +202,7 @@ export class CommandManager {
         this.env.plugin.addCommand({
             id: command.id,
             name: command.title,
+            icon: command.icon,
             callback,
         });
         this.map.set(command.id, template.info.file.path);
