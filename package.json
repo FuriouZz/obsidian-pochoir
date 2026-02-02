@@ -6,6 +6,7 @@
     "type": "module",
     "scripts": {
         "dev": "node esbuild.config.mts",
+        "dev:test": "node esbuild.config.mts test",
         "fmt": "biome check --write src/",
         "lint": "eslint src/ && biome check src/ && tsc -noEmit -skipLibCheck",
         "test": "vitest src/",
@@ -18,6 +19,8 @@
     "author": "",
     "license": "Apache Licence 2.0",
     "devDependencies": {
+        "@types/chai": "^5.2.3",
+        "@types/mocha": "^10.0.10",
         "@types/node": "^16.18.126",
         "@typescript-eslint/parser": "8.33.1",
         "biome": "^0.3.3",

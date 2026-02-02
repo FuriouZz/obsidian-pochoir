@@ -66,6 +66,12 @@ export default class PochoirPlugin extends Plugin {
         this.registerView(FormView.type, (leaf) => new FormView(leaf));
 
         await this.loadSettings();
+
+        if (import.meta.env.TEST) {
+            await import("../tests/index").then((a) =>
+                a.runTests(this.environment),
+            );
+        }
     }
 
     onunload() {
