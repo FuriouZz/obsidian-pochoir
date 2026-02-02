@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.0.21] - 2026-02-03
+
 ### Added
 - Add `$.hidden` property and `hidden` to hide template and snippet from template list
 
@@ -198,7 +200,8 @@ action: create # or "insert"
 
 First version
 
-[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.20...main
+[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.21...main
+[0.0.21]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.20...0.0.21
 [0.0.20]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.19...0.0.20
 [0.0.19]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.18...0.0.19
 [0.0.18]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.17...0.0.18
