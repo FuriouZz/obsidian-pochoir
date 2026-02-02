@@ -4,9 +4,9 @@ import {
     MarkdownView,
     type TFile,
     type TFolder,
-    Setting,
 } from "obsidian";
 import { Cache } from "./cache";
+import { promptTextConfirmation } from "./confirmation-modal";
 import { Editor } from "./editor";
 import { PochoirError } from "./errors";
 import { EventEmitter } from "./event-emitter";
@@ -26,10 +26,6 @@ import {
 import { TemplateSuggesterSet } from "./template-suggester-set";
 import { alertWrap } from "./utils/alert";
 import { ensurePath, findNote, findOrCreateNote } from "./utils/obsidian";
-import {
-    promptConfirmation,
-    promptTextConfirmation,
-} from "./confirmation-modal";
 
 export interface Extension {
     name: string;

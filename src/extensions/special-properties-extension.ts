@@ -58,7 +58,6 @@ export default function (): Extension {
                     type: "property",
                     test: "$.options",
                     process({ context, value: options }) {
-                        console.log(options);
                         if (!isStringList(options)) return;
                         context.set("options", options);
                     },

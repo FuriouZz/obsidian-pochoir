@@ -6,11 +6,11 @@ export type ConfirmationResult<T> = { cancelled: boolean; result: T };
 export interface ConfirmationParameters<T> {
     root: HTMLElement;
     value?: T;
-    on(event: "close", cb: () => void): void;
-    setTitle(value: string): void;
-    setDesc(value: string | DocumentFragment): void;
-    cancel(): void;
-    close(): void;
+    on: (event: "close", cb: () => void) => void;
+    setTitle: (value: string) => void;
+    setDesc: (value: string | DocumentFragment) => void;
+    cancel: () => void;
+    close: () => void;
 }
 
 export interface ConfirmationState<T = unknown> {
@@ -143,17 +143,15 @@ export function promptConfirmation<T = unknown>(
     target: "view" | "modal" = "modal",
 ) {
     return new Promise<T | undefined>((resolve, reject) => {
-        const createButtons = ({
-            root,
-            close,
-            cancel,
-        }: ConfirmationParameters<T>) => {
-            new Setting(root)
+        const createButtons = (params: ConfirmationParameters<T>) => {
+            new Setting(params.root)
                 .addButton((btn) => {
-                    btn.setButtonText("Validate").setCta().onClick(close);
+                    btn.setButtonText("Validate")
+                        .setCta()
+                        .onClick(params.close);
                 })
                 .addButton((btn) => {
-                    btn.setButtonText("Cancel").onClick(cancel);
+                    btn.setButtonText("Cancel").onClick(params.cancel);
                 });
         };
 
@@ -166,18 +164,18 @@ export function promptConfirmation<T = unknown>(
                 resolve(result);
             },
             cancel() {
-                let e: unknown;
+                const e = new Error();
                 try {
                     userState.onCancel?.();
                 } catch (err) {
-                    e = err;
+                    e.cause = err;
                 }
                 reject(e);
             },
         };
 
         if (target === "view") {
-            createView<T>(app, state);
+            createView<T>(app, state).then(() => {}, reject);
         } else {
             createModal<T>(app, state);
         }
