@@ -59,7 +59,7 @@ export class Parser {
             file,
             source,
             displayName: options?.displayName ?? "",
-            identifier: options?.displayName ?? "",
+            identifier: options?.identifier ?? "",
             ...this.parseSections(source, metadata, options?.renderCodeBlocks),
         });
     }
