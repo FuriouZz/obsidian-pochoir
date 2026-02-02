@@ -4,6 +4,7 @@ import {
     MarkdownView,
     type TFile,
     type TFolder,
+    Setting,
 } from "obsidian";
 import { Cache } from "./cache";
 import { Editor } from "./editor";
@@ -24,7 +25,11 @@ import {
 } from "./template-context";
 import { TemplateSuggesterSet } from "./template-suggester-set";
 import { alertWrap } from "./utils/alert";
-import { ensurePath, findOrCreateNote } from "./utils/obsidian";
+import { ensurePath, findNote, findOrCreateNote } from "./utils/obsidian";
+import {
+    promptConfirmation,
+    promptTextConfirmation,
+} from "./confirmation-modal";
 
 export interface Extension {
     name: string;
@@ -204,12 +209,17 @@ export class Environment extends Events {
             context.path.path = path;
             context.path.hasChanged = false;
             await template.process(this, context);
+            await this.confirmName(context);
 
-            const target = await findOrCreateNote(this.app, context.path.path);
-            await this.renderToFile(context, template, target);
-
-            if (openNote) {
+            let target = findNote(this.app, context.path.path);
+            if (target && context.options.includes("openIfExists")) {
                 await this.app.workspace.getLeaf(false).openFile(target);
+            } else {
+                target = await findOrCreateNote(this.app, context.path.path);
+                await this.renderToFile(context, template, target);
+                if (openNote) {
+                    await this.app.workspace.getLeaf(false).openFile(target);
+                }
             }
         });
     }
@@ -230,14 +240,31 @@ export class Environment extends Events {
             context.path.fromTFile(target);
             context.path.hasChanged = false;
             await template.process(this, context);
+            await this.confirmName(context);
 
-            if (context.path.hasChanged) {
-                const path = await ensurePath(app, context.path.path);
-                await app.fileManager.renameFile(target, path);
+            const newTarget = findNote(this.app, context.path.path);
+
+            if (newTarget && context.options.includes("openIfExists")) {
+                await this.app.workspace.getLeaf(false).openFile(newTarget);
+            } else {
+                if (!newTarget && context.path.hasChanged) {
+                    const path = await ensurePath(app, context.path.path);
+                    await app.fileManager.renameFile(target, path);
+                }
+
+                await this.renderToFile(context, template, target);
             }
-
-            await this.renderToFile(context, template, target);
         });
+    }
+
+    async confirmName(context: TemplateContext) {
+        if (context.options.includes("confirmName")) {
+            const path = await promptTextConfirmation(this.app, {
+                defaultValue: context.path.path,
+                onCancel: () => this.abortTemplate(),
+            });
+            if (path) context.path.path = path;
+        }
     }
 
     async createVirtualTemplate(
@@ -278,7 +305,10 @@ export class Environment extends Events {
     }
 
     abortTemplate(reject?: (e: unknown) => void) {
-        const error = new PochoirError("Template processing has been aborted");
+        const error = new PochoirError("Template creation has been aborted", {
+            prefix: "Pochoir",
+            verbose: false,
+        });
         if (reject) {
             reject(error);
         } else {

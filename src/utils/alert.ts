@@ -11,8 +11,7 @@ export function alert(
 ) {
     const n = new Notice("", duration);
     n.messageEl.createEl("b", { text: prefix });
-    n.messageEl.createEl("span", { text: ":" });
-    n.messageEl.createEl("br");
+    n.messageEl.createEl("span", { text: ": " });
     n.messageEl.createEl("span", { text: message });
 }
 
@@ -26,6 +25,7 @@ export function alertError(error: Error, options?: { duration?: number }) {
     } else if (error instanceof PochoirError) {
         verbose = error.verbose;
         notice = error.notice;
+        prefix = error.prefix;
     }
 
     if (verbose) LOGGER.error(error);

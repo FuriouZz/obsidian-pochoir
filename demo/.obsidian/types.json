@@ -3,11 +3,7 @@
     "aliases": "aliases",
     "cssclasses": "multitext",
     "tags": "tags",
-    "pochoir-aliases": "multitext",
     "$.properties": "multitext",
-    "$.exports": "multitext",
-    "$.title": "text",
-    "pochoir.aliases": "multitext",
     "$.aliases": "multitext",
     "TQ_explain": "checkbox",
     "TQ_extra_instructions": "text",
@@ -31,6 +27,7 @@
     "TQ_show_tree": "checkbox",
     "TQ_show_urgency": "checkbox",
     "author": "text",
-    "$.imports": "multitext"
+    "$.imports": "multitext",
+    "$.options": "multitext"
   }
 }

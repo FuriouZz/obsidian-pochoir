@@ -1,4 +1,4 @@
-import { TFile } from "obsidian";
+import type { TFile } from "obsidian";
 import { Content } from "./content";
 import type { Environment } from "./environment";
 import type { ParsedTemplateInfo } from "./parser";

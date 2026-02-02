@@ -22,6 +22,7 @@ import { type ISettings, SettingTab } from "./setting-tab";
 import { TemplateModalSuggester } from "./suggesters/template-modal-suggester";
 
 const ProcessorOrder = [
+    "property:options",
     "property:imports-template",
     "property:merge-properties",
     "codeblock:form",

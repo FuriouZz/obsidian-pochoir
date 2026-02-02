@@ -1,3 +1,7 @@
+---
+tags:
+  - template
+---
 ```pochoir-snippet name="bookmark" hidden
 #bookmark {^}
 ```

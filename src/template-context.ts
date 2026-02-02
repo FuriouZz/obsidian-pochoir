@@ -10,6 +10,7 @@ export interface TemplateContextLocals {
     properties: ReturnType<PropertiesBuilder["createProxy"]>;
     path: PathBuilder;
     exports: Record<string, unknown>;
+    options: string[];
     cursor: EditorPosition;
     selections: EditorSelection[];
 }
@@ -32,6 +33,7 @@ export class TemplateContext {
         this.set("$properties", properties);
         this.set("properties", properties.createProxy());
         this.set("exports", {});
+        this.set("options", []);
 
         verbose("create context", this.id);
     }
@@ -50,6 +52,10 @@ export class TemplateContext {
 
     get locals() {
         return this.#locals;
+    }
+
+    get options() {
+        return this.#locals.options!;
     }
 
     get<K extends keyof TemplateContextLocals>(

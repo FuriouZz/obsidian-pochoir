@@ -54,6 +54,15 @@ export default function (): Extension {
                         context.path.parent = parent;
                     },
                 })
+                .set("property:options", {
+                    type: "property",
+                    test: "$.options",
+                    process({ context, value: options }) {
+                        console.log(options);
+                        if (!isStringList(options)) return;
+                        context.set("options", options);
+                    },
+                })
                 .set("property:delete-internals", {
                     type: "property",
                     test: /^\$\./,
