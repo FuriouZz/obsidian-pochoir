@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Add `$.hidden` property and `hidden` to hide template and snippet from template list
+
+### Fixed
+- Resolve snippet(id) properly
+
 ## [0.0.20] - 2026-01-30
 
 ### Fixed
