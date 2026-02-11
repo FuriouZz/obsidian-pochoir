@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.0.22] - 2026-02-12
+
 ### Added
 - Add `$.options` property to control template creation behavior. `$.options` accepts the following list of strings:
     - `confirmName` will prompt a modal to confirm note name before creation
@@ -208,7 +210,8 @@ action: create # or "insert"
 
 First version
 
-[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.21...main
+[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.22...main
+[0.0.22]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.21...0.0.22
 [0.0.21]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.20...0.0.21
 [0.0.20]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.19...0.0.20
 [0.0.19]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.18...0.0.19
