@@ -124,11 +124,21 @@ export class Environment extends Events {
             const selections = context.get("selections");
             if (selections && selections.length > 0) {
                 view.editor.transaction({
-                    changes: selections.map((s) => ({
-                        from: s.anchor,
-                        to: s.head,
-                        text: content,
-                    })),
+                    changes: selections.map((s) => {
+                        let from = s.anchor;
+                        let to = s.head;
+
+                        if (
+                            s.anchor.line > s.head.line ||
+                            (s.anchor.line === s.head.line &&
+                                s.anchor.ch > s.head.ch)
+                        ) {
+                            from = s.head;
+                            to = s.anchor;
+                        }
+
+                        return { from, to, text: content };
+                    }),
                 });
             } else if (cursor) {
                 view.editor.transaction({
