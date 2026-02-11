@@ -7,12 +7,12 @@ import {
     jumpToNextCursorLocationCommand,
 } from "./commands";
 import { DEFAULT_SETTINGS } from "./constants";
+import { CustomView } from "./custom-view";
 import { Environment } from "./environment";
 import commandExtension from "./extensions/command-extension";
 import dateExtension from "./extensions/date-extension";
 import experimentalExtension from "./extensions/experimental-extension";
 import formExtension from "./extensions/form-extension";
-import { FormView } from "./extensions/form-extension/obsidian";
 import javascriptExtension from "./extensions/javascript-extension";
 import minimalExtension from "./extensions/minimal-extension";
 import propertiesExtension from "./extensions/properties-extension";
@@ -21,6 +21,7 @@ import specialPropertiesExtension from "./extensions/special-properties-extensio
 import { LOGGER } from "./logger";
 import { type ISettings, SettingTab } from "./setting-tab";
 import { TemplateModalSuggester } from "./suggesters/template-modal-suggester";
+import { promptTextConfirmation } from "./confirmation-modal";
 
 const ProcessorOrder = [
     "property:options",
@@ -61,11 +62,33 @@ export default class PochoirPlugin extends Plugin {
         this.environment.extensions.use(snippetExtension());
         this.environment.extensions.use(experimentalExtension());
 
+        // this.registerEditorExtension([
+        //     ViewPlugin.fromClass(
+        //         class implements PluginValue {
+        //             constructor(view: EditorView) {
+        //                 view.dom.addEventListener("click", (e) => {
+        //                     e.preventDefault();
+        //                     e.stopPropagation();
+        //                     view;
+        //                 });
+        //             }
+        //         },
+        //     ),
+        // ]);
+
+        // globalThis.addEventListener("click", (e) => {
+        //     e.preventDefault();
+        //     const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        //     const editor = view?.editor;
+        //     console.log(editor?.getClickableTokenAt(editor?.posAtMouse(e)));
+        //     if (!editor) return;
+        // });
+
         this.app.workspace.onLayoutReady(() => {
             this.register(this.environment.enable());
         });
 
-        this.registerView(FormView.type, (leaf) => new FormView(leaf));
+        this.registerView(CustomView.type, (leaf) => new CustomView(leaf));
 
         await this.loadSettings();
 

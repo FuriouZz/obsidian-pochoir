@@ -13,6 +13,13 @@ export function alert(
     n.messageEl.createEl("b", { text: prefix });
     n.messageEl.createEl("span", { text: ": " });
     n.messageEl.createEl("span", { text: message });
+
+    if (
+        !document.querySelector(".notice-container") &&
+        n.containerEl.parentElement
+    ) {
+        document.body.append(n.containerEl.parentElement);
+    }
 }
 
 export function alertError(error: Error, options?: { duration?: number }) {

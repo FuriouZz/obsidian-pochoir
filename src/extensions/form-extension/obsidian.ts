@@ -1,6 +1,6 @@
-import { type App, ItemView, Modal, Setting } from "obsidian";
+import { type App, Setting } from "obsidian";
 import * as v from "valibot";
-import { LOGGER } from "../../logger";
+import { promptConfirmation } from "../../confirmation-modal";
 import type { FormJSON } from "./createFormBuilder";
 import type { TextField, UnionField } from "./fields";
 import { checkMomentDate } from "./schemas";
@@ -26,84 +26,94 @@ const SETTINGS = {
     dropdown: DropdownFieldSetting,
 };
 
-interface FormState {
+export interface FormState {
     form: FormJSON;
-    close?: () => void;
-    done: (result: Record<string, unknown>) => void;
-    cancel: () => void;
-    [key: string]: unknown;
+    onCancel?: () => void;
 }
 
-function createFormSettings(
-    el: HTMLElement,
-    form: FormJSON,
-    modal: {
-        setTitle(value: string): void;
-        setDesc(value: string | DocumentFragment): void;
-        close(): void;
-    },
+export function promptForm(
+    app: App,
+    target: "view" | "modal",
+    state: FormState,
 ) {
-    modal.setTitle(form.title);
-    modal.setDesc(form.description);
+    let schema: v.ObjectSchema<v.ObjectEntries, undefined> | undefined;
+    let errorPlaceholder: HTMLElement | undefined;
 
-    let errorPlaceholder: HTMLElement = el.createEl("div");
+    return promptConfirmation<Record<string, unknown>>(app, {
+        type: target,
+        onCancel: state.onCancel,
 
-    const result: Record<string, unknown> = {};
+        onOpen(view) {
+            const { form } = state;
 
-    const entries: v.ObjectEntries = {};
+            view.value = view.value ?? {};
 
-    for (const field of form.fields as UnionField[]) {
-        switch (field.type) {
-            case "dropdown":
-            case "textarea":
-            case "text": {
-                const s = v.string();
-                if (field.required) {
-                    const ss = v.pipe(s, v.nonEmpty("Field is empty"));
-                    entries[field.name] = ss;
-                } else {
-                    entries[field.name] = s;
+            view.setTitle(form.title);
+            view.setDesc(form.description);
+
+            const entries: v.ObjectEntries = {};
+
+            for (const field of form.fields as UnionField[]) {
+                switch (field.type) {
+                    case "dropdown":
+                    case "textarea":
+                    case "text": {
+                        const s = v.string();
+                        if (field.required) {
+                            const ss = v.pipe(s, v.nonEmpty("Field is empty"));
+                            entries[field.name] = ss;
+                        } else {
+                            entries[field.name] = s;
+                        }
+                        break;
+                    }
+                    case "slider":
+                    case "number": {
+                        const s = v.number();
+                        entries[field.name] = s;
+                        break;
+                    }
+                    case "toggle": {
+                        const s = v.boolean();
+                        entries[field.name] = s;
+                        break;
+                    }
+                    case "date": {
+                        const s = v.pipe(
+                            v.string(),
+                            checkMomentDate("YYYY-MM-DD", "Date is invalid"),
+                        );
+                        entries[field.name] = s;
+                        break;
+                    }
+                    case "time": {
+                        const s = v.pipe(
+                            v.string(),
+                            checkMomentDate("hh:mm", "Time is invalid"),
+                        );
+                        entries[field.name] = s;
+                        break;
+                    }
                 }
-                break;
             }
-            case "slider":
-            case "number": {
-                const s = v.number();
-                entries[field.name] = s;
-                break;
-            }
-            case "toggle": {
-                const s = v.boolean();
-                entries[field.name] = s;
-                break;
-            }
-            case "date": {
-                const s = v.pipe(
-                    v.string(),
-                    checkMomentDate("YYYY-MM-DD", "Date is invalid"),
-                );
-                entries[field.name] = s;
-                break;
-            }
-            case "time": {
-                const s = v.pipe(
-                    v.string(),
-                    checkMomentDate("hh:mm", "Time is invalid"),
-                );
-                entries[field.name] = s;
-                break;
-            }
-        }
-    }
 
-    const schema = v.object(entries);
+            schema = v.object(entries);
 
-    const done = () => {
-        const ret = v.safeParse(schema, result);
-        if (ret.success) {
-            cancelled = false;
-            modal.close();
-        } else {
+            for (const field of form.fields as v.InferOutput<
+                typeof TextField
+            >[]) {
+                const setting = new Setting(view.element);
+                const createSetting = SETTINGS[field.type];
+                createSetting({ setting, field, data: view.value });
+            }
+        },
+
+        onValidate(view) {
+            if (!schema || !view.value) return true;
+
+            const ret = v.safeParse(schema, view.value);
+            if (ret.success) return true;
+
             const errors = new Setting(
                 globalThis.document.createElement("div"),
             );
@@ -133,162 +143,15 @@ function createFormSettings(
 
             errors.setName(name);
             errors.setDesc(desc);
+
+            if (!errorPlaceholder) {
+                errorPlaceholder = document.createElement("div");
+                view.element.prepend(errorPlaceholder);
+            }
             errorPlaceholder.replaceWith(errors.settingEl);
             errorPlaceholder = errors.settingEl;
-        }
-    };
 
-    for (const field of form.fields as v.InferOutput<typeof TextField>[]) {
-        const setting = new Setting(el);
-        const createSetting = SETTINGS[field.type];
-        createSetting({ setting, field, data: result });
-    }
-
-    let cancelled = true;
-
-    new Setting(el)
-        .addButton((btn) => {
-            btn.setButtonText("Validate").setCta().onClick(done);
-        })
-        .addButton((btn) => {
-            btn.setButtonText("Cancel").onClick(() => {
-                cancelled = true;
-                modal.close();
-            });
-        });
-
-    // Add event listener for Enter key to trigger the button
-    el.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") {
-            event.preventDefault(); // Prevent default form submission behavior
-            done();
-        }
-    });
-
-    return new Promise<{ cancelled: boolean; result: Record<string, unknown> }>(
-        (resolve) => {
-            el.addEventListener("form:close", () => {
-                resolve({ cancelled, result });
-            });
-        },
-    );
-}
-
-function createModal(app: App, state: FormState) {
-    const modal = new Modal(app);
-
-    modal.contentEl.empty();
-
-    const promise = createFormSettings(modal.contentEl, state.form, {
-        setTitle(value) {
-            modal.setTitle(value);
-        },
-        setDesc(value) {
-            modal.contentEl.createEl("p", { text: value });
-        },
-        close() {
-            modal.close();
-            state.close?.();
+            return false;
         },
     });
-
-    modal.onClose = () => {
-        modal.contentEl.dispatchEvent(new CustomEvent("form:close"));
-    };
-
-    modal.open();
-
-    promise
-        .then(({ cancelled, result }) => {
-            if (cancelled) {
-                state.cancel();
-            } else {
-                state.done(result);
-            }
-        })
-        .catch(LOGGER.error);
-}
-
-async function createView(app: App, state: FormState) {
-    app.workspace.detachLeavesOfType(FormView.type);
-    const leaf = app.workspace.getLeaf(false);
-    const prevState = leaf.getViewState();
-    await leaf.setViewState({ type: FormView.type, active: true });
-    await app.workspace.revealLeaf(leaf);
-    if (leaf.view instanceof FormView) {
-        leaf.view.formState = {
-            ...state,
-            close() {
-                leaf.setViewState(prevState).catch(LOGGER.error);
-            },
-            cancel() {
-                state.cancel();
-            },
-            done(result) {
-                state.done(result);
-            },
-        };
-        return leaf.view.openForm();
-    }
-}
-
-export class FormView extends ItemView {
-    formState?: FormState;
-
-    getViewType(): string {
-        return FormView.type;
-    }
-
-    getDisplayText(): string {
-        return "Form";
-    }
-
-    async openForm() {
-        if (!this.formState) return;
-        const state = this.formState;
-        const promise = createFormSettings(this.contentEl, state.form, {
-            setTitle: (value) => {
-                this.contentEl.createDiv({
-                    text: value,
-                    cls: "modal-title",
-                });
-            },
-            setDesc: (value) => {
-                this.contentEl.createEl("p", { text: value });
-            },
-            close: () => {
-                state.close?.();
-                // this.leaf.detach();
-            },
-        });
-        await promise
-            .then(({ cancelled, result }) => {
-                if (cancelled) {
-                    state.cancel();
-                } else {
-                    state.done(result);
-                }
-            })
-            .catch(LOGGER.error);
-    }
-
-    async onOpen() {
-        return this.openForm();
-    }
-
-    async onClose() {
-        this.contentEl.dispatchEvent(new CustomEvent("form:close"));
-        return Promise.resolve();
-    }
-
-    static type = "POCHOIR_FORM_VIEW";
-}
-
-export function promptForm(
-    app: App,
-    state: FormState,
-    target: "view" | "modal" = "modal",
-) {
-    if (target === "view") createView(app, state).catch(LOGGER.error);
-    else createModal(app, state);
 }

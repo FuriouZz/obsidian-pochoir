@@ -118,22 +118,13 @@ class FormContext {
         };
     }
 
-    prompt(
+    async prompt(
         form: FormBuilder,
         target: "modal" | "view" = Platform.isDesktop ? "modal" : "view",
     ) {
-        return new Promise<Record<string, unknown>>((resolve, reject) => {
-            promptForm(
-                this.app,
-                {
-                    form: form.toJSON(),
-                    done: resolve,
-                    cancel: () => {
-                        this.env.abortTemplate(reject);
-                    },
-                },
-                target,
-            );
-        });
+        return promptForm(this.app, target, {
+            form: form.toJSON(),
+            onCancel: () => this.env.abortTemplate(),
+        }).then((result) => result ?? {});
     }
 }

@@ -1,211 +1,114 @@
-import { type App, ItemView, Modal, Setting } from "obsidian";
-import { LOGGER } from "./logger";
+import { type App, Setting } from "obsidian";
+import {
+    type CustomContent,
+    type CustomContentParameters,
+    createCustomView,
+} from "./custom-view";
 
-export type ConfirmationResult<T> = { cancelled: boolean; result: T };
-
-export interface ConfirmationParameters<T> {
-    root: HTMLElement;
+export interface ConfirmationParameters<T> extends CustomContentParameters {
     value?: T;
-    on: (event: "close", cb: () => void) => void;
-    setTitle: (value: string) => void;
-    setDesc: (value: string | DocumentFragment) => void;
-    cancel: () => void;
-    close: () => void;
-}
-
-export interface ConfirmationState<T = unknown> {
-    createContent: (params: ConfirmationParameters<T>) => void;
-    close?: () => void;
-    done: (result?: T) => void;
+    confirm: () => void;
     cancel: () => void;
 }
 
-function createModal<T>(app: App, state: ConfirmationState<T>) {
-    const modal = new Modal(app);
-    modal.contentEl.empty();
-    modal.open();
-    modal.onClose = () => {
-        modal.contentEl.dispatchEvent(new CustomEvent("confirmation:close"));
-    };
-
-    let descriptionEl: HTMLElement | undefined;
-
-    const p: ConfirmationParameters<T> = {
-        root: modal.contentEl,
-        on(event, cb) {
-            modal.contentEl.addEventListener(`confirmation:${event}`, cb);
-        },
-        setTitle(value) {
-            modal.setTitle(value);
-        },
-        setDesc(value) {
-            if (!descriptionEl) {
-                descriptionEl = modal.contentEl.createEl("p");
-            }
-            descriptionEl.setText(value);
-        },
-        cancel() {
-            modal.close();
-            state.close?.();
-            state.cancel();
-        },
-        close() {
-            modal.close();
-            state.close?.();
-            state.done(p.value);
-        },
-    };
-
-    state.createContent(p);
+export interface ConfirmationOptions<T>
+    extends CustomContent<ConfirmationParameters<T>> {
+    onValidate?: (params: ConfirmationParameters<T>) => boolean;
+    onCancel?: (params: ConfirmationParameters<T>) => void;
+    onCreateButtons?: (params: ConfirmationParameters<T>) => void;
 }
 
-async function createView<T>(app: App, state: ConfirmationState<T>) {
-    app.workspace.detachLeavesOfType(ConfirmationView.type);
-    const leaf = app.workspace.getLeaf(false);
-    const prevState = leaf.getViewState();
-    await leaf.setViewState({ type: ConfirmationView.type, active: true });
-    await app.workspace.revealLeaf(leaf);
-
-    if (leaf.view instanceof ConfirmationView) {
-        leaf.view.confirmationState = {
-            ...state,
-            close() {
-                leaf.setViewState(prevState).catch(LOGGER.error);
-            },
-        } as ConfirmationState;
-        return leaf.view.openConfirmation();
-    }
-}
-
-class ConfirmationView extends ItemView {
-    static type = "POCHOIR_CONFIRMATION_VIEW";
-
-    confirmationState?: ConfirmationState;
-
-    getViewType(): string {
-        return ConfirmationView.type;
-    }
-
-    getDisplayText(): string {
-        return "Confirmation";
-    }
-
-    openConfirmation() {
-        if (!this.confirmationState) return;
-        const state = this.confirmationState;
-
-        this.contentEl.empty();
-
-        const p: ConfirmationParameters<unknown> = {
-            root: this.contentEl,
-            value: null,
-            on: (event, cb) => {
-                this.contentEl.addEventListener(`confirmation:${event}`, cb);
-            },
-            setTitle: (value) => {
-                this.contentEl.createDiv({
-                    text: value,
-                    cls: "confirmation-title",
-                });
-            },
-            setDesc: (value) => {
-                this.contentEl.createEl("p", { text: value });
-            },
-            cancel() {
-                state.close?.();
-                state.cancel();
-            },
-            close: () => {
-                state.close?.();
-                state.done(p.value);
-            },
-        };
-
-        state.createContent(p);
-    }
-
-    override async onOpen() {
-        this.openConfirmation();
-        return Promise.resolve();
-    }
-
-    override async onClose() {
-        this.contentEl.dispatchEvent(new CustomEvent("confirmation:close"));
-        return Promise.resolve();
-    }
-}
-
-export function promptConfirmation<T = unknown>(
+export function promptConfirmation<T>(
     app: App,
-    userState: {
-        createContent: ConfirmationState<T>["createContent"];
-        onCancel?: () => void;
-    },
-    target: "view" | "modal" = "modal",
+    state?: ConfirmationOptions<T>,
 ) {
     return new Promise<T | undefined>((resolve, reject) => {
-        const createButtons = (params: ConfirmationParameters<T>) => {
-            new Setting(params.root)
+        const defaultButtons: Required<
+            ConfirmationOptions<T>
+        >["onCreateButtons"] = ({ element, confirm, cancel }) => {
+            new Setting(element)
                 .addButton((btn) => {
-                    btn.setButtonText("Validate")
-                        .setCta()
-                        .onClick(params.close);
+                    btn.setButtonText("Validate").setCta().onClick(confirm);
                 })
                 .addButton((btn) => {
-                    btn.setButtonText("Cancel").onClick(params.cancel);
+                    btn.setButtonText("Cancel").onClick(cancel);
                 });
-        };
 
-        const state: ConfirmationState<T> = {
-            createContent(params) {
-                userState.createContent(params);
-                createButtons(params);
-            },
-            done(result) {
-                resolve(result);
-            },
-            cancel() {
-                const e = new Error();
-                try {
-                    userState.onCancel?.();
-                } catch (err) {
-                    e.cause = err;
+            element.addEventListener("keydown", (event) => {
+                if (event.key === "Enter") {
+                    event.preventDefault(); // Prevent default form submission behavior
+                    confirm();
                 }
-                reject(e);
-            },
+            });
         };
 
-        if (target === "view") {
-            createView<T>(app, state).then(() => {}, reject);
-        } else {
-            createModal<T>(app, state);
-        }
+        const parameters = {
+            value: undefined,
+        } as ConfirmationParameters<T>;
+
+        let confirmed = false;
+
+        return createCustomView(app, {
+            viewTitle: "Confirm",
+            ...state,
+            onOpen(view) {
+                view.setTitle("Confirm");
+
+                const validate = state?.onValidate ?? (() => true);
+                const createButtons = state?.onCreateButtons ?? defaultButtons;
+
+                Object.assign(parameters, {
+                    ...view,
+
+                    confirm: () => {
+                        if (validate(parameters)) {
+                            confirmed = true;
+                            view.close();
+                        }
+                    },
+
+                    cancel() {
+                        confirmed = false;
+                        view.close();
+                    },
+                });
+
+                state?.onOpen?.(parameters);
+                createButtons(parameters);
+            },
+            onClose(view) {
+                state?.onClose?.(parameters);
+                view.element.dispatchEvent(
+                    new CustomEvent("confirmation:close"),
+                );
+
+                if (!confirmed) {
+                    try {
+                        state?.onCancel?.(parameters);
+                    } catch (err) {
+                        reject(err);
+                    }
+                } else {
+                    resolve(parameters.value);
+                }
+            },
+        }).then(() => {}, reject);
     });
 }
 
 export function promptTextConfirmation(
     app: App,
-    userState: {
-        onCancel?: () => void;
-        defaultValue?: string;
-    },
-    target: "view" | "modal" = "modal",
+    state?: ConfirmationOptions<string> & { defaultValue?: string },
 ) {
-    return promptConfirmation<string>(
-        app,
-        {
-            ...userState,
-            createContent(params) {
-                params.setTitle("Confirm note name");
-                new Setting(params.root).addText((c) => {
-                    if (userState.defaultValue)
-                        c.setValue(userState.defaultValue);
-                    c.onChange((value) => {
-                        params.value = value;
-                    });
+    return promptConfirmation<string>(app, {
+        ...state,
+        onOpen(params) {
+            new Setting(params.element).addText((c) => {
+                if (state?.defaultValue) c.setValue(state.defaultValue);
+                c.onChange((value) => {
+                    params.value = value;
                 });
-            },
+            });
         },
-        target,
-    );
+    });
 }
