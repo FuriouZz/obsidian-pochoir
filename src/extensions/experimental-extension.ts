@@ -1,3 +1,4 @@
+import * as obsidian from "obsidian";
 import { ContentProcessor } from "../content-processor";
 import type { Extension } from "../environment";
 
@@ -23,6 +24,19 @@ const ContentExtension: Extension["setup"] = (env) => {
     });
 };
 
+const ObsidianExtension: Extension["setup"] = (env) => {
+    env.loaders.unshift({
+        contextMode: "shared",
+        test: "pochoir:app",
+        load: () => env.app,
+    });
+    env.loaders.unshift({
+        contextMode: "shared",
+        test: "pochoir:obsidian",
+        load: () => obsidian,
+    });
+};
+
 export default function (): Extension {
     return {
         name: "experimental",
@@ -32,6 +46,7 @@ export default function (): Extension {
         },
         setup(env) {
             ContentExtension(env);
+            ObsidianExtension(env);
         },
     };
 }

@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Experimental: Expose `pochoir:app` for [Obsidian App object](https://docs.obsidian.md/Reference/TypeScript+API/App) and `pochoir:obsidian` for [Obsidian API](https://github.com/obsidianmd/obsidian-api)
+
+### Fixed
+- Cannot replace selection when cursor is behind anchor
+
 ## [0.0.22] - 2026-02-12
 
 ### Added

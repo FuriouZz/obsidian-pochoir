@@ -3,7 +3,11 @@ tags:
   - template
 ---
 ```pochoir-snippet name="bookmark" hidden
-#bookmark {^}
+---
+$.imports:
+- "[[Utilities]]"
+---
+#bookmark [{^}]({{ await clipboard() }})
 ```
 
 ```pochoir-snippet name="today" hidden
@@ -14,8 +18,16 @@ tags:
 {{date.today("HH:mm")}}{^}
 ```
 
-````pochoir-snippet name="daily-note" hidden process
-```pochoir-props
+```pochoir-snippet name="link" hidden
+---
+$.imports:
+- "[[Utilities]]"
+---
+[[{{selection()}}]]{^}
+```
+
+````pochoir-snippet name="daily-note" hidden
+---
 date: "{{date.today()}}"
 tags:
 - inbox
@@ -23,7 +35,7 @@ $.path: "Daily/{{date.today('YYYY-MM-DD')}}"
 $.options:
   - openIfExists
   - confirmName
-```
+---
 ````
 
 ```pochoir-command
@@ -38,5 +50,6 @@ templates:
 - snippet(today)
 - snippet(now)
 - snippet(daily-note)
+- snippet(link)
 ```
 
