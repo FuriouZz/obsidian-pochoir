@@ -90,7 +90,7 @@ class ConfirmationView extends ItemView {
         return "Confirmation";
     }
 
-    async openConfirmation() {
+    openConfirmation() {
         if (!this.confirmationState) return;
         const state = this.confirmationState;
 
@@ -124,11 +124,11 @@ class ConfirmationView extends ItemView {
         state.createContent(p);
     }
 
-    async onOpen() {
+    override async onOpen() {
         return this.openConfirmation();
     }
 
-    async onClose() {
+    override async onClose() {
         this.contentEl.dispatchEvent(new CustomEvent("confirmation:close"));
         return Promise.resolve();
     }
