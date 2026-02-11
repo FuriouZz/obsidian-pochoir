@@ -1,4 +1,5 @@
 import type { Plugin } from "obsidian";
+import type { CursorJumper } from "./cursor-jumper";
 import type { TemplateModalSuggester } from "./suggesters/template-modal-suggester";
 
 export function insertFromTemplateCommand(
@@ -32,6 +33,27 @@ export function createFromTemplateCommand(
         icon: "pochoir-icon",
         callback() {
             suggester.createFromTemplate();
+        },
+    });
+}
+
+export function jumpToNextCursorLocationCommand(
+    plugin: Plugin,
+    jumper: CursorJumper,
+) {
+    plugin.addCommand({
+        id: "jump-to-next-cursor-location",
+        name: "Jump to next cursor location",
+        icon: "text-cursor",
+        checkCallback(checking) {
+            const file = plugin.app.workspace.getActiveFile();
+            if (file) {
+                if (!checking) {
+                    jumper.jump();
+                }
+                return true;
+            }
+            return false;
         },
     });
 }

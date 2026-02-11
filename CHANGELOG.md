@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Add cursor jump
+    - Until now you used `{^}` to place a cursor location
+    - Now, you can add a number to set a location order (eg:. `{^1}`)
+    - If you place two location `{^1}` and `{^2}`, the cursor will go to the first one, then if call the command `Jump to next cursor location` the cursor will go to the second one
+- Add a new command `Jump to next cursor location` 
+
 ## [0.0.23] - 2026-02-12
 
 ### Added

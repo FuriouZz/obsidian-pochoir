@@ -4,6 +4,7 @@ import iconStroke from "../assets/icon-stroke-full.svg";
 import {
     createFromTemplateCommand,
     insertFromTemplateCommand,
+    jumpToNextCursorLocationCommand,
 } from "./commands";
 import { DEFAULT_SETTINGS } from "./constants";
 import { Environment } from "./environment";
@@ -48,6 +49,7 @@ export default class PochoirPlugin extends Plugin {
         this.addSettingTab(new SettingTab(this));
         insertFromTemplateCommand(this, this.templateSuggester);
         createFromTemplateCommand(this, this.templateSuggester);
+        jumpToNextCursorLocationCommand(this, this.environment.cursorJumper);
 
         this.environment.extensions.use(minimalExtension());
         this.environment.extensions.use(propertiesExtension());

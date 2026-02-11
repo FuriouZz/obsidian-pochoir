@@ -1,12 +1,7 @@
-import {
-    type EditorSelectionOrCaret,
-    Events,
-    MarkdownView,
-    type TFile,
-    type TFolder,
-} from "obsidian";
+import { Events, MarkdownView, type TFile, type TFolder } from "obsidian";
 import { Cache } from "./cache";
 import { promptTextConfirmation } from "./confirmation-modal";
+import { CursorJumper } from "./cursor-jumper";
 import { Editor } from "./editor";
 import { PochoirError } from "./errors";
 import { EventEmitter } from "./event-emitter";
@@ -44,6 +39,7 @@ export class Environment extends Events {
     extensions: ExtensionList;
     editor: Editor;
     templateSuggesters: TemplateSuggesterSet;
+    cursorJumper: CursorJumper;
 
     processors = new ProcessorList<Processor>();
     contextProviders: TemplateContextProvider[] = [];
@@ -65,6 +61,7 @@ export class Environment extends Events {
         this.extensions = new ExtensionList();
         this.editor = new Editor(this);
         this.templateSuggesters = new TemplateSuggesterSet();
+        this.cursorJumper = new CursorJumper(this.app);
     }
 
     get app() {
@@ -154,37 +151,6 @@ export class Environment extends Events {
             }
         };
 
-        const selectCursors = (view: MarkdownView) => {
-            const cursorPattern = "{^}";
-            const cursorReg = new RegExp(/\{\^\}/);
-
-            const selections: EditorSelectionOrCaret[] = [];
-            for (let i = 0; i < view.editor.lineCount(); i++) {
-                const line = view.editor.getLine(i);
-                const match = line.match(cursorReg);
-                if (!match) continue;
-                const ch = match.index ?? 0;
-                selections.push({
-                    anchor: { ch, line: i },
-                    head: { ch: ch + cursorPattern.length, line: i },
-                });
-            }
-
-            if (selections.length > 0) {
-                view.editor.transaction({
-                    selections: selections.map((s) => ({
-                        from: s.anchor,
-                        // to: s.head,
-                    })),
-                    changes: selections.map((s) => ({
-                        from: s.anchor,
-                        to: s.head,
-                        text: "",
-                    })),
-                });
-            }
-        };
-
         // Place content
         const activeFile = this.app.workspace.getActiveFile();
         const view = this.app.workspace.getActiveViewOfType(MarkdownView);
@@ -194,7 +160,8 @@ export class Environment extends Events {
             view.getMode() !== "preview"
         ) {
             await writeView(content, view);
-            selectCursors(view);
+            this.cursorJumper.parse();
+            this.cursorJumper.jump();
         } else {
             await writeFile(content, target);
         }
