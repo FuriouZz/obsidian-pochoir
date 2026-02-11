@@ -25,12 +25,14 @@ export interface ParsedTemplateInfo extends ParsedSections {
     identifier: string;
     displayName: string;
     hidden: boolean;
+    processTemplate: boolean;
 }
 
 export interface ParserParseFromFileOptions {
     identifier?: string;
     displayName?: string;
     renderCodeBlocks?: boolean;
+    processTemplate?: boolean;
 }
 
 export interface ParserParseFromSourceOptions
@@ -57,6 +59,7 @@ export class Parser {
             identifier: options?.identifier ?? file.path,
             displayName: options?.displayName ?? file.basename,
             hidden: false,
+            processTemplate: true,
             ...this.parseSections(source, metadata, options?.renderCodeBlocks),
         });
     }
@@ -73,6 +76,7 @@ export class Parser {
             displayName: options?.displayName ?? "",
             identifier: options?.identifier ?? "",
             hidden: options?.hidden ?? false,
+            processTemplate: true,
             ...this.parseSections(source, metadata, options?.renderCodeBlocks),
         });
     }

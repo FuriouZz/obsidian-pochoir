@@ -10,7 +10,7 @@
   "footnotes": false,
   "properties": false,
   "page-preview": true,
-  "daily-notes": true,
+  "daily-notes": false,
   "templates": true,
   "note-composer": true,
   "command-palette": true,

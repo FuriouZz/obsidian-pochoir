@@ -28,13 +28,17 @@ export default function (): Extension {
                               : codeBlock.id;
 
                     const identifier = `${parent.info.file.path}#${id}`;
+                    const processTemplate = !(
+                        "process" in codeBlock.attributes
+                    );
 
                     const template = await env.createVirtualTemplate({
                         type: "source",
                         source: codeBlock.code,
                         identifier,
                         displayName,
-                        renderCodeBlocks: true,
+                        renderCodeBlocks: processTemplate,
+                        processTemplate: processTemplate,
                         hidden: "hidden" in codeBlock.attributes,
                     });
 

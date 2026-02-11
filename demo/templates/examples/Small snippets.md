@@ -14,6 +14,18 @@ tags:
 {{date.today("HH:mm")}}{^}
 ```
 
+````pochoir-snippet name="daily-note" hidden process
+```pochoir-props
+date: "{{date.today()}}"
+tags:
+- inbox
+$.path: "Daily/{{date.today('YYYY-MM-DD')}}"
+$.options:
+  - openIfExists
+  - confirmName
+```
+````
+
 ```pochoir-command
 title: Small snippets
 action: insert
@@ -25,5 +37,6 @@ templates:
 - snippet(bookmark)
 - snippet(today)
 - snippet(now)
+- snippet(daily-note)
 ```
 

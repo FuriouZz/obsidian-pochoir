@@ -14,8 +14,8 @@ $.options:
 
 ```pochoir-command
 id: create-daily-note
-title: Create daily note
-icon: pen
+title: Open today's daily note
+icon: calendar
 action: create
 triggers:
 - ribbon

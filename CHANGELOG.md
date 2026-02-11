@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add `$.options` property to control template creation behavior. `$.options` accepts the following list of strings:
     - `confirmName` will prompt a modal to confirm note name before creation
     - `openIfExists` will not render the template if note already exists
+- Add ability to process snippet.
+    - By default, snippets are not processed (code block are not executed and properties not injected).
+    - Add `process` attribute to `pochoir-snippet` code block to enable snippet processing
 
 ## [0.0.21] - 2026-02-03
 

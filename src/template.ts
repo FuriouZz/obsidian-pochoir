@@ -88,7 +88,7 @@ export class Template {
             await Promise.resolve(p(context, this));
         }
 
-        if (this.isSnippet()) return;
+        if (!this.info.processTemplate) return;
 
         context.properties.merge(this.info.properties);
 
