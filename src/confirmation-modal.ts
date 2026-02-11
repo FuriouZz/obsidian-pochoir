@@ -125,7 +125,8 @@ class ConfirmationView extends ItemView {
     }
 
     override async onOpen() {
-        return this.openConfirmation();
+        this.openConfirmation();
+        return Promise.resolve();
     }
 
     override async onClose() {
