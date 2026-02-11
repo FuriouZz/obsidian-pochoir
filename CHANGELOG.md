@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.0.23] - 2026-02-12
+
 ### Added
 - Experimental: Expose `pochoir:app` for [Obsidian App object](https://docs.obsidian.md/Reference/TypeScript+API/App) and `pochoir:obsidian` for [Obsidian API](https://github.com/obsidianmd/obsidian-api)
 
@@ -216,7 +218,8 @@ action: create # or "insert"
 
 First version
 
-[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.22...main
+[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.23...main
+[0.0.23]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.22...0.0.23
 [0.0.22]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.21...0.0.22
 [0.0.21]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.20...0.0.21
 [0.0.20]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.19...0.0.20
