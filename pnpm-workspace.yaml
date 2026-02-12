@@ -1,3 +1,5 @@
+packages:
+    - e2e
 onlyBuiltDependencies:
   - core-js
   - electron

@@ -1,0 +1,22 @@
+{
+    "name": "e2e",
+    "type": "module",
+    "devDependencies": {
+        "@types/node": "^16.18.126",
+        "@wdio/cli": "^9.24.0",
+        "@wdio/globals": "^9.23.0",
+        "@wdio/junit-reporter": "^9.24.0",
+        "@wdio/local-runner": "^9.24.0",
+        "@wdio/mocha-framework": "^9.24.0",
+        "@wdio/spec-reporter": "^9.24.0",
+        "electron": "32.2.5",
+        "expect-webdriverio": "^5.6.4",
+        "obsidian": "^1.8.7",
+        "typescript": "5.8.3",
+        "wdio-electron-service": "^9.2.1"
+    },
+    "scripts": {
+        "prwdio": "pnpm --dir .. run build",
+        "wdio": "wdio run ./wdio.conf.ts"
+    }
+}

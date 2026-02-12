@@ -1,9 +1,11 @@
-import { assert, describe, test } from "vitest";
-import { createField } from "./createField";
-import { DropdownField, TextField } from "./fields";
+import { createField } from "../../src/extensions/form-extension/createField";
+import {
+    DropdownField,
+    TextField,
+} from "../../src/extensions/form-extension/fields";
 
 describe("createField", () => {
-    test("TextField", () => {
+    it("TextField", () => {
         const field = createField(TextField, {
             name: "name",
         })
@@ -11,7 +13,7 @@ describe("createField", () => {
             .name("title")
             .initialValue("Untitled");
 
-        assert.deepEqual(field.toJSON(), {
+        expect(field.toJSON()).toEqual({
             label: "Title",
             name: "title",
             type: "text",
@@ -19,7 +21,7 @@ describe("createField", () => {
         });
     });
 
-    test("DropdownField", () => {
+    it("DropdownField", () => {
         const field = createField(DropdownField, {
             name: "name",
         })
@@ -28,7 +30,7 @@ describe("createField", () => {
             .initialValue("they")
             .options({ they: "They", she: "She", he: "He" });
 
-        assert.deepEqual(field.toJSON(), {
+        expect(field.toJSON()).toEqual({
             label: "Pronoms",
             name: "pronoms",
             type: "dropdown",

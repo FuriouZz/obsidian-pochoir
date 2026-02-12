@@ -9,7 +9,7 @@
         "dev:test": "node esbuild.config.mts test",
         "fmt": "biome check --write src/",
         "lint": "eslint src/ && biome check src/ && tsc -noEmit -skipLibCheck",
-        "test": "vitest src/",
+        "test": "pnpm --dir e2e run wdio",
         "build": "npm run lint && node esbuild.config.mts production",
         "bump": "NODE_NO_WARNINGS=1 node --experimental-strip-types version-bump.mts",
         "docs:serve": "cd docs && deno task serve",
@@ -19,8 +19,6 @@
     "author": "",
     "license": "Apache Licence 2.0",
     "devDependencies": {
-        "@types/chai": "^5.2.3",
-        "@types/mocha": "^10.0.10",
         "@types/node": "^16.18.126",
         "@typescript-eslint/parser": "8.33.1",
         "biome": "^0.3.3",
@@ -30,8 +28,7 @@
         "eslint-plugin-obsidianmd": "^0.1.9",
         "obsidian": "^1.8.7",
         "tslib": "2.4.0",
-        "typescript": "5.8.3",
-        "vitest": "^3.2.4"
+        "typescript": "5.8.3"
     },
     "dependencies": {
         "@codemirror/language": "^6.11.2",

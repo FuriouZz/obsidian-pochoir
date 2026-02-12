@@ -1,13 +1,12 @@
-import { assert, describe, test } from "vitest";
-import { createField } from "./createField";
-import { createFormBuilder } from "./createFormBuilder";
-import { TextField } from "./fields";
+import { createField } from "../../src/extensions/form-extension/createField";
+import { createFormBuilder } from "../../src/extensions/form-extension/createFormBuilder";
+import { TextField } from "../../src/extensions/form-extension/fields";
 
 describe("createForm", () => {
-    test("toJSON", () => {
+    it("toJSON", async () => {
         const form = createFormBuilder();
         form.text("title").label("Title").initialValue("Untitled");
-        assert.deepEqual(form.toJSON(), {
+        expect(form.toJSON()).toEqual({
             title: "Insert template",
             description: "Please fill in the form",
             fields: [
@@ -21,7 +20,7 @@ describe("createForm", () => {
         });
     });
 
-    test("fromJSON", () => {
+    it("fromJSON", async () => {
         const title = createField(TextField, { name: "title" })
             .label("Title")
             .initialValue("Untitled");
@@ -33,7 +32,7 @@ describe("createForm", () => {
             fields: [title.toJSON()],
         });
 
-        assert.deepEqual(form.toJSON(), {
+        expect(form.toJSON()).toEqual({
             title: "MyForm",
             description: "MyForm description",
             fields: [
