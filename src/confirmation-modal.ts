@@ -4,6 +4,7 @@ import {
     type CustomContentParameters,
     createCustomView,
 } from "./custom-view";
+import { LOGGER } from "./logger";
 
 export interface ConfirmationParameters<T> extends CustomContentParameters {
     value?: T;
@@ -48,7 +49,7 @@ export function promptConfirmation<T>(
 
         let confirmed = false;
 
-        return createCustomView(app, {
+        createCustomView(app, {
             viewTitle: "Confirm",
             ...state,
             onOpen(view) {
@@ -63,13 +64,13 @@ export function promptConfirmation<T>(
                     confirm: () => {
                         if (validate(parameters)) {
                             confirmed = true;
-                            view.close();
+                            view.close().catch(LOGGER.error);
                         }
                     },
 
                     cancel() {
                         confirmed = false;
-                        view.close();
+                        view.close().catch(LOGGER.error);
                     },
                 });
 
@@ -86,7 +87,7 @@ export function promptConfirmation<T>(
                     try {
                         state?.onCancel?.(parameters);
                     } catch (err) {
-                        reject(err);
+                        reject(err as Error);
                     }
                 } else {
                     resolve(parameters.value);

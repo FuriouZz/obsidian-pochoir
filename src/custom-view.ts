@@ -14,7 +14,7 @@ export interface CustomContentParameters {
     readonly element: HTMLElement;
     setTitle: (title: string) => void;
     setDesc: (title: string | DocumentFragment) => void;
-    close: () => void;
+    close: () => Promise<void>;
     view?: CustomView;
     modal?: Modal;
 }
@@ -114,12 +114,12 @@ export class CustomModal extends Modal {
         }
     }
 
-    async onOpen(): Promise<void> {
-        return Promise.resolve(this.trigger("open"));
+    onOpen() {
+        this.trigger("open");
     }
 
-    async onClose(): Promise<void> {
-        return Promise.resolve(this.trigger("close"));
+    onClose() {
+        this.trigger("close");
     }
 
     getParameters(): CustomContentParameters {
@@ -131,7 +131,7 @@ export class CustomModal extends Modal {
             modal: this,
             setTitle: (text) => this.setTitle(text),
             setDesc: (text) => this.setDesc(text),
-            close: () => this.close(),
+            close: () => Promise.resolve(this.close()),
         };
     }
 }

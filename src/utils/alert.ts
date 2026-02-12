@@ -15,10 +15,10 @@ export function alert(
     n.messageEl.createEl("span", { text: message });
 
     if (
-        !document.querySelector(".notice-container") &&
+        !globalThis.document.querySelector(".notice-container") &&
         n.containerEl.parentElement
     ) {
-        document.body.append(n.containerEl.parentElement);
+        globalThis.document.body.append(n.containerEl.parentElement);
     }
 }
 

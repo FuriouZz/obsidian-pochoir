@@ -21,7 +21,6 @@ import specialPropertiesExtension from "./extensions/special-properties-extensio
 import { LOGGER } from "./logger";
 import { type ISettings, SettingTab } from "./setting-tab";
 import { TemplateModalSuggester } from "./suggesters/template-modal-suggester";
-import { promptTextConfirmation } from "./confirmation-modal";
 
 const ProcessorOrder = [
     "property:options",

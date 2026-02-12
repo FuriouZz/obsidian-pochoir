@@ -145,7 +145,7 @@ export function promptForm(
             errors.setDesc(desc);
 
             if (!errorPlaceholder) {
-                errorPlaceholder = document.createElement("div");
+                errorPlaceholder = globalThis.document.createElement("div");
                 view.element.prepend(errorPlaceholder);
             }
             errorPlaceholder.replaceWith(errors.settingEl);
