@@ -2,7 +2,7 @@ import type { FuzzyMatch } from "obsidian";
 import type {
     TemplateModalEntry,
     TemplateModalSuggester,
-} from "./suggesters/template-modal-suggester";
+} from "../suggesters/template-modal-suggester";
 
 export interface TemplateSuggester {
     getItems?: (params: {
@@ -14,5 +14,3 @@ export interface TemplateSuggester {
         query: string;
     }) => FuzzyMatch<TemplateModalEntry>[] | undefined | null;
 }
-
-export class TemplateSuggesterSet extends Set<TemplateSuggester> {}

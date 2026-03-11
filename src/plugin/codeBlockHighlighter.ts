@@ -9,7 +9,7 @@ import {
 } from "@codemirror/view";
 import type { Environment } from "../environment";
 import { LOGGER } from "../logger";
-import type { createMarkdownRenderer } from "../utils/obsidian";
+import type { createMarkdownRenderer } from "../obsidian/functions";
 
 async function highlight({
     builder,

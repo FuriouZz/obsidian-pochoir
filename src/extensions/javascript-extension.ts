@@ -1,5 +1,17 @@
 import type { Extension } from "../environment";
-import { createAsyncFunction } from "../utils/function";
+
+type Fn<T> = () => (...parameters: unknown[]) => Promise<T>;
+
+function createAsyncFunction<T = unknown>(
+    code: string,
+    ...parameters: string[]
+) {
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval -- necessary to evaluate javascript blocks
+    const ctor = new Function(`return async function(${parameters.join(",")}) {
+        ${code}
+    }`) as Fn<T>;
+    return ctor();
+}
 
 export default function (): Extension {
     return {

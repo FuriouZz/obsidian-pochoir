@@ -1,7 +1,7 @@
 import type { App, CachedMetadata, Loc, SectionCache, TFile } from "obsidian";
-import { PropertiesBuilder } from "./properties-builder";
+import { parseYaml } from "./obsidian/functions";
+import { PropertiesBuilder } from "./obsidian/properties-builder";
 import { Template } from "./template";
-import { parseYaml } from "./utils/obsidian";
 
 export interface ParsedCodeBlock {
     id: number;

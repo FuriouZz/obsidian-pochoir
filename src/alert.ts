@@ -1,6 +1,6 @@
 import { Notice } from "obsidian";
-import { PochoirError, RendererError } from "../errors";
-import { LOGGER } from "../logger";
+import { PochoirError, RendererError } from "./errors";
+import { LOGGER } from "./logger";
 
 export function alert(
     message: string,

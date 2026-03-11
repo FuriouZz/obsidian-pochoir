@@ -4,12 +4,12 @@ import { FileWatcher, type FileWatcherEvent } from "./file-watcher";
 import { LOGGER, verbose } from "./logger";
 import { Parser } from "./parser";
 import type { Template } from "./template";
-import { alertWrap } from "./utils/alert";
+import { alertWrap } from "./alert";
 import {
     findLinkPath,
     SnippetRegex,
     WikiLinkPathRegex,
-} from "./utils/obsidian";
+} from "./obsidian/functions";
 
 export type CacheEvent =
     | { name: "template-change"; template: Template }

@@ -1,0 +1,95 @@
+import { addIcon, Plugin } from "obsidian";
+import iconFull from "../assets/icon-full.svg";
+import iconStroke from "../assets/icon-stroke-full.svg";
+import { DEFAULT_SETTINGS } from "../constants";
+import { Environment } from "../environment";
+import commandExtension from "../extensions/command-extension";
+import dateExtension from "../extensions/date-extension";
+import experimentalExtension from "../extensions/experimental-extension";
+import formExtension from "../extensions/form-extension";
+import javascriptExtension from "../extensions/javascript-extension";
+import minimalExtension from "../extensions/minimal-extension";
+import propertiesExtension from "../extensions/properties-extension";
+import snippetExtension from "../extensions/snippet-extension";
+import specialPropertiesExtension from "../extensions/special-properties-extension";
+import { LOGGER } from "../logger";
+import { View } from "../obsidian/view";
+import { TemplateModalSuggester } from "../suggesters/template-modal-suggester";
+import {
+    createFromTemplateCommand,
+    insertFromTemplateCommand,
+    jumpToNextCursorLocationCommand,
+} from "./commands";
+import { type ISettings, SettingTab } from "./setting-tab";
+
+const ProcessorOrder = [
+    "property:options",
+    "property:imports-template",
+    "property:merge-properties",
+    "codeblock:form",
+    "codeblock:properties",
+    "codeblock:javascript",
+    "property:render",
+    "property:create-path",
+    "property:delete-internals",
+];
+
+export class PochoirPlugin extends Plugin {
+    settings: ISettings = { ...DEFAULT_SETTINGS };
+    environment = new Environment(this);
+    templateSuggester = new TemplateModalSuggester(this.app, this.environment);
+
+    async onload() {
+        LOGGER.level = import.meta.env.DEV ? "VERBOSE" : "DEBUG";
+
+        addIcon("pochoir-full-icon", iconFull);
+        addIcon("pochoir-stroke-icon", iconStroke);
+        addIcon("pochoir-icon", iconStroke);
+
+        this.addSettingTab(new SettingTab(this));
+        insertFromTemplateCommand(this, this.templateSuggester);
+        createFromTemplateCommand(this, this.templateSuggester);
+        jumpToNextCursorLocationCommand(this, this.environment.cursorJumper);
+
+        this.environment.extensions.use(minimalExtension());
+        this.environment.extensions.use(propertiesExtension());
+        this.environment.extensions.use(specialPropertiesExtension());
+        this.environment.extensions.use(dateExtension());
+        this.environment.extensions.use(formExtension());
+        this.environment.extensions.use(commandExtension());
+        this.environment.extensions.use(javascriptExtension());
+        this.environment.extensions.use(snippetExtension());
+        this.environment.extensions.use(experimentalExtension());
+
+        this.app.workspace.onLayoutReady(() => {
+            this.register(this.environment.enable());
+        });
+
+        this.registerView(View.type, (leaf) => new View(leaf));
+
+        await this.loadSettings();
+    }
+
+    onunload() {
+        this.environment.cleanup();
+    }
+
+    async loadSettings() {
+        const data = (await this.loadData()) as ISettings;
+        this.settings = { ...this.settings, ...data };
+        this.environment.extensions.enabled.join(this.settings.extensions);
+        this.#updateEnvironment();
+    }
+
+    async saveSettings() {
+        this.settings.extensions = [...this.environment.extensions.enabled];
+        await this.saveData(this.settings);
+        this.#updateEnvironment();
+    }
+
+    #updateEnvironment() {
+        LOGGER.verbose("updateEnvironment");
+        this.environment.refresh(this.settings);
+        this.environment.processors.sort(ProcessorOrder);
+    }
+}

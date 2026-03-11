@@ -1,19 +1,19 @@
 import { type App, Setting } from "obsidian";
-import {
-    type CustomContent,
-    type CustomContentParameters,
-    createCustomView,
-} from "./custom-view";
 import { LOGGER } from "./logger";
+import {
+    createView,
+    type ViewOptions,
+    type ViewParameters,
+} from "./obsidian/view";
 
-export interface ConfirmationParameters<T> extends CustomContentParameters {
+export interface ConfirmationParameters<T> extends ViewParameters {
     value?: T;
     confirm: () => void;
     cancel: () => void;
 }
 
 export interface ConfirmationOptions<T>
-    extends CustomContent<ConfirmationParameters<T>> {
+    extends ViewOptions<ConfirmationParameters<T>> {
     onValidate?: (params: ConfirmationParameters<T>) => boolean;
     onCancel?: (params: ConfirmationParameters<T>) => void;
     onCreateButtons?: (params: ConfirmationParameters<T>) => void;
@@ -49,7 +49,7 @@ export function promptConfirmation<T>(
 
         let confirmed = false;
 
-        createCustomView(app, {
+        createView(app, {
             viewTitle: "Confirm",
             ...state,
             onOpen(view) {

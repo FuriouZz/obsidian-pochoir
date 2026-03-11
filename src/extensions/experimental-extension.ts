@@ -1,6 +1,6 @@
 import * as obsidian from "obsidian";
-import { ContentProcessor } from "../content-processor";
 import type { Extension } from "../environment";
+import { ContentProcessor } from "./content-extension/content-processor";
 
 const ContentExtension: Extension["setup"] = (env) => {
     env.loaders.unshift({

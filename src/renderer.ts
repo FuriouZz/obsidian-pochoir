@@ -1,8 +1,8 @@
 import type { App } from "obsidian";
 import type { Environment, Loader } from "ventojs/core/environment.js";
 import { RendererError } from "./errors";
+import { findLinkPath } from "./obsidian/functions";
 import type { Template } from "./template";
-import { findLinkPath } from "./utils/obsidian";
 import { vento } from "./vento";
 
 interface TemplateLoaderOptions {

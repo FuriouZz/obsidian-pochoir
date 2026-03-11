@@ -1,8 +1,8 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: idk */
 import type { App, EditorPosition, EditorSelection, TFile } from "obsidian";
 import { verbose } from "./logger";
-import { PathBuilder } from "./path-builder";
-import { PropertiesBuilder } from "./properties-builder";
+import { PathBuilder } from "./obsidian/path-builder";
+import { PropertiesBuilder } from "./obsidian/properties-builder";
 import type { Template } from "./template";
 
 export interface TemplateContextLocals {

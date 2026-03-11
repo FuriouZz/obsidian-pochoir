@@ -6,7 +6,7 @@ import {
     TFile,
 } from "obsidian";
 import { EventEmitter } from "./event-emitter";
-import { getFilesAtLocation } from "./utils/obsidian";
+import { getFilesAtLocation } from "./obsidian/functions";
 
 export type FileWatcherEvent =
     | {

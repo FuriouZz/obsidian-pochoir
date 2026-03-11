@@ -1,6 +1,6 @@
 import type { Plugin } from "obsidian";
-import type { CursorJumper } from "./cursor-jumper";
-import type { TemplateModalSuggester } from "./suggesters/template-modal-suggester";
+import type { CursorJumper } from "../obsidian/cursor-jumper";
+import type { TemplateModalSuggester } from "../suggesters/template-modal-suggester";
 
 export function insertFromTemplateCommand(
     plugin: Plugin,

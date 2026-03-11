@@ -2,7 +2,7 @@ import { Platform } from "obsidian";
 import type { InferOutput } from "valibot";
 import type { Environment, Extension } from "../environment";
 import type { TemplateContext } from "../template-context";
-import { tryParseYaml } from "../utils/obsidian";
+import { tryParseYaml } from "../obsidian/functions";
 import {
     createFormBuilder,
     type FormBuilder,

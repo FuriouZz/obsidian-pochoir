@@ -3,8 +3,8 @@ import type { Menu } from "obsidian";
 import type { Environment, Extension } from "../environment";
 import { LOGGER } from "../logger";
 import type { Template } from "../template";
-import { alertWrap } from "../utils/alert";
-import { tryParseYaml } from "../utils/obsidian";
+import { alertWrap } from "../alert";
+import { tryParseYaml } from "../obsidian/functions";
 
 export default function (): Extension {
     return {

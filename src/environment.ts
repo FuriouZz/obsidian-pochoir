@@ -1,26 +1,26 @@
 import { Events, MarkdownView, type TFile, type TFolder } from "obsidian";
+import { alertWrap } from "./alert";
 import { Cache } from "./cache";
 import { promptTextConfirmation } from "./confirmation-modal";
-import { CursorJumper } from "./cursor-jumper";
-import { Editor } from "./editor";
 import { PochoirError } from "./errors";
 import { EventEmitter } from "./event-emitter";
 import { ExtensionList } from "./extension-list";
 import { Importer, type Loader } from "./importer";
 import { LOGGER } from "./logger";
-import type PochoirPlugin from "./main";
+import { CursorJumper } from "./obsidian/cursor-jumper";
+import { ensurePath, findNote, findOrCreateNote } from "./obsidian/functions";
 import type { ParserParseFromSourceOptions } from "./parser";
+import { Editor } from "./plugin/editor";
+import type { PochoirPlugin } from "./plugin/plugin";
+import type { ISettings } from "./plugin/setting-tab";
 import { type Processor, ProcessorList } from "./processor-list";
 import { Renderer } from "./renderer";
-import type { ISettings } from "./setting-tab";
 import type { Template } from "./template";
 import {
     TemplateContext,
     type TemplateContextProvider,
 } from "./template-context";
-import { TemplateSuggesterSet } from "./template-suggester-set";
-import { alertWrap } from "./utils/alert";
-import { ensurePath, findNote, findOrCreateNote } from "./utils/obsidian";
+import type { TemplateSuggester } from "./types/pochoir";
 
 export interface Extension {
     name: string;
@@ -38,7 +38,7 @@ export class Environment extends Events {
     importer: Importer;
     extensions: ExtensionList;
     editor: Editor;
-    templateSuggesters: TemplateSuggesterSet;
+    templateSuggesters: Set<TemplateSuggester>;
     cursorJumper: CursorJumper;
 
     processors = new ProcessorList<Processor>();
@@ -60,7 +60,7 @@ export class Environment extends Events {
         this.importer = new Importer(this);
         this.extensions = new ExtensionList();
         this.editor = new Editor(this);
-        this.templateSuggesters = new TemplateSuggesterSet();
+        this.templateSuggesters = new Set<TemplateSuggester>();
         this.cursorJumper = new CursorJumper(this.app);
     }
 

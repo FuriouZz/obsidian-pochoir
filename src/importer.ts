@@ -1,6 +1,6 @@
 import type { Template } from "./template";
 import { TemplateContext } from "./template-context";
-import { alertError } from "./utils/alert";
+import { alertError } from "./alert";
 
 export type Loader<TResult = unknown> = {
     contextMode?: "shared" | "isolated";

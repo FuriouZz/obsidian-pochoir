@@ -1,10 +1,10 @@
+import type { Environment } from "../environment";
+import { createMarkdownRenderer } from "../obsidian/functions";
+import { CodeEditorSuggester } from "../suggesters/code-editor-suggester";
 import {
     highlightInEditingMode,
     hightlightInReadingMode,
-} from "./editor/codeBlockHighlighter";
-import type { Environment } from "./environment";
-import { CodeEditorSuggester } from "./suggesters/code-editor-suggester";
-import { createMarkdownRenderer } from "./utils/obsidian";
+} from "./codeBlockHighlighter";
 
 export class Editor {
     suggester?: CodeEditorSuggester;

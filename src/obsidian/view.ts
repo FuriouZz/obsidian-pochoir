@@ -1,8 +1,21 @@
-import { type App, ItemView, Modal } from "obsidian";
-import { LOGGER } from "./logger";
+import {
+    type App,
+    Modal as ObsidianModal,
+    ItemView as ObsidianView,
+} from "obsidian";
+import { LOGGER } from "../logger";
 
-export interface CustomContent<
-    TParameters extends CustomContentParameters = CustomContentParameters,
+export interface ViewParameters {
+    readonly element: HTMLElement;
+    setTitle: (title: string) => void;
+    setDesc: (title: string | DocumentFragment) => void;
+    close: () => Promise<void>;
+    view?: View;
+    modal?: Modal;
+}
+
+export interface ViewOptions<
+    TParameters extends ViewParameters = ViewParameters,
 > {
     type?: "modal" | "view";
     viewTitle?: string;
@@ -10,16 +23,7 @@ export interface CustomContent<
     onClose?: (params: TParameters) => void;
 }
 
-export interface CustomContentParameters {
-    readonly element: HTMLElement;
-    setTitle: (title: string) => void;
-    setDesc: (title: string | DocumentFragment) => void;
-    close: () => Promise<void>;
-    view?: CustomView;
-    modal?: Modal;
-}
-
-export class CustomView extends ItemView {
+export class View extends ObsidianView {
     static type = "POCHOIR_CUSTOM_VIEW";
     static title = "Pochoir";
 
@@ -27,16 +31,16 @@ export class CustomView extends ItemView {
     descEl: HTMLElement | undefined;
 
     triggers?: {
-        open?: (view: CustomView) => void;
-        close?: (view: CustomView) => void;
+        open?: (view: View) => void;
+        close?: (view: View) => void;
     };
 
     getViewType(): string {
-        return CustomView.type;
+        return View.type;
     }
 
     getDisplayText(): string {
-        return CustomView.title;
+        return View.title;
     }
 
     setTitle(text: string) {
@@ -74,7 +78,7 @@ export class CustomView extends ItemView {
         return Promise.resolve(this.trigger("close"));
     }
 
-    getParameters(): CustomContentParameters {
+    getParameters(): ViewParameters {
         const element = this.contentEl;
         return {
             get element() {
@@ -88,10 +92,10 @@ export class CustomView extends ItemView {
     }
 }
 
-export class CustomModal extends Modal {
+export class Modal extends ObsidianModal {
     triggers?: {
-        open?: (view: CustomModal) => void;
-        close?: (view: CustomModal) => void;
+        open?: (view: Modal) => void;
+        close?: (view: Modal) => void;
     };
 
     descEl: HTMLElement | undefined;
@@ -122,7 +126,7 @@ export class CustomModal extends Modal {
         this.trigger("close");
     }
 
-    getParameters(): CustomContentParameters {
+    getParameters(): ViewParameters {
         const element = this.contentEl;
         return {
             get element() {
@@ -136,15 +140,15 @@ export class CustomModal extends Modal {
     }
 }
 
-async function _createCustomView(app: App, content: CustomContent) {
-    CustomView.title = content.viewTitle ?? "Pochoir";
+async function createObsidianView(app: App, content: ViewOptions) {
+    View.title = content.viewTitle ?? "Pochoir";
 
-    app.workspace.detachLeavesOfType(CustomView.type);
+    app.workspace.detachLeavesOfType(View.type);
     const leaf = app.workspace.getLeaf(false);
     const prevState = leaf.getViewState();
-    await leaf.setViewState({ type: CustomView.type, active: true });
+    await leaf.setViewState({ type: View.type, active: true });
     await app.workspace.revealLeaf(leaf);
-    if (!(leaf.view instanceof CustomView)) return;
+    if (!(leaf.view instanceof View)) return;
 
     leaf.view.triggers = {
         open(view) {
@@ -158,8 +162,8 @@ async function _createCustomView(app: App, content: CustomContent) {
     return leaf.view.trigger("open");
 }
 
-function _createCustomModal(app: App, content: CustomContent) {
-    const modal = new CustomModal(app);
+function createObsidianModal(app: App, content: ViewOptions) {
+    const modal = new Modal(app);
     modal.contentEl.empty();
 
     modal.triggers = {
@@ -174,9 +178,9 @@ function _createCustomModal(app: App, content: CustomContent) {
     modal.open();
 }
 
-export function createCustomView(app: App, content: CustomContent) {
+export function createView(app: App, content: ViewOptions) {
     if (content.type === "view") {
-        return _createCustomView(app, content);
+        return createObsidianView(app, content);
     }
-    return Promise.resolve(_createCustomModal(app, content));
+    return Promise.resolve(createObsidianModal(app, content));
 }

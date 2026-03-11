@@ -1,7 +1,7 @@
 import type { Extension } from "../environment";
 import { LOGGER } from "../logger";
-import { PathBuilder } from "../path-builder";
-import { parseYaml } from "../utils/obsidian";
+import { PathBuilder } from "../obsidian/path-builder";
+import { parseYaml } from "../obsidian/functions";
 
 export default function (): Extension {
     return {

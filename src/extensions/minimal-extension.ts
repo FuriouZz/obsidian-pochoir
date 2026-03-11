@@ -1,5 +1,5 @@
 import type { Extension } from "../environment";
-import { PathBuilder } from "../path-builder";
+import { PathBuilder } from "../obsidian/path-builder";
 
 export default function (): Extension {
     return {

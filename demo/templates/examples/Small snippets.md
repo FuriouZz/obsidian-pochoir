@@ -45,6 +45,7 @@ icon: pochoir-icon
 triggers: 
 - command
 - editor-menu
+- ribbon
 templates:
 - snippet(bookmark)
 - snippet(today)

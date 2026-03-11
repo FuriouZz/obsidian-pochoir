@@ -1,5 +1,4 @@
 import type { TFile } from "obsidian";
-import { Content } from "./content";
 import type { Environment } from "./environment";
 import type { ParsedTemplateInfo } from "./parser";
 import type {
@@ -11,11 +10,9 @@ import type { TemplateContext } from "./template-context";
 
 export class Template {
     info: ParsedTemplateInfo;
-    content: Content;
 
     constructor(info: ParsedTemplateInfo) {
         this.info = info;
-        this.content = new Content();
     }
 
     getDisplayName() {
@@ -31,7 +28,11 @@ export class Template {
     }
 
     getContent() {
-        return this.content.render(this);
+        const { source } = this.info;
+        return this.info.contentRanges
+            .map((range) => source.slice(...range))
+            .join("")
+            .trim();
     }
 
     async preprocess(env: Environment) {

@@ -1,4 +1,4 @@
-import { parseYaml } from "./utils/obsidian";
+import { parseYaml } from "./functions";
 
 type AcceptedValue = string | string[];
 
