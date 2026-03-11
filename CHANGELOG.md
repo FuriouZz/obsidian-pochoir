@@ -11,7 +11,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - Until now you used `{^}` to place a cursor location
     - Now, you can add a number to set a location order (eg:. `{^1}`)
     - If you place two location `{^1}` and `{^2}`, the cursor will go to the first one, then if call the command `Jump to next cursor location` the cursor will go to the second one
-- Add a new command `Jump to next cursor location` 
+- Add a new command `Jump to next cursor location`
+- Export `originalContent()` as vento variable to place template result before/after file content
+- Setup E2E testing
+
+### Fixed
+- If the template has cursor jumps, the file is opened
 
 ## [0.0.23] - 2026-02-12
 

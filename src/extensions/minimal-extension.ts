@@ -28,7 +28,7 @@ export default function (): Extension {
                         path: context.path.createProxy(),
                         ...context.exports,
                     });
-                    const res = JSON.parse(resStr) as string | string[];
+                    const res = JSON.parse(resStr.content) as string | string[];
                     context.properties.set(key, res);
                 },
             });

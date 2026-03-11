@@ -108,15 +108,22 @@ export class Environment extends Events {
         template: Template,
         target: TFile,
     ) {
-        const content = await template.render(this, context, target);
+        const result = await template.render(this, context, target);
+        const { content } = result;
+        const hasCursors = this.cursorJumper.hasCursors(content);
+        const contentProcessor = context.get("content");
+        const originalContentChanged = contentProcessor?.targetChanged ?? false;
 
-        const writeFile = (content: string, target: TFile) => {
+        const writeInFile = (content: string, target: TFile) => {
             return this.app.vault.process(target, (data) => {
-                return data + content;
+                if (!contentProcessor || !originalContentChanged) {
+                    content = data + content;
+                }
+                return content;
             });
         };
 
-        const writeView = async (content: string, view: MarkdownView) => {
+        const writeInView = async (content: string, view: MarkdownView) => {
             const cursor = context.get("cursor") ?? view.editor.getCursor();
             const selections = context.get("selections");
             if (selections && selections.length > 0) {
@@ -147,23 +154,40 @@ export class Environment extends Events {
                     ],
                 });
             } else {
-                await writeFile(content, target);
+                await writeInFile(content, target);
             }
+        };
+
+        const jumpToCursor = async () => {
+            const activeFile = this.app.workspace.getActiveFile();
+            if (activeFile?.path !== target.path) {
+                await this.app.workspace.getLeaf(false).openFile(target);
+            }
+
+            await new Promise<void>((resolve) =>
+                setTimeout(() => resolve(), 100),
+            );
+
+            this.cursorJumper.parse();
+            this.cursorJumper.jump();
         };
 
         // Place content
         const activeFile = this.app.workspace.getActiveFile();
         const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-        if (
+        const isInView =
             activeFile?.path === target.path &&
             view &&
-            view.getMode() !== "preview"
-        ) {
-            await writeView(content, view);
-            this.cursorJumper.parse();
-            this.cursorJumper.jump();
-        } else {
-            await writeFile(content, target);
+            view.getMode() !== "preview";
+
+        if (originalContentChanged) {
+            await writeInFile(content, target);
+        } else if (isInView) {
+            await writeInView(content, view);
+        }
+
+        if (hasCursors && isInView) {
+            await jumpToCursor();
         }
     }
 
@@ -222,7 +246,7 @@ export class Environment extends Events {
             } else {
                 if (!newTarget && context.path.hasChanged) {
                     const path = await ensurePath(app, context.path.path);
-                    await app.fileManager.renameFile(target, path);
+                    await app.vault.rename(target, path);
                 }
 
                 await this.renderToFile(context, template, target);

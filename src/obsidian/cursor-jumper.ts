@@ -1,6 +1,16 @@
 import { type App, type EditorSelectionOrCaret, MarkdownView } from "obsidian";
 
-const CursorRegex = new RegExp(/\{\^(\d*)\}/);
+const CursorRegex = /\{\^(\d*)\}/g;
+
+// BUG with String.prototype.matchAll()
+// fallback to RegExp.exec()
+function* matchAll(source: string, regex: RegExp) {
+    let match: RegExpExecArray | null = regex.exec(source);
+    while (match) {
+        yield match;
+        match = regex.exec(source);
+    }
+}
 
 export class CursorJumper {
     cursors: EditorSelectionOrCaret[][];
@@ -19,6 +29,10 @@ export class CursorJumper {
         return null;
     }
 
+    hasCursors(content: string) {
+        return CursorRegex.test(content);
+    }
+
     parse() {
         const view = this.getView();
         if (!view) return;
@@ -29,21 +43,21 @@ export class CursorJumper {
 
         for (let i = 0; i < view.editor.lineCount(); i++) {
             const line = view.editor.getLine(i);
-            const match = line.match(CursorRegex);
-            if (!match) continue;
-            const ch = match.index ?? 0;
-            const pattern = match[0];
+            for (const match of matchAll(line, CursorRegex)) {
+                const ch = match.index ?? 0;
+                const pattern = match[0];
 
-            const order = match[1] ? match[1] : "0";
+                const order = match[1] ? match[1] : "0";
 
-            if (!(order in cursors)) {
-                cursors[order] = [];
+                if (!(order in cursors)) {
+                    cursors[order] = [];
+                }
+
+                cursors[order].push({
+                    anchor: { ch, line: i },
+                    head: { ch: ch + pattern.length, line: i },
+                });
             }
-
-            cursors[order].push({
-                anchor: { ch, line: i },
-                head: { ch: ch + pattern.length, line: i },
-            });
         }
 
         this.cursors = Object.keys(cursors)

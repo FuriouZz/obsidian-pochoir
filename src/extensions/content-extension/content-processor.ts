@@ -34,13 +34,16 @@ class Content {
 export class ContentProcessor {
     targetProcessor: ((params: { content: Content }) => void)[] = [];
     templateProcessor: ((params: { content: Content }) => void)[] = [];
+    targetChanged = false;
 
-    processTarget(content: string) {
-        const c = new Content(content);
+    processTarget(source: string) {
+        const c = new Content(source);
+        let content = source;
         for (const processor of this.targetProcessor) {
             processor({ content: c });
             content = c.get();
         }
+        this.targetChanged = source !== content;
         return content;
     }
 

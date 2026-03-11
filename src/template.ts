@@ -160,6 +160,12 @@ export class Template {
 
         // Update file content
         if (contentProcessor) {
+            const originalContent = await env.app.vault.cachedRead(target);
+            context.exports.originalContent = () => {
+                contentProcessor.targetChanged = true;
+                return originalContent;
+            };
+
             await env.app.vault.process(target, (content) => {
                 return contentProcessor.processTarget(content) ?? content;
             });

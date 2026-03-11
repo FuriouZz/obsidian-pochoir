@@ -40,7 +40,9 @@ export default function (): Extension {
                         path: context.path.createProxy(),
                         ...context.exports,
                     });
-                    context.properties.merge(parseYaml<object>(yaml) ?? {});
+                    context.properties.merge(
+                        parseYaml<object>(yaml.content) ?? {},
+                    );
                 },
             });
         },

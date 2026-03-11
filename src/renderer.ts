@@ -48,7 +48,7 @@ export class Renderer {
     ) {
         try {
             const result = await this.vento.runString(content, data, path);
-            return result.content;
+            return result;
         } catch (e) {
             let message = "";
             if (e instanceof Error) {
