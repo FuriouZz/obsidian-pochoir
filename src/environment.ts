@@ -164,9 +164,9 @@ export class Environment extends Events {
                 await this.app.workspace.getLeaf(false).openFile(target);
             }
 
-            await new Promise<void>((resolve) =>
-                setTimeout(() => resolve(), 100),
-            );
+            await new Promise<void>((resolve) => {
+                globalThis.setTimeout(() => resolve(), 100);
+            });
 
             this.cursorJumper.parse();
             this.cursorJumper.jump();

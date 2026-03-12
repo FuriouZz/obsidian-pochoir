@@ -1,7 +1,7 @@
 import { PluginSettingTab, Setting } from "obsidian";
-import type PochoirPlugin from "./plugin";
 import { minidownFragment } from "../minidown";
 import { FileInputSuggester } from "../suggesters/file-input-suggester";
+import type { PochoirPlugin } from "./plugin";
 
 export interface ISettings {
     templates_folder: string;
