@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.0.24] - 2026-03-13
+
 ### Added
 - Add cursor jump
     - Until now you used `{^}` to place a cursor location
@@ -230,7 +232,8 @@ action: create # or "insert"
 
 First version
 
-[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.23...main
+[Unreleased]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.24...main
+[0.0.24]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.23...0.0.24
 [0.0.23]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.22...0.0.23
 [0.0.22]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.21...0.0.22
 [0.0.21]: https://github.com/FuriouZz/obsidian-pochoir/compare/0.0.20...0.0.21
