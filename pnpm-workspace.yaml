@@ -1,7 +1,9 @@
 packages:
-    - e2e
+  - e2e
 onlyBuiltDependencies:
   - core-js
+  - edgedriver
   - electron
   - esbuild
+  - geckodriver
   - obsidian-typings
