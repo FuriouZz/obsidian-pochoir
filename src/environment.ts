@@ -159,6 +159,8 @@ export class Environment extends Events {
         };
 
         const jumpToCursor = async () => {
+            if (!isInView) return;
+
             const activeFile = this.app.workspace.getActiveFile();
             if (activeFile?.path !== target.path) {
                 await this.app.workspace.getLeaf(false).openFile(target);
@@ -167,6 +169,9 @@ export class Environment extends Events {
             await new Promise<void>((resolve) => {
                 globalThis.setTimeout(() => resolve(), 100);
             });
+
+            view.editor.refresh();
+            view.editor.focus();
 
             this.cursorJumper.parse();
             this.cursorJumper.jump();
